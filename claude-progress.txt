@@ -1,5 +1,82 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Session 15 - Feature #56)
+
+### Feature #56: Update notification appears when new version available - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Update notification appears when new version available"
+- Description: "WordPress shows update notice when GitHub has newer release"
+- Category: functional
+- Dependencies: Feature #55 (Plugin Update Checker initializes correctly)
+- Steps:
+  1. Simulate newer version available on GitHub
+  2. Navigate to Plugins page
+  3. Verify update notification appears for BWG Rentals
+  4. Verify new version number is displayed
+
+#### Implementation:
+
+**1. Enhanced Updater Code (includes/class-bwg-rentals.php):**
+- Modified init_updater() to support custom update URLs via BWG_RENTALS_UPDATE_URL constant
+- This allows testing with JSON metadata files instead of requiring a real GitHub repo
+- Only sets GitHub branch when using GitHub URLs
+
+**2. Created update-info.json:**
+- JSON metadata file declaring version 2.0.0
+- Includes changelog, requirements, author info
+- Served from /wp-content/plugins/bwg-rentals/update-info.json
+
+**3. Configured wp-config.php:**
+- Added: define( 'BWG_RENTALS_UPDATE_URL', 'http://localhost/wp-content/plugins/bwg-rentals/update-info.json' )
+- This tells Plugin Update Checker to use local JSON instead of GitHub
+
+#### Testing Performed (Browser Automation):
+
+**Step 1: Simulate newer version available**
+1. Created update-info.json with version 2.0.0 (current is 1.0.0)
+2. Configured BWG_RENTALS_UPDATE_URL in wp-config.php
+3. Cleared all WordPress transients to force fresh update check
+4. Verified JSON file accessible via HTTP
+
+**Step 2-3: Navigate to Plugins page and verify update notification**
+1. Logged into WordPress admin at localhost:8088
+2. Navigated to Plugins page
+3. BWG Rentals row shows: "There is a new version of BWG Rentals available."
+4. "View version 2.0.0 details" link present
+5. "update now" link present
+6. Screenshot captured: feature-56-update-notification.png
+
+**Step 4: Verify new version number is displayed**
+1. Clicked "View version 2.0.0 details" link
+2. Modal opened showing:
+   - Version: 2.0.0
+   - Author: Sawdust and Coffee
+   - Requires WordPress Version: 6.0 or higher
+   - Compatible up to: 6.4.3
+   - Requires PHP Version: 7.4 or higher
+   - Changelog with new features
+3. "Install Update Now" button present
+4. Screenshot captured: feature-56-version-details-modal.png
+5. No JavaScript console errors
+
+#### Screenshots:
+- feature-56-update-notification.png - Plugins page with update notification
+- feature-56-version-details-modal.png - Version details modal
+
+#### Result:
+Feature #56 PASSING - Update notification appears correctly when a new version is available.
+
+---
+
+### Updated Statistics
+- Total Passing: 16/90 features (17.8%)
+- This Session: Feature #56 completed
+
+---
+
 ## Session: 2026-01-30 (Session 14 - Feature #12)
 
 ### Feature #12: API client fetches properties list - PASSED ✓
@@ -1603,3 +1680,34 @@ Feature #75 PASSING - The i18n text domain 'bwg-rentals' is properly registered 
 ### Updated Statistics
 - Total Passing: 16/90 features (17.8%)
 - This Session: Feature #75 completed
+
+[Testing] Feature #3 verified - still passing
+
+## Session: 2026-01-30 (Regression Test - Feature #3)
+
+### Feature #3: Settings menu item appears for administrators
+
+**Status: VERIFIED - STILL PASSING ✓**
+
+#### Verification Steps:
+1. ✅ Logged in as WordPress administrator (user: admin)
+2. ✅ Navigated to Settings menu in the admin sidebar
+3. ✅ Verified 'BWG Rentals' submenu item exists under Settings
+4. ✅ Verified menu item is visible and clickable
+5. ✅ Clicked on 'BWG Rentals' - successfully navigated to BWG Rentals Settings page
+6. ✅ No JavaScript console errors detected
+
+#### Technical Evidence:
+- URL: http://localhost:8088/wp-admin/options-general.php?page=bwg-rentals
+- Page Title: BWG Rentals Settings ‹ BWG Instagram Test — WordPress
+- Menu location: Settings > BWG Rentals
+- Settings page loaded correctly with API credentials, cache settings, and connection test options
+
+#### Screenshots:
+- feature-3-settings-menu-bwg-rentals.png - Dashboard showing Settings menu
+- feature-3-settings-submenu-bwg-rentals-visible.png - Settings submenu expanded with BWG Rentals visible
+- feature-3-bwg-rentals-settings-page.png - BWG Rentals Settings page
+
+#### Result:
+No regression detected. Settings menu item appears correctly for administrators.
+
