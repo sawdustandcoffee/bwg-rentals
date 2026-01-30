@@ -457,9 +457,36 @@
     font-family: var(--bwg-font-family);
 }
 
+.bwg-property-rates__base {
+    display: flex;
+    align-items: baseline;
+    gap: var(--bwg-spacing-sm);
+    margin-bottom: var(--bwg-spacing-lg);
+    padding: var(--bwg-spacing-md);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: var(--bwg-border-radius);
+}
+
+.bwg-property-rates__base-label {
+    font-size: 0.875rem;
+    color: var(--bwg-text-light);
+}
+
+.bwg-property-rates__base-price {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--bwg-primary-color);
+}
+
+.bwg-property-rates__base-period {
+    font-size: 0.875rem;
+    color: var(--bwg-text-light);
+}
+
 .bwg-property-rates__table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: var(--bwg-spacing-md);
 }
 
 .bwg-property-rates__table th,
@@ -481,6 +508,84 @@
 .bwg-property-rates__price {
     font-weight: 600;
     color: var(--bwg-primary-color);
+}
+
+.bwg-property-rates__fees {
+    margin-top: var(--bwg-spacing-md);
+    padding: var(--bwg-spacing-md);
+    background: #f8f9fa;
+    border-radius: var(--bwg-border-radius);
+}
+
+.bwg-property-rates__fees h4 {
+    margin: 0 0 var(--bwg-spacing-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bwg-text-color);
+}
+
+.bwg-property-rates__fees ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bwg-property-rates__fees li {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--bwg-spacing-sm) 0;
+    border-bottom: 1px solid var(--bwg-border-color);
+}
+
+.bwg-property-rates__fees li:last-child {
+    border-bottom: none;
+}
+
+.bwg-property-rates__fee-name {
+    color: var(--bwg-text-light);
+}
+
+.bwg-property-rates__fee-amount {
+    font-weight: 600;
+    color: var(--bwg-text-color);
+}
+
+.bwg-property-rates__discounts {
+    margin-top: var(--bwg-spacing-md);
+    padding: var(--bwg-spacing-md);
+    background: #e8f5e9;
+    border-radius: var(--bwg-border-radius);
+    border-left: 4px solid var(--bwg-accent-color);
+}
+
+.bwg-property-rates__discounts h4 {
+    margin: 0 0 var(--bwg-spacing-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bwg-accent-color);
+}
+
+.bwg-property-rates__discounts ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bwg-property-rates__discounts li {
+    padding: var(--bwg-spacing-sm) 0;
+    color: var(--bwg-text-color);
+}
+
+.bwg-property-rates__discounts li:last-child {
+    padding-bottom: 0;
+}
+
+.bwg-property-rates__empty {
+    padding: var(--bwg-spacing-md);
+    background: #f8f9fa;
+    border-radius: var(--bwg-border-radius);
+    color: var(--bwg-text-light);
+    text-align: center;
 }
 
 /* Property Booking Button */
