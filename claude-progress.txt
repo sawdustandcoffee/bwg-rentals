@@ -1,3 +1,70 @@
+## Session: 2026-01-30 (Feature #47 - Parallel Agent)
+
+### Feature #47: CSS only loads when shortcodes are used - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 47
+- Name: CSS only loads when shortcodes are used
+- Description: Plugin styles are conditionally enqueued only on pages with shortcodes
+- Category: style
+- Dependencies: Feature #20 (bwg_properties shortcode renders property grid) PASSED
+- Steps:
+  1. View a page without any BWG shortcodes
+  2. Check for bwg-rentals-public.css in source
+  3. Verify CSS is not loaded
+  4. View page with shortcode
+  5. Verify CSS is now loaded
+
+#### Implementation Details:
+
+**Asset Registration (includes/class-bwg-rentals.php):**
+- Lines 147-162: enqueue_frontend_assets method
+- Uses wp_register_style and wp_register_script to REGISTER (not enqueue) assets
+- Assets are registered but NOT loaded yet
+
+**Conditional Enqueuing (includes/class-bwg-shortcodes.php):**
+- Lines 68-77: enqueue_assets private method
+- Called by EVERY shortcode method when rendering
+- Uses wp_enqueue_style to actually load CSS
+- Uses wp_enqueue_script to actually load JS
+- Has assets_enqueued flag to prevent duplicate loading
+
+#### Browser Verification:
+
+**Test 1: Page WITHOUT BWG Shortcodes (Homepage)**
+- URL: http://localhost:8088/
+- Removed widget with BWG shortcode for clean test
+- Result:
+  - bwgCSSLoaded: false
+  - bwgCSSFiles: []
+  - bwgScriptsLoaded: false
+  - bwgScriptFiles: []
+- PASS: No BWG CSS/JS loaded on page without shortcodes
+
+**Test 2: Page WITH BWG Shortcodes (Properties Grid)**
+- URL: http://localhost:8088/bwg-properties-grid-test-feature-20/
+- Contains: bwg_properties shortcode
+- Result:
+  - bwgCSSLoaded: true
+  - bwgCSSFiles: bwg-rentals-public.css loaded
+  - bwgScriptsLoaded: true
+  - bwgScriptFiles: bwg-rentals-public.js loaded
+  - bwgElementsCount: 25 (elements using BWG CSS classes)
+- PASS: BWG CSS/JS loaded on page with shortcodes
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-47-no-shortcode-no-css.png - Homepage without shortcode, no BWG CSS
+- feature-47-with-shortcode-css-loaded.png - Properties page with shortcode, BWG CSS loaded
+
+#### Result:
+Feature #47 PASSING - CSS and JS files are conditionally loaded only when BWG shortcodes are used on a page. This improves page load performance by not loading unnecessary assets.
+
+---
+
 ## Session: 2026-01-30 (Feature #22 - Parallel Agent)
 
 ### Feature #22: [bwg_properties] columns attribute works - PASSED ✓
