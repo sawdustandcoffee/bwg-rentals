@@ -1,3 +1,63 @@
+## Session: 2026-01-30 (Feature #28 - Parallel Agent)
+
+### Feature #28: [bwg_property_title] tag attribute changes heading level - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 28
+- Name: [bwg_property_title] tag attribute changes heading level
+- Description: The tag attribute controls h1/h2/h3 heading level
+- Category: functional
+- Dependencies: Feature #27 ([bwg_property_title] displays property name) PASSED
+- Steps:
+  1. Add [bwg_property_title id='X' tag='h1']
+  2. Inspect HTML, verify h1 tag used
+  3. Change to tag='h3'
+  4. Verify h3 tag is now used
+
+#### Implementation Details (Already Implemented):
+
+**Shortcode Logic (includes/class-bwg-shortcodes.php):**
+- Line 302: Default tag is 'h1'
+- Line 319: Allowed tags array includes h1-h6, p, span, div
+- Line 320: Tag validation ensures only allowed tags are used
+- Lines 324-329: Output uses the validated tag variable
+
+```php
+$allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
+$tag = in_array( $atts['tag'], $allowed_tags, true ) ? $atts['tag'] : 'h1';
+$output = sprintf(
+    '<%1$s class="bwg-property-title %2$s">%3$s</%1$s>',
+    $tag,
+    $class,
+    $name
+);
+```
+
+#### Browser Verification:
+
+**Test 1: tag="h1"** ✅
+- Test page: /feature-28-tag-attribute-test-h1/
+- Shortcode: `[bwg_property_title id="1" tag="h1"]`
+- HTML output: `<h1 class="bwg-property-title ">Oceanfront Beach House</h1>`
+- tagName verified: H1
+- Screenshot: feature-28-tag-h1-test.png
+
+**Test 2: tag="h3"** ✅
+- Test page: /feature-28-tag-attribute-test-h3/
+- Shortcode: `[bwg_property_title id="1" tag="h3"]`
+- HTML output: `<h3 class="bwg-property-title ">Oceanfront Beach House</h3>`
+- tagName verified: H3
+- Screenshot: feature-28-tag-h3-test.png
+
+#### Console Errors: None
+
+#### Result:
+Feature #28 PASSING - The tag attribute correctly controls the heading level. Tested tag="h1" (renders as H1) and tag="h3" (renders as H3).
+
+---
+
 ## Session: 2026-01-30 (Feature #68 - Parallel Agent)
 
 ### Feature #68: Network timeout shows user-friendly message - PASSED
