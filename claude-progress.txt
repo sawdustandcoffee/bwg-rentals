@@ -6279,3 +6279,85 @@ Feature #78 PASSING - The orderby attribute correctly sorts property listings:
 - Feature #78 completed and verified
 - Status: PASSED
 - Feature #78 unblocks: None (leaf feature)
+
+
+---
+
+## Session: 2026-01-30 (Feature #19 - Parallel Agent)
+
+### Feature #19: Availability cache expires in 15 minutes - PASSED
+
+**Status: VERIFIED via Code Inspection and Browser Automation**
+
+#### Feature Definition:
+- ID: 19
+- Name: Availability cache expires in 15 minutes
+- Description: Availability data uses shorter cache duration than property data
+- Category: functional
+- Dependencies: Feature #14 (API client fetches availability data) PASSED
+- Steps:
+  1. Fetch availability data
+  2. Verify transient is created
+  3. Check transient expiration time
+  4. Verify expiration is ~15 minutes
+  5. Verify property data has longer expiration
+
+#### Implementation Details (Already Implemented):
+
+**1. BWG_Cache Class (includes/class-bwg-cache.php):**
+- Line 33: const AVAILABILITY_DURATION = 900; (15 minutes = 900 seconds)
+- Lines 41-48: get_duration() method returns AVAILABILITY_DURATION when type is 'availability'
+
+**2. BWG_API Class (includes/class-bwg-api.php):**
+- Lines 648-666: get_availability() method passes 'availability' type to cache methods
+- cache->get($cache_key, 'availability') - gets with availability type
+- cache->set($cache_key, $data, 'availability') - sets with availability type
+
+**3. Admin Settings Documentation:**
+- Cache Duration helper text states: "Availability data is cached for 15 minutes regardless of this setting."
+
+#### Verification Performed:
+
+**Test 1: Code Inspection**
+- Verified BWG_Cache::AVAILABILITY_DURATION = 900 seconds (15 minutes)
+- Verified get_duration() returns 900 for 'availability' type
+
+**Test 2: Database Verification (via PHP script)**
+- Created test availability transient
+- Checked transient timeout in wp_options table
+- Result: Expires in exactly 900 seconds (15 minutes)
+
+**Test 3: Real Availability Cache Verification**
+- Cleared all cache via admin settings
+- Visited /availability-test-feature-35/ page
+- Availability calendar displayed with January, February, March 2026
+- Checked database for availability_1 transient:
+  - Expires in: 880 seconds (~14.67 minutes remaining)
+  - Status: VALID (within 15-minute window)
+
+**Test 4: Comparison with Property Cache**
+- Property cache (bwg_rentals_properties): Expires in ~24 hours (86329 seconds)
+- Availability cache (bwg_rentals_availability_1): Expires in ~15 minutes (880 seconds)
+- This confirms availability cache uses shorter duration as expected
+
+#### Screenshots:
+- feature-19-availability-calendar.png - Availability calendar page
+- feature-19-settings-showing-15min-cache.png - Settings page showing "15 minutes" documentation
+
+#### Console Errors: None
+
+#### Result:
+Feature #19 PASSING - Availability cache correctly configured to expire in 15 minutes:
+- BWG_Cache::AVAILABILITY_DURATION = 900 seconds (15 minutes)
+- Availability transients verified to expire within 15-minute window
+- Property data uses standard cache duration (configurable, default 24 hours)
+- Admin UI documents the 15-minute availability cache behavior
+
+---
+
+### Updated Statistics
+- Total Passing: 61/90 features (67.8%)
+- This Session: Feature #19 completed
+- Feature #19 unblocks: None (leaf feature)
+
+[Testing] Feature #19 verified - availability cache expires in 15 minutes (2026-01-30 23:20)
