@@ -1,5 +1,79 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Session 9 - Feature #89)
+
+### Feature #89: Gallery lightbox closes on escape key - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Gallery lightbox closes on escape key"
+- Category: style
+- Description: "Pressing Escape key closes the lightbox"
+- Steps:
+  1. View property gallery with lightbox layout
+  2. Click an image to open lightbox
+  3. Press Escape key on keyboard
+  4. Verify lightbox closes
+
+#### Code Implementation:
+The escape key functionality is already implemented in `/assets/js/bwg-rentals-public.js` (lines 90-95):
+```javascript
+// Close lightbox on escape key
+$(document).on('keydown', function(e) {
+    if (e.key === 'Escape' && self.$lightbox.hasClass('bwg-lightbox--active')) {
+        self.close();
+    }
+});
+```
+
+#### Testing Performed (Browser Automation):
+
+**Environment Setup:**
+1. ✅ WordPress container running at localhost:8088 (bwg-igf-wordpress)
+2. ✅ Logged into WordPress admin as admin user
+3. ✅ BWG Rentals plugin activated
+4. ✅ Created test page "Lightbox Escape Key Test" with gallery grid images
+
+**Test 1 - First Image:**
+1. ✅ Navigated to test page: http://localhost:8088/lightbox-escape-key-test/
+2. ✅ Clicked on "Test Image 1" - lightbox opened
+3. ✅ Verified lightbox displayed with dark overlay and centered image
+4. ✅ Pressed Escape key
+5. ✅ Lightbox closed successfully - page returned to normal view
+
+**Test 2 - Second Image (Consistency Check):**
+1. ✅ Clicked on "Test Image 2" - lightbox opened
+2. ✅ Screenshot captured showing lightbox open (feature-89-lightbox-open.png)
+3. ✅ Pressed Escape key
+4. ✅ Lightbox closed successfully
+5. ✅ Screenshot captured showing page returned to normal (feature-89-lightbox-closed-after-escape-2.png)
+
+**Console Error Check:**
+1. ✅ No JavaScript console errors detected
+
+#### Screenshots:
+- feature-89-lightbox-open.png - Lightbox displaying selected image with dark overlay
+- feature-89-lightbox-closed-after-escape.png - Page after first Escape key press
+- feature-89-lightbox-closed-after-escape-2.png - Page after second Escape key press
+
+#### Testing Environment:
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- Theme: Twenty Twenty-One
+- PHP version: 8.2
+
+#### Result:
+Feature #89 VERIFIED - Gallery lightbox correctly closes when Escape key is pressed. The implementation uses jQuery's keydown event listener that checks for 'Escape' key and calls the close() method when the lightbox is active.
+
+---
+
+### Updated Statistics
+- Progress: 10/90 features (11.1%)
+- Features passing: 10
+
+---
+
 ## Session: 2026-01-30 (Session 8 - Feature #5)
 
 ### Feature #5: API credentials can be saved - PASSED ✓
