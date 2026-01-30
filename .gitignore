@@ -20,9 +20,8 @@ package-lock.json
 yarn.lock
 
 # PHP dependencies (dev only)
-vendor/
-!vendor/plugin-update-checker/
 composer.lock
+# Note: vendor/plugin-update-checker is included in the repo for GitHub updates
 
 # Development/testing
 .phpunit.result.cache
