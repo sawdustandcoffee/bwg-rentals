@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $months_to_show = absint( $atts['months_to_show'] );
 $start_month    = $atts['start_month'];
+$property_id    = isset( $atts['id'] ) ? absint( $atts['id'] ) : 0;
 
 // Get current date
 $current_date = new DateTime();
@@ -25,6 +26,9 @@ if ( 'current' !== $start_month ) {
     }
 }
 
+// Store the base date for navigation
+$base_date = $current_date->format( 'Y-m-d' );
+
 $day_names = array(
     __( 'Sun', 'bwg-rentals' ),
     __( 'Mon', 'bwg-rentals' ),
@@ -35,7 +39,24 @@ $day_names = array(
     __( 'Sat', 'bwg-rentals' ),
 );
 ?>
-<div class="bwg-property-availability">
+<div class="bwg-property-availability"
+     data-property-id="<?php echo esc_attr( $property_id ); ?>"
+     data-months-to-show="<?php echo esc_attr( $months_to_show ); ?>"
+     data-base-date="<?php echo esc_attr( $base_date ); ?>"
+     data-offset="0">
+
+    <!-- Calendar Navigation -->
+    <div class="bwg-availability-calendar__navigation">
+        <button type="button" class="bwg-availability-calendar__nav bwg-availability-calendar__nav--prev" data-direction="prev" aria-label="<?php esc_attr_e( 'Previous months', 'bwg-rentals' ); ?>">
+            <span class="bwg-availability-calendar__nav-icon">&laquo;</span>
+            <span class="bwg-availability-calendar__nav-text"><?php esc_html_e( 'Previous', 'bwg-rentals' ); ?></span>
+        </button>
+        <button type="button" class="bwg-availability-calendar__nav bwg-availability-calendar__nav--next" data-direction="next" aria-label="<?php esc_attr_e( 'Next months', 'bwg-rentals' ); ?>">
+            <span class="bwg-availability-calendar__nav-text"><?php esc_html_e( 'Next', 'bwg-rentals' ); ?></span>
+            <span class="bwg-availability-calendar__nav-icon">&raquo;</span>
+        </button>
+    </div>
+
     <div class="bwg-availability-calendar">
         <?php for ( $m = 0; $m < $months_to_show; $m++ ) : ?>
             <?php

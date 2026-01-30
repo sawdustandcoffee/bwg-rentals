@@ -312,6 +312,64 @@
     font-family: var(--bwg-font-family);
 }
 
+/* Calendar Navigation */
+.bwg-availability-calendar__navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--bwg-spacing-md);
+    padding: 0 var(--bwg-spacing-sm);
+}
+
+.bwg-availability-calendar__nav {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bwg-spacing-sm);
+    padding: var(--bwg-spacing-sm) var(--bwg-spacing-md);
+    background-color: var(--bwg-background-color);
+    color: var(--bwg-primary-color);
+    border: 1px solid var(--bwg-border-color);
+    border-radius: var(--bwg-border-radius);
+    cursor: pointer;
+    font-family: var(--bwg-font-family);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.bwg-availability-calendar__nav:hover {
+    background-color: var(--bwg-primary-color);
+    color: var(--bwg-button-text);
+    border-color: var(--bwg-primary-color);
+}
+
+.bwg-availability-calendar__nav:focus {
+    outline: 2px solid var(--bwg-primary-color);
+    outline-offset: 2px;
+}
+
+.bwg-availability-calendar__nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.bwg-availability-calendar__nav:disabled:hover {
+    background-color: var(--bwg-background-color);
+    color: var(--bwg-primary-color);
+    border-color: var(--bwg-border-color);
+}
+
+.bwg-availability-calendar__nav-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.bwg-availability-calendar__nav-text {
+    display: inline;
+}
+
 .bwg-availability-calendar {
     display: flex;
     flex-wrap: wrap;
@@ -536,5 +594,18 @@
     .bwg-availability-calendar__legend {
         flex-direction: column;
         gap: var(--bwg-spacing-sm);
+    }
+
+    /* Calendar Navigation Mobile */
+    .bwg-availability-calendar__nav-text {
+        display: none;
+    }
+
+    .bwg-availability-calendar__nav {
+        padding: var(--bwg-spacing-sm);
+    }
+
+    .bwg-availability-calendar__nav-icon {
+        font-size: 1.25rem;
     }
 }
