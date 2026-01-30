@@ -1,5 +1,114 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Feature #11 - Parallel Agent)
+
+### Feature #11: Cache status displays in admin - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Cache status displays in admin"
+- Description: "Settings page shows cache status including last updated time"
+- Category: functional
+- Dependencies: Feature #10 (Manual cache clear button works)
+- Steps:
+  1. Ensure API is configured and properties fetched
+  2. Navigate to Settings > BWG Rentals
+  3. Locate cache status section
+  4. Verify last updated timestamp displays
+  5. Verify cached item count shows
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials configured
+
+**Test Execution:**
+
+1. **Step 1: Ensure API is configured and properties fetched**
+   - ✅ API credentials configured (MOCK_API_KEY_FOR_TESTING / test-org-123)
+   - ✅ Cache has items from previous API calls
+
+2. **Step 2: Navigate to Settings > BWG Rentals**
+   - ✅ Logged in as admin
+   - ✅ Navigated to /wp-admin/options-general.php?page=bwg-rentals
+   - ✅ Settings page loaded successfully
+
+3. **Step 3: Locate cache status section**
+   - ✅ Cache Management section visible
+   - ✅ Cache Status row present in table
+
+4. **Step 4: Verify last updated timestamp displays**
+   - ✅ "Last Updated:" label with bold text
+   - ✅ Timestamp shows formatted date/time: "January 30, 2026 10:16 pm"
+   - ✅ Uses WordPress date_i18n() for proper formatting
+
+5. **Step 5: Verify cached item count shows**
+   - ✅ "Cached Items:" label with bold text
+   - ✅ Count displays: "2" (reflects actual cached API responses)
+   - ✅ "Duration:" also displayed showing "24 hours"
+
+#### Additional Testing:
+
+**Cache Clear and Refresh Test:**
+1. ✅ Clicked "Clear All Cache" button
+2. ✅ Cache status updated immediately (AJAX):
+   - Last Updated: "Never"
+   - Cached Items: "0"
+   - Duration: "24 hours" (unchanged - this is the setting)
+3. ✅ Navigated to page with [bwg_properties] shortcode
+4. ✅ API call triggered, cache populated
+5. ✅ Returned to settings page
+6. ✅ Cache status reflects new data:
+   - Last Updated: "January 30, 2026 10:16 pm"
+   - Cached Items: "2"
+
+**Console Errors:** None detected
+
+#### Code Implementation:
+
+**class-bwg-cache.php (get_status method, lines 141-155):**
+```php
+public function get_status() {
+    $metadata = get_option( 'bwg_rentals_cache_metadata', array() );
+
+    $last_updated = isset( $metadata['last_updated'] )
+        ? date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $metadata['last_updated'] )
+        : __( 'Never', 'bwg-rentals' );
+
+    $item_count = isset( $metadata['items'] ) ? count( $metadata['items'] ) : 0;
+
+    return array(
+        'last_updated' => $last_updated,
+        'item_count'   => $item_count,
+        'duration'     => get_option( 'bwg_rentals_cache_duration', 24 ) . ' ' . __( 'hours', 'bwg-rentals' ),
+    );
+}
+```
+
+**admin-settings.php template (lines 120-153):**
+- Cache Management section with h2 heading
+- Cache Status row with Last Updated, Cached Items, and Duration
+- Clear Cache row with button and description
+
+#### Screenshots:
+- feature-11-cache-status-display.png - Initial cache status with 2 cached items
+- feature-11-cache-cleared-status.png - After clearing cache (0 items, "Never")
+- feature-11-cache-status-after-api-call.png - After API call (2 items, new timestamp)
+
+#### Result:
+Feature #11 PASSING - Cache status displays correctly in admin settings page with:
+- Last updated timestamp
+- Cached item count
+- Cache duration setting
+- Dynamic updates after cache clear and API calls
+
+---
+
 ## Session: 2026-01-30 (Feature #24 - Parallel Agent)
 
 ### Feature #24: [bwg_property_card] renders single property card - PASSED
@@ -3041,3 +3150,78 @@ Feature #18 PASSING - Property data is correctly cached after fetch using WordPr
 - Total Passing: 32/90 features (35.6%)
 - This Session: Feature #18 completed
 - Feature #18 unblocks: Features #57, #73
+
+---
+
+## Session: 2026-01-30 (Regression Test - Feature #2)
+
+### Feature #2: Plugin deactivates cleanly - VERIFIED ✓
+
+**Status: PASSING - No regression found**
+
+#### Feature Definition:
+- Name: "Plugin deactivates cleanly"
+- Description: "The plugin can be deactivated without errors and cleans up scheduled events"
+- Category: functional
+- Dependencies: Feature #1 (Plugin activates without errors) ✓
+- Steps:
+  1. Navigate to WordPress admin plugins page
+  2. Click 'Deactivate' on BWG Rentals
+  3. Verify no PHP errors occur
+  4. Verify plugin shows as inactive
+  5. Verify scheduled cron events are cleared
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Step 1: Navigate to plugins page**
+1. ✅ Logged into WordPress admin as administrator
+2. ✅ Navigated to Plugins page
+3. ✅ BWG Rentals shown as active with "Deactivate" link
+
+**Step 2: Click Deactivate**
+1. ✅ Clicked "Deactivate BWG Rentals" link
+2. ✅ Page reloaded successfully
+
+**Step 3: Verify no PHP errors**
+1. ✅ No PHP fatal errors
+2. ✅ No PHP warnings
+3. ✅ No JavaScript console errors
+4. ✅ Page loaded normally with "Plugin deactivated." success message
+
+**Step 4: Verify plugin shows as inactive**
+1. ✅ BWG Rentals now shows "Activate | Delete" links (inactive state)
+2. ✅ Active plugins count changed from 2 to 1
+3. ✅ "Recently Active (1)" filter appeared
+4. ✅ Settings > BWG Rentals menu item removed from sidebar
+
+**Step 5: Verify scheduled cron events cleared**
+1. ✅ Checked wp cron event list via WP-CLI
+2. ✅ No BWG-related cron events found (bwg_rentals_cache_refresh cleared)
+3. ✅ Deactivation hook in bwg-rentals.php correctly calls wp_clear_scheduled_hook()
+
+**Cleanup:**
+1. ✅ Reactivated BWG Rentals plugin
+2. ✅ "Plugin activated." message displayed
+3. ✅ Plugin back to active state with "Deactivate" link
+4. ✅ Settings > BWG Rentals menu restored
+
+#### Code Review:
+Verified deactivation hook in bwg-rentals.php (lines 108-115):
+- wp_clear_scheduled_hook('bwg_rentals_cache_refresh') - clears cron
+- flush_rewrite_rules() - cleans up rewrite rules
+
+#### Screenshots:
+- feature-2-bwg-rentals-active.png - Initial state (active)
+- feature-2-bwg-rentals-deactivated.png - After deactivation (inactive)
+- feature-2-bwg-rentals-reactivated.png - After reactivation (active again)
+
+#### Result:
+Feature #2 VERIFIED - Plugin deactivates cleanly with no PHP errors, shows as inactive, and scheduled cron events are properly cleared. No regression found.
+
+[Testing] Feature #2 verified - still passing (regression test 2026-01-30 17:20)
