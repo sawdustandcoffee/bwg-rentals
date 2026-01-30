@@ -41,6 +41,252 @@ class BWG_API {
      */
     public function __construct( $cache ) {
         $this->cache = $cache;
+
+        // Add filter for mock API responses (useful for testing without real credentials)
+        add_filter( 'pre_http_request', array( $this, 'maybe_mock_api_response' ), 10, 3 );
+    }
+
+    /**
+     * Mock API response for testing purposes
+     *
+     * When API key starts with 'MOCK_', return mock data instead of making real API calls.
+     * This allows testing the plugin functionality without valid Direct Software credentials.
+     *
+     * @param false|array|WP_Error $preempt      A preemptive return value of an HTTP request.
+     * @param array                $parsed_args  HTTP request arguments.
+     * @param string               $url          The request URL.
+     * @return false|array Preemptive return value or false to continue with request.
+     */
+    public function maybe_mock_api_response( $preempt, $parsed_args, $url ) {
+        // Only intercept requests to the Direct Software API
+        if ( strpos( $url, self::API_BASE_URL ) === false ) {
+            return $preempt;
+        }
+
+        // Check if using mock credentials (API key starts with MOCK_)
+        $credentials = $this->get_credentials();
+        if ( empty( $credentials['api_key'] ) || strpos( $credentials['api_key'], 'MOCK_' ) !== 0 ) {
+            return $preempt;
+        }
+
+        // Determine which endpoint is being called
+        $mock_data = array();
+
+        if ( strpos( $url, '/properties/' ) !== false && strpos( $url, '/availability' ) !== false ) {
+            // Mock availability data
+            $mock_data = $this->get_mock_availability();
+        } elseif ( strpos( $url, '/properties/' ) !== false && strpos( $url, '/rates' ) !== false ) {
+            // Mock rates data
+            $mock_data = $this->get_mock_rates();
+        } elseif ( preg_match( '/\/properties\/(\d+)$/', $url, $matches ) ) {
+            // Mock single property data
+            $mock_data = $this->get_mock_property( (int) $matches[1] );
+        } elseif ( strpos( $url, '/properties' ) !== false ) {
+            // Mock properties list
+            $mock_data = $this->get_mock_properties();
+        }
+
+        // Return mock HTTP response
+        return array(
+            'headers'  => array( 'content-type' => 'application/json' ),
+            'body'     => wp_json_encode( $mock_data ),
+            'response' => array(
+                'code'    => 200,
+                'message' => 'OK',
+            ),
+            'cookies'  => array(),
+            'filename' => '',
+        );
+    }
+
+    /**
+     * Get mock properties list
+     *
+     * @return array Mock property data.
+     */
+    private function get_mock_properties() {
+        return array(
+            array(
+                'id'          => 1,
+                'name'        => 'Oceanfront Beach House',
+                'headline'    => 'Stunning oceanfront property with private beach access',
+                'description' => 'Experience luxury living in this beautiful 4-bedroom oceanfront beach house. Wake up to stunning ocean views, enjoy morning coffee on your private deck, and take a short walk to your own private beach.',
+                'bedrooms'    => 4,
+                'bathrooms'   => 3,
+                'sleeps'      => 10,
+                'sqft'        => 2500,
+                'images'      => array(
+                    array( 'url' => 'https://picsum.photos/800/600?random=1', 'caption' => 'Living Room' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=2', 'caption' => 'Master Bedroom' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=3', 'caption' => 'Kitchen' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=4', 'caption' => 'Ocean View' ),
+                ),
+                'amenities'   => array( 'WiFi', 'Air Conditioning', 'Beach Access', 'Pool', 'Hot Tub', 'Grill', 'Parking' ),
+                'address'     => array(
+                    'street'  => '123 Ocean Drive',
+                    'city'    => 'Beach Town',
+                    'state'   => 'FL',
+                    'zip'     => '33139',
+                    'country' => 'USA',
+                ),
+                'latitude'    => 25.7617,
+                'longitude'   => -80.1918,
+            ),
+            array(
+                'id'          => 2,
+                'name'        => 'Mountain Retreat Cabin',
+                'headline'    => 'Cozy cabin with breathtaking mountain views',
+                'description' => 'Escape to this charming 3-bedroom cabin nestled in the mountains. Perfect for a peaceful getaway with hiking trails nearby and a cozy fireplace for chilly evenings.',
+                'bedrooms'    => 3,
+                'bathrooms'   => 2,
+                'sleeps'      => 8,
+                'sqft'        => 1800,
+                'images'      => array(
+                    array( 'url' => 'https://picsum.photos/800/600?random=5', 'caption' => 'Cabin Exterior' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=6', 'caption' => 'Living Area' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=7', 'caption' => 'Mountain View' ),
+                ),
+                'amenities'   => array( 'WiFi', 'Fireplace', 'Hot Tub', 'Hiking Trails', 'BBQ Grill', 'Mountain Views' ),
+                'address'     => array(
+                    'street'  => '456 Mountain Road',
+                    'city'    => 'Highland',
+                    'state'   => 'CO',
+                    'zip'     => '80517',
+                    'country' => 'USA',
+                ),
+                'latitude'    => 40.3428,
+                'longitude'   => -105.6836,
+            ),
+            array(
+                'id'          => 3,
+                'name'        => 'Downtown Luxury Condo',
+                'headline'    => 'Modern condo in the heart of downtown',
+                'description' => 'Stay in style at this sleek 2-bedroom condo located in downtown. Walking distance to restaurants, shopping, and entertainment. Perfect for business or leisure travel.',
+                'bedrooms'    => 2,
+                'bathrooms'   => 2,
+                'sleeps'      => 4,
+                'sqft'        => 1200,
+                'images'      => array(
+                    array( 'url' => 'https://picsum.photos/800/600?random=8', 'caption' => 'Living Space' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=9', 'caption' => 'City View' ),
+                ),
+                'amenities'   => array( 'WiFi', 'Air Conditioning', 'Gym Access', 'Rooftop Pool', 'Parking', 'Concierge' ),
+                'address'     => array(
+                    'street'  => '789 Main Street',
+                    'city'    => 'Metro City',
+                    'state'   => 'NY',
+                    'zip'     => '10001',
+                    'country' => 'USA',
+                ),
+                'latitude'    => 40.7484,
+                'longitude'   => -73.9857,
+            ),
+        );
+    }
+
+    /**
+     * Get mock single property
+     *
+     * @param int $property_id Property ID.
+     * @return array Mock property data.
+     */
+    private function get_mock_property( $property_id ) {
+        $properties = $this->get_mock_properties();
+
+        foreach ( $properties as $property ) {
+            if ( $property['id'] === $property_id ) {
+                // Add additional details for single property view
+                $property['policies'] = array(
+                    'check_in'     => '4:00 PM',
+                    'check_out'    => '10:00 AM',
+                    'cancellation' => 'Free cancellation up to 7 days before check-in. After that, the first night is non-refundable.',
+                    'house_rules'  => array(
+                        'No smoking',
+                        'No pets allowed',
+                        'No parties or events',
+                        'Quiet hours: 10 PM - 8 AM',
+                    ),
+                );
+                return $property;
+            }
+        }
+
+        // Return first property if ID not found
+        $properties[0]['policies'] = array(
+            'check_in'     => '4:00 PM',
+            'check_out'    => '10:00 AM',
+            'cancellation' => 'Free cancellation up to 7 days before check-in.',
+            'house_rules'  => array( 'No smoking', 'No pets' ),
+        );
+        return $properties[0];
+    }
+
+    /**
+     * Get mock availability data
+     *
+     * @return array Mock availability calendar.
+     */
+    private function get_mock_availability() {
+        $availability = array();
+        $today = new DateTime();
+
+        // Generate 90 days of availability
+        for ( $i = 0; $i < 90; $i++ ) {
+            $date = clone $today;
+            $date->modify( "+{$i} days" );
+            $date_str = $date->format( 'Y-m-d' );
+
+            // Random availability (80% available)
+            $availability[] = array(
+                'date'      => $date_str,
+                'available' => ( rand( 1, 10 ) > 2 ),
+                'min_stay'  => ( $i % 7 === 0 || $i % 7 === 6 ) ? 3 : 2, // Weekend min stay 3, weekday 2
+            );
+        }
+
+        return $availability;
+    }
+
+    /**
+     * Get mock rates data
+     *
+     * @return array Mock pricing data.
+     */
+    private function get_mock_rates() {
+        return array(
+            'base_rate'      => 250,
+            'currency'       => 'USD',
+            'cleaning_fee'   => 150,
+            'service_fee'    => 50,
+            'seasonal_rates' => array(
+                array(
+                    'name'       => 'Peak Season',
+                    'start_date' => date( 'Y-06-01' ),
+                    'end_date'   => date( 'Y-08-31' ),
+                    'rate'       => 350,
+                ),
+                array(
+                    'name'       => 'Holiday Season',
+                    'start_date' => date( 'Y-12-15' ),
+                    'end_date'   => date( 'Y-01-05' ),
+                    'rate'       => 400,
+                ),
+            ),
+            'discounts'      => array(
+                array(
+                    'name'     => 'Weekly Discount',
+                    'type'     => 'percentage',
+                    'value'    => 10,
+                    'min_stay' => 7,
+                ),
+                array(
+                    'name'     => 'Monthly Discount',
+                    'type'     => 'percentage',
+                    'value'    => 20,
+                    'min_stay' => 28,
+                ),
+            ),
+        );
     }
 
     /**
