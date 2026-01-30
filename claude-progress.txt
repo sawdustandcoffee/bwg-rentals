@@ -1,3 +1,155 @@
+## Session: 2026-01-30 (Feature #49 - Parallel Agent)
+
+### Feature #49: Property cards have consistent styling - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 49
+- Name: "Property cards have consistent styling"
+- Description: "All property cards have uniform appearance"
+- Category: style
+- Dependencies: Feature #24 ([bwg_property_card] renders single property card) ✓
+- Steps:
+  1. View properties grid with multiple properties
+  2. Verify all cards have same dimensions
+  3. Verify image sizing is consistent
+  4. Verify text alignment is uniform
+
+#### Implementation Details:
+
+**CSS Styling (assets/css/bwg-rentals-public.css):**
+
+The property card styling uses CSS custom properties for consistent theming:
+
+```css
+.bwg-property-card {
+    background: var(--bwg-background-color);      /* #ffffff */
+    border: 1px solid var(--bwg-border-color);    /* #dcdcde */
+    border-radius: var(--bwg-border-radius);      /* 4px */
+    overflow: hidden;
+    box-shadow: var(--bwg-box-shadow);            /* 0 1px 3px rgba(0,0,0,0.1) */
+    transition: box-shadow 0.2s ease;
+}
+
+.bwg-property-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bwg-property-card__image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+}
+
+.bwg-property-card__content {
+    padding: var(--bwg-spacing-md);               /* 16px */
+}
+
+.bwg-property-card__title {
+    margin: 0 0 var(--bwg-spacing-sm);            /* 0 0 8px */
+    font-size: 1.25rem;                           /* 20px */
+    font-weight: 600;
+    color: var(--bwg-text-color);                 /* #1d2327 */
+}
+```
+
+#### Browser Verification:
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Test 1: Properties Grid (3 cards)**
+URL: /bwg-properties-grid-test-feature-20/
+
+All 3 property cards verified with IDENTICAL styling:
+| Property | Card | Background | Border | Border Radius | Box Shadow | Dimensions |
+|----------|------|------------|--------|---------------|------------|------------|
+| Downtown Luxury Condo | 1 | rgb(255,255,255) | 1px solid rgb(220,220,222) | 4px | rgba(0,0,0,0.1) 0px 1px 3px | 187x257 |
+| Mountain Retreat Cabin | 2 | rgb(255,255,255) | 1px solid rgb(220,220,222) | 4px | rgba(0,0,0,0.1) 0px 1px 3px | 187x257 |
+| Oceanfront Beach House | 3 | rgb(255,255,255) | 1px solid rgb(220,220,222) | 4px | rgba(0,0,0,0.1) 0px 1px 3px | 187x257 |
+
+**Content Styling (All Cards):**
+- Image dimensions: 185x139 (consistent aspect ratio 4:3)
+- Content padding: 16px
+- Title font-size: 20px
+- Title font-weight: 600
+- Title margin: 0px 0px 8px
+- Specs display: flex
+- Specs gap: 16px
+- Specs font-size: 14px
+
+**Test 2: Single Property Card**
+URL: /feature-24-property-card-test/
+
+Single card verified with same styling:
+- Background: rgb(255, 255, 255)
+- Border: 1px solid rgb(220, 220, 222)
+- Border-radius: 4px
+- Box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px
+- Image aspect-ratio: 4/3
+- Content padding: 16px
+- Title: 20px, weight 600, color rgb(29, 35, 39)
+- Specs: flex, 16px gap, color rgb(100, 105, 112)
+
+**Test 3: List Layout**
+URL: /bwg-properties-list-layout-test/
+
+Cards in list layout maintain consistent styling:
+- Same background, border, border-radius
+- Display: flex (horizontal card layout)
+- Flex-direction: row
+- Consistent hover effect
+
+**Test 4: Hover State**
+- Default shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px
+- Hover shadow: rgba(0, 0, 0, 0.15) 0px 4px 12px 0px
+- Transition: box-shadow 0.2s
+
+**CSS Custom Properties Verified:**
+- --bwg-primary-color: #0073aa
+- --bwg-border-color: #dcdcde
+- --bwg-background-color: #ffffff
+- --bwg-text-color: #1d2327
+- --bwg-text-light: #646970
+- --bwg-border-radius: 4px
+- --bwg-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1)
+- --bwg-spacing-sm: 8px
+- --bwg-spacing-md: 16px
+- --bwg-spacing-lg: 24px
+- --bwg-font-family: system fonts stack
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-49-property-cards-grid-view.png - Grid with 3 property cards
+- feature-49-property-cards-full-view.png - Full view of all cards in grid
+- feature-49-card-hover-state.png - Card with hover shadow effect
+- feature-49-single-property-card.png - Single property card shortcode
+- feature-49-single-card-full.png - Single card full view
+- feature-49-list-layout-cards.png - Cards in list layout
+
+#### Result:
+Feature #49 PASSING - All property cards have consistent styling across:
+- Grid layout (multiple cards)
+- List layout (horizontal cards)
+- Single card shortcode
+- Hover state effects
+
+Cards use CSS custom properties for easy theming and maintain uniform appearance with identical dimensions, spacing, typography, colors, and shadows.
+
+---
+
+### Updated Statistics
+- Total Passing: 69/90 features (76.7%)
+- This Session: Feature #49 completed
+- Feature #49 unblocks: None directly (style feature)
+
+---
+
 ## Session: 2026-01-30 (Feature #39 - Parallel Agent)
 
 ### Feature #39: [bwg_property_booking_button] text attribute customizes label - PASSED
