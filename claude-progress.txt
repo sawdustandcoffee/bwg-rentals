@@ -2383,3 +2383,83 @@ Feature #43 PASSING - Settings form properly uses WordPress nonce verification f
 - Total Passing: 24/90 features (26.7%)
 - This Session: Feature #43 completed
 
+
+---
+
+## Session: 2026-01-30 (Feature #62 - Parallel Agent)
+
+### Feature #62: Admin notice shows when API not configured - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Admin notice shows when API not configured"
+- Description: "Warning notice displays when credentials are missing"
+- Category: functional
+- Dependencies: Feature #4 (Settings page loads correctly) ✓
+- Steps:
+  1. Activate plugin without configuring API
+  2. Navigate to any admin page
+  3. Verify admin notice about missing configuration
+  4. Configure API credentials
+  5. Verify notice disappears
+
+#### Implementation Details:
+The admin_notices() method is implemented in includes/class-bwg-rentals.php (lines 168-190).
+
+Key features:
+- Hooks into WordPress admin_notices action
+- Checks if bwg_rentals_api_key and bwg_rentals_organization_id options are empty
+- Displays WordPress standard warning notice (notice-warning is-dismissible)
+- Contains link to settings page for easy configuration
+- Notice automatically disappears when credentials are configured
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Test 1: Notice appears when API not configured**
+1. ✅ Cleared API credentials via WP-CLI
+2. ✅ Logged into WordPress admin as administrator
+3. ✅ Navigated to Dashboard
+4. ✅ Admin notice visible: "BWG Rentals: Please configure your API credentials in the settings page to start displaying properties."
+5. ✅ Notice has yellow/warning styling (WordPress standard)
+6. ✅ Dismiss button (X) present
+7. ✅ "settings page" text is a clickable link to BWG Rentals settings
+
+**Test 2: Settings page link works**
+1. ✅ Clicked "settings page" link in notice
+2. ✅ Navigated to Settings > BWG Rentals page
+3. ✅ Notice also visible on settings page
+
+**Test 3: Notice disappears after configuration**
+1. ✅ Entered API Key: MOCK_API_KEY_FOR_TESTING
+2. ✅ Entered Organization ID: test-org-123
+3. ✅ Clicked Save Changes
+4. ✅ Settings saved successfully
+5. ✅ Notice no longer appears on settings page
+6. ✅ Navigated to Dashboard
+7. ✅ Notice no longer appears on Dashboard
+8. ✅ No console errors
+
+#### Screenshots:
+- feature-62-admin-notice-visible.png - Dashboard showing warning notice when API not configured
+- feature-62-admin-notice-gone-after-config.png - Dashboard with no notice after API credentials saved
+
+#### Code Location:
+- includes/class-bwg-rentals.php lines 102-103 (hook registration)
+- includes/class-bwg-rentals.php lines 168-190 (admin_notices method)
+
+#### Result:
+Feature #62 PASSING - Admin notice correctly shows when API credentials are not configured and disappears after configuration.
+
+---
+
+### Updated Statistics
+- Total Passing: 26/90 features (28.9%)
+- This Session: Feature #62 completed
+
