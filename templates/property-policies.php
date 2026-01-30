@@ -57,7 +57,18 @@ if ( empty( $policies ) && empty( $property['house_rules'] ) ) {
                 <?php echo esc_html( $title ); ?>
             </h4>
             <div class="bwg-property-policies__content">
-                <?php echo wp_kses_post( $content ); ?>
+                <?php
+                // Handle both array and string content
+                if ( is_array( $content ) ) {
+                    echo '<ul class="bwg-property-policies__list">';
+                    foreach ( $content as $item ) {
+                        echo '<li>' . esc_html( $item ) . '</li>';
+                    }
+                    echo '</ul>';
+                } else {
+                    echo wp_kses_post( $content );
+                }
+                ?>
             </div>
         </div>
     <?php endforeach; ?>
