@@ -1,3 +1,77 @@
+## Session: 2026-01-30 (Feature #21 - Parallel Agent)
+
+### Feature #21: [bwg_properties] layout attribute switches to list - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 21
+- Name: "[bwg_properties] layout attribute switches to list"
+- Description: "Setting layout='list' displays properties in list format"
+- Category: functional
+- Dependencies: Feature #20 ([bwg_properties] shortcode renders property grid) ✓
+- Steps:
+  1. Add [bwg_properties layout='list'] to a page
+  2. View the page on frontend
+  3. Verify list layout is applied (not grid)
+  4. Verify styling matches list template
+
+#### Implementation Details:
+
+**Shortcode Logic (includes/class-bwg-shortcodes.php):**
+- Line 119: Default layout is 'grid'
+- Line 148: Template selection based on layout attribute:
+  ```php
+  $template = 'grid' === $atts['layout'] ? 'properties-grid.php' : 'properties-list.php';
+  ```
+
+**Templates:**
+- `templates/properties-grid.php`: Uses `bwg-properties--grid` class
+- `templates/properties-list.php`: Uses `bwg-properties--list` class and includes description excerpts
+
+**CSS (assets/css/bwg-rentals-public.css):**
+- Lines 60-74: List layout CSS with horizontal card display
+- Lines 669-675: Responsive list layout (stacks vertically on mobile)
+
+#### Browser Verification:
+
+**Test Page:** /bwg-properties-list-layout-test/
+- Shortcode: `[bwg_properties layout="list"]`
+
+**Step 1: View page on frontend** ✅
+- Navigated to test page
+- Page loads correctly
+
+**Step 2: Verify list layout applied** ✅
+- Container has class: `bwg-properties bwg-properties--list`
+- Does NOT have grid class
+- 3 property cards displayed
+
+**Step 3: Verify list-specific styling** ✅
+- Cards display horizontally (image left, content right)
+- Description excerpts are shown (unique to list layout)
+- Cards stack vertically
+
+**Comparison with Grid Layout:**
+
+| Feature | Grid Layout | List Layout |
+|---------|-------------|-------------|
+| CSS Class | bwg-properties--grid | bwg-properties--list |
+| Card Layout | Vertical (side-by-side) | Horizontal (stacked) |
+| Description Excerpt | ❌ No | ✅ Yes |
+| Columns Class | bwg-properties--grid-3 | N/A |
+
+#### Screenshots:
+- feature-21-list-layout-test.png - First property card
+- feature-21-list-layout-full-page.png - Full page with all 3 properties
+
+#### Console Errors: None
+
+#### Result:
+Feature #21 PASSING - The layout='list' attribute correctly switches to list layout with proper CSS classes and description excerpts.
+
+---
+
 ## Session: 2026-01-30 (Feature #35 - Parallel Agent)
 
 ### Feature #35: [bwg_property_availability] renders calendar - PASSED ✓
@@ -4883,3 +4957,117 @@ Feature #48 PASSING - The property grid is fully responsive. Media queries corre
 - This Session: Feature #48 completed
 - Feature #48 unblocks: Feature #79 (Mobile touch targets meet minimum size)
 
+
+## Session: 2026-01-30 (Feature #41 - Parallel Agent)
+
+### Feature #41: [bwg_property_policies] displays house rules - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 41
+- Name: "[bwg_property_policies] displays house rules"
+- Description: "The policies shortcode shows property rules and policies"
+- Category: functional
+- Dependencies: Feature #13 (API client fetches single property) ✓
+- Steps:
+  1. Add [bwg_property_policies id='X'] to a page
+  2. View page on frontend
+  3. Verify policies/house rules display
+
+#### Implementation Details:
+
+**Shortcode Registration (includes/class-bwg-shortcodes.php):**
+- Shortcode: `[bwg_property_policies]`
+- Attributes: `id`, `sections` (default 'all')
+- Method: `property_policies()` at lines 541-568
+
+**Template (templates/property-policies.php):**
+- Renders multiple policy sections: house_rules, cancellation, check_in, pets, smoking, damage
+- Uses section filtering via comma-separated `sections` attribute
+- BEM class naming: `.bwg-property-policies`, `.bwg-property-policies__section`, etc.
+
+**API Data (includes/class-bwg-api.php):**
+- Mock data includes policies array with various policy types
+- `house_rules` is returned as an ARRAY of rules
+- Other policies returned as strings
+
+#### Bug Fixed:
+
+**Array Content Handling in Template:**
+- Issue: Fatal PHP error `str_contains(): Argument #1 ($haystack) must be of type string, array given`
+- Cause: Mock API returns `house_rules` as an array, but template used `wp_kses_post($content)` which expects a string
+- Fix: Added `is_array()` check to render arrays as `<ul class="bwg-property-policies__list"><li>` elements
+- Code change in templates/property-policies.php lines 59-72
+
+#### Browser Verification:
+- Test page created: "Policies Test – Feature 41" (property ID 1)
+- Second test page: "Policies Test – Property 2" (property ID 2)
+- Both pages render correctly showing:
+  - House Rules (as bulleted list)
+  - Cancellation Policy (as text)
+  - Check-In/Check-Out (as text)
+- No console errors
+- Screenshots saved: feature-41-policies-working.png
+
+#### Commit:
+- Hash: e9590d2
+- Message: "Fix property policies template to handle array and string content"
+
+
+## Session: 2026-01-30 17:41 (Regression Test - Feature #46)
+
+### Feature #46: CSS classes use BEM naming convention - VERIFIED ✓
+
+**Status: PASSING - No regression found**
+
+#### Feature Definition:
+- ID: 46
+- Name: CSS classes use BEM naming convention
+- Description: All plugin CSS classes follow BEM methodology with bwg- prefix
+- Category: style
+- Dependencies: Feature #20 (passing)
+
+#### Verification Steps:
+
+**Step 1: View page with shortcode output** ✅
+- Navigated to /bwg-properties-grid-with-attributes-test/
+- Page loaded successfully with property cards
+
+**Step 2: Inspect HTML elements** ✅
+- Used JavaScript evaluation to extract all bwg- prefixed classes
+- Analyzed 19 DOM elements with BWG classes
+
+**Step 3: Verify classes use bwg- prefix** ✅
+- All 13 unique classes have bwg- prefix
+- Classes found: bwg-properties, bwg-properties--grid, bwg-properties--grid-2, etc.
+
+**Step 4: Verify BEM structure (block__element--modifier)** ✅
+- Block: bwg-properties, bwg-property-card, bwg-property-specs
+- Element: __image, __content, __title, __item
+- Modifier: --grid, --grid-2
+- All classes match BEM pattern regex
+
+#### Additional Verification (Multiple Pages):
+
+**Property Grid Page:**
+- Total BEM classes: 13
+- Non-BEM classes: 0 (100% compliant)
+
+**Availability Calendar Page:**
+- Total BEM classes: 25
+- Non-BEM classes: 0 (100% compliant)
+
+**Amenities Page:**
+- Total BEM classes: 9
+- Non-BEM classes: 0 (100% compliant)
+
+#### Console Errors: None
+
+#### Screenshot:
+- feature-46-regression-bem-classes-verified.png
+
+#### Result:
+Feature #46 VERIFIED - No regression found. All CSS classes follow BEM naming convention with bwg- prefix.
+
+[Testing] Feature #46 verified - still passing (regression test 2026-01-30 17:41)
