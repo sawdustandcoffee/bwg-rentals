@@ -28,6 +28,16 @@ class BWG_API {
     const API_VERSION = 'application/vnd.direct.v1';
 
     /**
+     * Maximum number of retries for rate limiting
+     */
+    const MAX_RETRIES = 3;
+
+    /**
+     * Base delay in seconds for exponential backoff
+     */
+    const BASE_DELAY = 2;
+
+    /**
      * Cache instance
      *
      * @var BWG_Cache
@@ -52,10 +62,15 @@ class BWG_API {
      * When API key starts with 'MOCK_', return mock data instead of making real API calls.
      * This allows testing the plugin functionality without valid Direct Software credentials.
      *
+     * Special mock modes:
+     * - MOCK_EMPTY_*: Returns empty array (for testing empty states)
+     * - MOCK_RATELIMIT_*: Simulates rate limiting (returns 429 first N times based on transient counter)
+     * - MOCK_TIMEOUT_*: Simulates network timeout error (returns WP_Error)
+     *
      * @param false|array|WP_Error $preempt      A preemptive return value of an HTTP request.
      * @param array                $parsed_args  HTTP request arguments.
      * @param string               $url          The request URL.
-     * @return false|array Preemptive return value or false to continue with request.
+     * @return false|array|WP_Error Preemptive return value, WP_Error for simulated failures, or false to continue with request.
      */
     public function maybe_mock_api_response( $preempt, $parsed_args, $url ) {
         // Only intercept requests to the Direct Software API
@@ -67,6 +82,20 @@ class BWG_API {
         $credentials = $this->get_credentials();
         if ( empty( $credentials['api_key'] ) || strpos( $credentials['api_key'], 'MOCK_' ) !== 0 ) {
             return $preempt;
+        }
+
+        // Handle rate limiting simulation
+        if ( strpos( $credentials['api_key'], 'MOCK_RATELIMIT_' ) === 0 ) {
+            return $this->maybe_mock_rate_limit_response( $url );
+        }
+
+        // Handle timeout simulation
+        if ( strpos( $credentials['api_key'], 'MOCK_TIMEOUT_' ) === 0 ) {
+            BWG_Rentals::log( 'Mock API: Simulating network timeout error.', 'debug' );
+            return new WP_Error(
+                'http_request_failed',
+                'cURL error 28: Operation timed out after 30001 milliseconds with 0 bytes received'
+            );
         }
 
         // Determine which endpoint is being called
@@ -91,6 +120,79 @@ class BWG_API {
         }
 
         // Return mock HTTP response
+        return array(
+            'headers'  => array( 'content-type' => 'application/json' ),
+            'body'     => wp_json_encode( $mock_data ),
+            'response' => array(
+                'code'    => 200,
+                'message' => 'OK',
+            ),
+            'cookies'  => array(),
+            'filename' => '',
+        );
+    }
+
+    /**
+     * Simulate rate limiting for testing
+     *
+     * Returns 429 response on first 2 requests, then 200 on subsequent requests.
+     * Uses a transient counter to track request attempts.
+     *
+     * @param string $url Request URL.
+     * @return array Mock HTTP response.
+     */
+    private function maybe_mock_rate_limit_response( $url ) {
+        // Use transient to track how many times rate limit has been returned
+        $transient_key = 'bwg_mock_ratelimit_counter';
+        $counter       = (int) get_transient( $transient_key );
+
+        // First 2 requests return 429 (rate limited)
+        if ( $counter < 2 ) {
+            set_transient( $transient_key, $counter + 1, 60 ); // Expires in 60 seconds
+
+            BWG_Rentals::log(
+                sprintf( 'Mock API: Simulating rate limit (attempt %d/2)', $counter + 1 ),
+                'debug'
+            );
+
+            return array(
+                'headers'  => array(
+                    'content-type' => 'application/json',
+                    'retry-after'  => '2', // Tell client to retry in 2 seconds
+                ),
+                'body'     => wp_json_encode(
+                    array(
+                        'error'   => 'rate_limit',
+                        'message' => 'Too many requests. Please slow down.',
+                    )
+                ),
+                'response' => array(
+                    'code'    => 429,
+                    'message' => 'Too Many Requests',
+                ),
+                'cookies'  => array(),
+                'filename' => '',
+            );
+        }
+
+        // After 2 rate limits, reset counter and return success
+        delete_transient( $transient_key );
+
+        BWG_Rentals::log( 'Mock API: Rate limit retry successful, returning data.', 'debug' );
+
+        // Determine which endpoint and return appropriate data
+        $mock_data = array();
+
+        if ( strpos( $url, '/properties/' ) !== false && strpos( $url, '/availability' ) !== false ) {
+            $mock_data = $this->get_mock_availability();
+        } elseif ( strpos( $url, '/properties/' ) !== false && strpos( $url, '/rates' ) !== false ) {
+            $mock_data = $this->get_mock_rates();
+        } elseif ( preg_match( '/\/properties\/(\d+)$/', $url, $matches ) ) {
+            $mock_data = $this->get_mock_property( (int) $matches[1] );
+        } elseif ( strpos( $url, '/properties' ) !== false ) {
+            $mock_data = $this->get_mock_properties();
+        }
+
         return array(
             'headers'  => array( 'content-type' => 'application/json' ),
             'body'     => wp_json_encode( $mock_data ),
@@ -308,11 +410,12 @@ class BWG_API {
     /**
      * Make an API request
      *
-     * @param string $endpoint API endpoint.
-     * @param array  $args     Request arguments.
+     * @param string $endpoint    API endpoint.
+     * @param array  $args        Request arguments.
+     * @param int    $retry_count Current retry attempt (for rate limiting).
      * @return array|WP_Error Response data or error.
      */
-    private function request( $endpoint, $args = array() ) {
+    private function request( $endpoint, $args = array(), $retry_count = 0 ) {
         $credentials = $this->get_credentials();
 
         if ( empty( $credentials['api_key'] ) || empty( $credentials['org_id'] ) ) {
@@ -334,20 +437,110 @@ class BWG_API {
 
         $response = wp_remote_get( $url, $args );
 
-        // Check for errors
+        // Check for WP errors (network issues, etc.)
         if ( is_wp_error( $response ) ) {
-            BWG_Rentals::log( 'API request failed: ' . $response->get_error_message() );
+            $error_code    = $response->get_error_code();
+            $error_message = $response->get_error_message();
+
+            BWG_Rentals::log( 'API request failed: ' . $error_message );
+
+            // Handle timeout errors with user-friendly message
+            if ( 'http_request_failed' === $error_code ) {
+                // Check for various timeout patterns in the error message
+                $timeout_patterns = array(
+                    'cURL error 28',        // cURL timeout error
+                    'Operation timed out',  // Generic timeout message
+                    'Connection timed out', // Connection timeout
+                    'timed out',            // Generic timeout
+                    'timeout',              // Generic timeout
+                );
+
+                $is_timeout = false;
+                foreach ( $timeout_patterns as $pattern ) {
+                    if ( stripos( $error_message, $pattern ) !== false ) {
+                        $is_timeout = true;
+                        break;
+                    }
+                }
+
+                if ( $is_timeout ) {
+                    return new WP_Error(
+                        'network_timeout',
+                        __( 'Unable to connect to the property service. The server is taking too long to respond. Please try again later.', 'bwg-rentals' ),
+                        array( 'original_error' => $error_message )
+                    );
+                }
+
+                // Handle DNS/connection errors
+                $connection_patterns = array(
+                    'Could not resolve host',     // DNS error
+                    'Failed to connect',          // Connection failed
+                    'Connection refused',         // Server refused connection
+                    'Network is unreachable',     // No network
+                    'cURL error 6',               // Could not resolve host
+                    'cURL error 7',               // Failed to connect
+                );
+
+                foreach ( $connection_patterns as $pattern ) {
+                    if ( stripos( $error_message, $pattern ) !== false ) {
+                        return new WP_Error(
+                            'network_error',
+                            __( 'Unable to connect to the property service. Please check your internet connection and try again.', 'bwg-rentals' ),
+                            array( 'original_error' => $error_message )
+                        );
+                    }
+                }
+
+                // Generic network error fallback
+                return new WP_Error(
+                    'network_error',
+                    __( 'Unable to connect to the property service. Please try again later.', 'bwg-rentals' ),
+                    array( 'original_error' => $error_message )
+                );
+            }
+
             return $response;
         }
 
         $status_code = wp_remote_retrieve_response_code( $response );
         $body        = wp_remote_retrieve_body( $response );
+        $headers     = wp_remote_retrieve_headers( $response );
 
-        // Handle rate limiting
+        // Handle rate limiting with exponential backoff
         if ( 429 === $status_code ) {
-            BWG_Rentals::log( 'API rate limited. Retrying in 2 seconds.', 'warning' );
-            sleep( 2 );
-            return $this->request( $endpoint, $args );
+            if ( $retry_count >= self::MAX_RETRIES ) {
+                BWG_Rentals::log( 'API rate limit exceeded after ' . self::MAX_RETRIES . ' retries.', 'error' );
+                return new WP_Error(
+                    'rate_limit_exceeded',
+                    __( 'The API is currently busy. Please try again in a few minutes.', 'bwg-rentals' ),
+                    array( 'status' => 429 )
+                );
+            }
+
+            // Calculate delay: check Retry-After header, or use exponential backoff
+            $delay = self::BASE_DELAY;
+            if ( isset( $headers['retry-after'] ) ) {
+                $retry_after = intval( $headers['retry-after'] );
+                if ( $retry_after > 0 && $retry_after <= 60 ) {
+                    $delay = $retry_after;
+                }
+            } else {
+                // Exponential backoff: 2, 4, 8 seconds
+                $delay = self::BASE_DELAY * pow( 2, $retry_count );
+            }
+
+            BWG_Rentals::log(
+                sprintf(
+                    'API rate limited. Retry %d/%d in %d seconds.',
+                    $retry_count + 1,
+                    self::MAX_RETRIES,
+                    $delay
+                ),
+                'warning'
+            );
+
+            sleep( $delay );
+            return $this->request( $endpoint, $args, $retry_count + 1 );
         }
 
         // Handle errors
