@@ -1890,3 +1890,82 @@ No regression detected. Settings menu item appears correctly for administrators.
 #### Result:
 No regression detected. Plugin activates without errors.
 
+
+---
+
+## Session: 2026-01-30 (Feature #17 - Parallel Agent)
+
+### Feature #17: API errors are handled gracefully - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "API errors are handled gracefully"
+- Description: "API client handles errors without PHP exceptions or crashes"
+- Category: functional
+- Dependencies: Feature #12 (API client fetches properties list)
+- Steps:
+  1. Simulate API 500 error response
+  2. Verify no PHP fatal errors occur
+  3. Verify error is logged to debug.log
+  4. Verify user-friendly message is available
+  5. Verify shortcodes handle error state gracefully
+
+#### Testing Performed (Browser Automation):
+
+**Step 1: Set up error condition**
+- Changed API Key from MOCK_API_KEY_12345 to INVALID_KEY_TEST_ERROR_HANDLING
+- Cleared all cache via admin settings
+- This triggers real API calls which return HTTP 404 errors
+
+**Step 2: Verify no PHP fatal errors**
+- Navigated to /bwg-properties-grid-test-feature-20/
+- Page loaded completely without crashes
+- No PHP fatal errors displayed
+- WordPress admin bar visible (proves WordPress fully loaded)
+
+**Step 3: Verify error logging**
+- Checked /var/www/html/wp-content/debug.log
+- Found entries: [BWG Rentals ERROR] API error: HTTP 404
+- Errors properly prefixed with [BWG Rentals ERROR]
+- Multiple timestamps showing consistent logging
+
+**Step 4: Verify user-friendly message**
+- Frontend page displays: "API error: HTTP 404" in styled error box
+- Admin "Test Connection" button displays: "API error: HTTP 404"
+- Error message is clear and not a raw PHP error
+
+**Step 5: Verify shortcodes handle error gracefully**
+- [bwg_properties] shortcode shows styled error instead of crashing
+- Error displayed in .bwg-error CSS class with red border styling
+- No JavaScript console errors
+- Page layout intact with error message in content area
+
+#### Code Implementation Evidence:
+
+**Error handling in API class (class-bwg-api.php):**
+- Lines 333-337: WP_Error check with logging
+- Lines 349-358: HTTP status code error handling with user-friendly message
+- Lines 363-366: JSON parsing error handling
+
+**Error display in shortcodes (class-bwg-shortcodes.php):**
+- render_error() method for styled user-friendly error display
+
+**Logging (class-bwg-rentals.php):**
+- BWG_Rentals::log() method with level prefix
+
+#### Screenshots:
+- feature-17-api-error-graceful-handling.png - Frontend showing styled error message
+- feature-17-test-connection-error.png - Admin settings showing error after Test Connection
+
+#### Git Commit:
+- a57a421 - Verify Feature #17: API errors are handled gracefully
+
+#### Result:
+Feature #17 PASSING - API errors are handled gracefully without PHP crashes, with proper logging and user-friendly messages.
+
+---
+
+### Updated Statistics
+- Total Passing: 21/90 features (23.3%)
+- This Session: Feature #17 completed
