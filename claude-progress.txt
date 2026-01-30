@@ -1,3 +1,72 @@
+## Session: 2026-01-30 (Feature #68 - Parallel Agent)
+
+### Feature #68: Network timeout shows user-friendly message - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 68
+- Name: Network timeout shows user-friendly message
+- Description: Connection timeout displays helpful error, not PHP error
+- Category: functional
+- Dependencies: Feature #17 (API errors are handled gracefully) PASSED
+- Steps:
+  1. Simulate network timeout to API
+  2. View page with shortcode
+  3. Verify user-friendly timeout message displays
+  4. Verify no PHP fatal errors
+
+#### Implementation Details:
+
+The timeout handling was implemented as part of the broader network error handling in `includes/class-bwg-api.php`. The code:
+
+1. **Detects timeout patterns** in cURL error messages:
+   - cURL error 28 (operation timed out)
+   - "Operation timed out", "Connection timed out"
+   - Generic "timeout" patterns
+
+2. **Returns user-friendly message**:
+   ```php
+   return new WP_Error(
+       'network_timeout',
+       __( 'Unable to connect to the property service. The server is taking too long to respond. Please try again later.', 'bwg-rentals' ),
+       array( 'original_error' => $error_message )
+   );
+   ```
+
+3. **Also handles other connection errors**:
+   - DNS errors (cURL error 6)
+   - Connection refused (cURL error 7)
+   - Network unreachable
+
+4. **Mock timeout mode** added for testing:
+   - Set API key to `MOCK_TIMEOUT_TEST` to simulate timeout
+   - Returns fake cURL error 28 message
+
+#### Testing Performed (Browser Automation):
+
+**Test 1: Admin - Test Connection Button**
+- Set API key to `MOCK_TIMEOUT_TEST`
+- Clicked "Test Connection" button
+- Result: ✅ User-friendly message displayed
+
+**Test 2: Frontend - Shortcode Error Display**
+- Cleared cache
+- Navigated to properties page
+- Result: ✅ "Unable to connect to the property service. The server is taking too long to respond. Please try again later."
+
+#### Screenshot:
+- feature-68-timeout-user-friendly-message.png
+
+#### Code Location:
+- Network error handling: includes/class-bwg-api.php (lines 430-510)
+- Mock timeout mode: includes/class-bwg-api.php (in `maybe_mock_api_response`)
+
+#### Result:
+Feature #68 PASSING - Network timeout errors now display user-friendly messages instead of raw cURL error codes.
+
+---
+
 ## Session: 2026-01-30 (Feature #23 - Parallel Agent)
 
 ### Feature #23: [bwg_properties] limit attribute restricts count - PASSED
