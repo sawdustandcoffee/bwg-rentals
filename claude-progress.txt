@@ -1,5 +1,78 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Feature #24 - Parallel Agent)
+
+### Feature #24: [bwg_property_card] renders single property card - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "[bwg_property_card] renders single property card"
+- Description: "The bwg_property_card shortcode displays a single property summary"
+- Category: functional
+- Dependencies: Feature #13 (API client fetches single property)
+- Steps:
+  1. Get a valid property ID
+  2. Add [bwg_property_card id='X'] to a page
+  3. View page on frontend
+  4. Verify property card renders
+  5. Verify image, title, and specs display
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials configured
+
+**Test Execution:**
+
+1. **Step 1: Get a valid property ID**
+   - ✅ Using property ID "1" (Oceanfront Beach House from mock API)
+
+2. **Step 2: Add [bwg_property_card id='X'] to a page**
+   - ✅ Created test page "Feature 24 - Property Card Test"
+   - ✅ Added shortcode: `[bwg_property_card id="1"]`
+   - ✅ Published page via Gutenberg editor
+
+3. **Step 3: View page on frontend**
+   - ✅ Navigated to http://localhost:8088/feature-24-property-card-test/
+   - ✅ Page loads without errors
+
+4. **Step 4: Verify property card renders**
+   - ✅ Property card structure visible with .bwg-property-card class
+   - ✅ Card contains image container, content area with title and specs
+
+5. **Step 5: Verify image, title, and specs display**
+   - ✅ **Image**: Forest/nature image displays correctly (from mock API picsum.photos)
+   - ✅ **Title**: "Oceanfront Beach House" displayed as h3 heading
+   - ✅ **Specs**: "4 Beds  3 Baths" displayed below title
+
+**Console Errors:** None detected
+
+#### Code Implementation:
+- Shortcode registered in class-bwg-shortcodes.php (line 50)
+- property_card() method (lines 160-187) handles:
+  - Attribute parsing (id, show_image, show_specs, link)
+  - API call via $this->api->get_property()
+  - Template rendering via property-card.php
+- Template (templates/property-card.php) renders:
+  - .bwg-property-card container
+  - .bwg-property-card__image with img tag
+  - .bwg-property-card__content with h3 title
+  - .bwg-property-specs with bedroom/bathroom/guest counts
+
+#### Screenshots:
+- feature-24-property-card-rendered.png - Initial view
+- feature-24-property-card-top.png - Full page with complete property card visible
+
+#### Result:
+Feature #24 PASSING - The [bwg_property_card id="X"] shortcode correctly renders a single property card with image, title, and specs.
+
+---
+
 ## Session: 2026-01-30 (Feature #50 - Parallel Agent)
 
 ### Feature #50: Admin settings page matches WordPress styling - PASSED
