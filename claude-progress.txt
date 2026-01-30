@@ -1,5 +1,76 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Session 16 - Feature #20)
+
+### Feature #20: [bwg_properties] shortcode renders property grid - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "[bwg_properties] shortcode renders property grid"
+- Description: "The bwg_properties shortcode displays a grid of all properties"
+- Category: functional
+- Dependencies: Feature #12 (API client fetches properties list)
+- Steps:
+  1. Add [bwg_properties] to a page
+  2. View the page on frontend
+  3. Verify properties are displayed
+  4. Verify grid layout is applied
+  5. Verify each property shows image, title, and specs
+
+#### Testing Performed (Browser Automation):
+
+**Environment Setup:**
+1. ✅ WordPress container running at localhost:8088 (bwg-igf-wordpress)
+2. ✅ Logged into WordPress admin as admin user
+3. ✅ BWG Rentals plugin activated with mock API credentials (MOCK_API_KEY_FOR_TESTING)
+4. ✅ Mock API system returns 3 properties: Oceanfront Beach House, Mountain Retreat Cabin, Downtown Luxury Condo
+
+**Test 1: Default Grid Layout**
+1. ✅ Created test page "BWG Properties Grid Test - Feature 20"
+2. ✅ Added shortcode: [bwg_properties]
+3. ✅ Published page and viewed on frontend
+4. ✅ Verified 3 properties displayed in grid (3 columns default)
+5. ✅ Each property card shows: image, title, beds, baths
+6. ✅ Screenshot captured: feature-20-properties-grid-fullpage.png
+
+**Test 2: Columns and Limit Attributes**
+1. ✅ Created test page "BWG Properties Grid with Attributes Test"
+2. ✅ Added shortcode: [bwg_properties columns="2" limit="2"]
+3. ✅ Verified only 2 properties displayed (limit attribute works)
+4. ✅ Verified 2-column layout applied (columns attribute works)
+5. ✅ Screenshot captured: feature-20-properties-grid-limit-2.png
+
+**Test 3: List Layout**
+1. ✅ Created test page "BWG Properties List Layout Test"
+2. ✅ Added shortcode: [bwg_properties layout="list"]
+3. ✅ Verified properties displayed in vertical list format
+4. ✅ Verified descriptions are included in list layout
+5. ✅ Screenshot captured: feature-20-properties-list-layout.png
+
+**Test 4: Error Handling**
+1. ✅ No JavaScript console errors detected
+2. ✅ Shortcode renders gracefully with mock data
+
+#### Screenshots:
+- feature-20-properties-grid-default.png - Initial grid view
+- feature-20-properties-grid-fullpage.png - Full page showing grid
+- feature-20-properties-grid-limit-2.png - Grid with limit="2" columns="2"
+- feature-20-properties-list-layout.png - List layout view
+
+#### Technical Verification:
+- Shortcode registered via add_shortcode() in class-bwg-shortcodes.php
+- Properties fetched from API via $this->api->get_properties()
+- Grid template: templates/properties-grid.php
+- List template: templates/properties-list.php
+- Attributes supported: layout (grid/list), columns (2/3/4), limit, orderby
+- BEM class naming: .bwg-properties, .bwg-properties--grid, .bwg-property-card
+
+#### Result:
+Feature #20 PASSING - The [bwg_properties] shortcode renders property grid correctly with all attributes working.
+
+---
+
 ## Session: 2026-01-30 (Session 15 - Feature #56)
 
 ### Feature #56: Update notification appears when new version available - PASSED
@@ -1710,4 +1781,40 @@ Feature #75 PASSING - The i18n text domain 'bwg-rentals' is properly registered 
 
 #### Result:
 No regression detected. Settings menu item appears correctly for administrators.
+
+
+[Testing] Feature #1 verified - still passing
+
+## Session: 2026-01-30 (Regression Test - Feature #1)
+
+### Feature #1: Plugin activates without errors
+
+**Status: VERIFIED - STILL PASSING ✓**
+
+#### Verification Steps Performed:
+1. ✅ Logged in as WordPress administrator (user: admin)
+2. ✅ Navigated to Plugins page (plugins.php)
+3. ✅ Located BWG Rentals plugin in the list
+4. ✅ Verified plugin was initially active (showed 'Deactivate' option)
+5. ✅ Deactivated plugin - success message 'Plugin deactivated.' appeared
+6. ✅ Re-activated plugin by clicking 'Activate BWG Rentals'
+7. ✅ Success message 'Plugin activated.' displayed
+8. ✅ Plugin status confirmed as Active
+9. ✅ No PHP errors or warnings during activation/deactivation cycle
+10. ✅ No JavaScript console errors detected
+11. ✅ Settings > BWG Rentals menu item appears after activation
+
+#### Technical Evidence:
+- URL: http://localhost:8088/wp-admin/plugins.php
+- Plugin Name: BWG Rentals
+- Plugin Version: 1.0.0
+- Author: Sawdust and Coffee
+- Status: Active (Deactivate link visible)
+
+#### Screenshots:
+- feature-1-plugin-active-status.png - Initial active state
+- feature-1-plugin-activated-success.png - After reactivation with success message
+
+#### Result:
+No regression detected. Plugin activates without errors.
 
