@@ -1,0 +1,24 @@
+{
+    "name": "BWG Rentals",
+    "slug": "bwg-rentals",
+    "version": "2.0.0",
+    "requires": "6.0",
+    "tested": "6.4",
+    "requires_php": "7.4",
+    "download_url": "https://github.com/sawdustandcoffee/bwg-rentals/releases/download/v2.0.0/bwg-rentals.zip",
+    "author": "Sawdust and Coffee",
+    "author_homepage": "https://sawdustandcoffee.com",
+    "homepage": "https://github.com/sawdustandcoffee/bwg-rentals",
+    "sections": {
+        "description": "Display vacation rental properties from Direct Software on your WordPress site with flexible shortcodes.",
+        "changelog": "<h4>2.0.0</h4><ul><li>New feature: Added property comparison tool</li><li>Improved: Better API error handling</li><li>Fixed: Calendar navigation issues</li></ul>"
+    },
+    "banners": {
+        "low": "",
+        "high": ""
+    },
+    "icons": {
+        "1x": "",
+        "2x": ""
+    }
+}

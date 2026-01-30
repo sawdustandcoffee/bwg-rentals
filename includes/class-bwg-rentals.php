@@ -104,7 +104,11 @@ class BWG_Rentals {
     }
 
     /**
-     * Initialize the GitHub updater
+     * Initialize the updater
+     *
+     * Uses Plugin Update Checker library to check for updates.
+     * By default, checks GitHub releases. Can be overridden with a JSON metadata URL
+     * by defining BWG_RENTALS_UPDATE_URL constant.
      */
     private function init_updater() {
         // Include Plugin Update Checker if available
@@ -114,14 +118,21 @@ class BWG_Rentals {
             require_once $updater_file;
 
             if ( class_exists( 'YahnisElsts\\PluginUpdateChecker\\v5\\PucFactory' ) ) {
+                // Allow override of update URL for testing or custom update servers
+                $update_url = defined( 'BWG_RENTALS_UPDATE_URL' )
+                    ? BWG_RENTALS_UPDATE_URL
+                    : 'https://github.com/sawdustandcoffee/bwg-rentals';
+
                 $update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-                    'https://github.com/sawdustandcoffee/bwg-rentals',
+                    $update_url,
                     BWG_RENTALS_PLUGIN_DIR . 'bwg-rentals.php',
                     'bwg-rentals'
                 );
 
-                // Set the branch that contains the stable release
-                $update_checker->setBranch( 'main' );
+                // Only set branch for GitHub URLs
+                if ( strpos( $update_url, 'github.com' ) !== false ) {
+                    $update_checker->setBranch( 'main' );
+                }
             }
         }
     }
