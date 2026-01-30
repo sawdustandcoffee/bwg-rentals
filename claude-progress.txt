@@ -6017,3 +6017,132 @@ Feature #67 PASSING - Rate limiting is handled with proper retry logic:
 - This Session: Feature #67 completed
 - Feature #67 unblocks: None (leaf feature)
 
+
+---
+
+## Session: 2026-01-30 (Feature #22 - Regression Test)
+
+### Feature #22: [bwg_properties] columns attribute works - VERIFIED ✓
+
+**Status: NO REGRESSION - Feature still passing**
+
+#### Feature Definition:
+- ID: 22
+- Name: [bwg_properties] columns attribute works
+- Description: The columns attribute controls grid column count
+- Category: functional
+- Dependencies: Feature #20
+
+#### Verification Steps Performed:
+
+**Step 1-2: Tested columns='2'** ✅
+- Navigated to /feature-22-columns-2-test/
+- Shortcode: [bwg_properties columns="2"]
+- Grid CSS class: bwg-properties--grid-2
+- Grid template columns: 293px 293px (2 columns confirmed)
+- Visual: 2 properties per row, third wraps to next row
+
+**Step 3-4: Tested default columns (3)** ✅
+- Navigated to /bwg-properties-grid-test-feature-20/
+- Shortcode: [bwg_properties] (default)
+- Grid CSS class: bwg-properties--grid-3
+- Grid template columns: 187.328px 187.328px 187.328px (3 columns confirmed)
+- Visual: 3 properties per row
+
+**CSS Verification:** ✅
+- CSS file supports: .bwg-properties--grid-2, .bwg-properties--grid-3, .bwg-properties--grid-4
+- Template correctly generates class from columns attribute
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-22-columns-2-test.png - Shows 2-column grid layout
+- feature-22-columns-2-test-scrolled.png - Shows 2 properties per row with third wrapping
+
+#### Result:
+Feature #22 VERIFIED - No regression found. The columns attribute correctly controls grid column count.
+
+[Testing] Feature #22 verified - still passing (regression test 2026-01-30 18:08)
+
+---
+
+## Session: 2026-01-30 (Feature #73 - Parallel Agent)
+
+### Feature #73: Cache refresh happens automatically on expiration - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 73
+- Name: Cache refresh happens automatically on expiration
+- Description: Expired cache triggers fresh API fetch transparently
+- Category: functional
+- Dependencies: Feature #18 (Property data is cached after fetch) PASSED
+- Steps:
+  1. Fetch properties (creates cache)
+  2. Force expire the transient
+  3. Request properties again
+  4. Verify fresh data is fetched from API
+  5. Verify new cache is created
+
+#### Implementation Analysis:
+
+The cache auto-refresh mechanism is built into the API class architecture:
+
+1. **BWG_Cache class** (includes/class-bwg-cache.php):
+   - Uses WordPress Transients API with prefix bwg_rentals_
+   - get() method returns false when transient doesnt exist or is expired
+   - set() method stores data with configurable duration (default 24 hours)
+   - Tracks metadata (last_updated, items) in separate option
+
+2. **BWG_API class** (includes/class-bwg-api.php):
+   - All data methods check cache first
+   - If cache returns false (expired), fetches fresh from API
+   - Stores new data in cache after successful fetch
+
+3. **Transparent refresh**: When cache expires, WordPress get_transient() returns false, triggering:
+   - Fresh API call via request() method
+   - New cache creation via set() method
+   - Updated metadata with current timestamp
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials: MOCK_API_KEY_FOR_TESTING / test-org-123
+
+**Step 1: Clear existing cache** - Cleared all bwg_rentals transients via WP-CLI
+
+**Step 2: Set cache with short expiration** - Created transient with 5 second expiration
+
+**Step 3: Wait for expiration** - Waited 6 seconds, verified transient expired
+
+**Step 4: Request properties page** - Page rendered with fresh data (not old cached data)
+
+**Step 5: Verify new cache created** - Confirmed transient contains fresh data from API
+
+**Step 6: Verify settings page** - Cache Status shows updated timestamp and item count
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-73-cache-auto-refresh-verified.png
+- feature-73-cache-status-updated.png
+
+#### Git Commit:
+- Hash: 3a11aa1
+- Message: Verify Feature #73: Cache refresh happens automatically on expiration
+
+#### Result:
+Feature #73 PASSING - Cache refresh happens automatically on expiration.
+
+---
+
+### Updated Statistics
+- Total Passing: 59/90 features (65.6%)
+- This Session: Feature #73 completed
+
+[Testing] Feature #73 verified - cache auto-refresh works (2026-01-30 23:15)
+
