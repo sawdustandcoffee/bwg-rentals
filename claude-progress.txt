@@ -1,5 +1,80 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Feature #42 - Parallel Agent)
+
+### Feature #42: Non-admin cannot access settings page - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Non-admin cannot access settings page"
+- Description: "Users without administrator capability cannot view settings"
+- Category: security
+- Dependencies: Feature #4 (Settings page exists under Settings menu)
+- Steps:
+  1. Log in as subscriber or editor user
+  2. Try to access /wp-admin/options-general.php?page=bwg-rentals directly
+  3. Verify access is denied
+  4. Verify no settings form is displayed
+
+#### Implementation Details:
+
+The security is implemented in includes/class-bwg-admin.php:
+
+1. **Menu Registration (line 72)**: Uses `'manage_options'` capability which only administrators have
+2. **Page Render Check (lines 224-227)**: `current_user_can( 'manage_options' )` check
+3. **AJAX Test Connection (lines 249-251)**: Capability check before processing
+4. **AJAX Clear Cache (lines 271-273)**: Capability check before processing
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+
+**Test Users:**
+1. `testsubscriber` - Subscriber role (no manage_options capability)
+2. `editor` - Editor role (no manage_options capability)
+3. `admin` - Administrator role (has manage_options capability)
+
+**Test Execution:**
+
+**Test 1: Subscriber User (testsubscriber)**
+1. ✅ Logged in as testsubscriber
+2. ✅ Admin menu shows only Dashboard and Profile (no Settings menu)
+3. ✅ Direct URL access to /wp-admin/options-general.php?page=bwg-rentals
+4. ✅ Response: "Sorry, you are not allowed to access this page."
+5. ✅ No settings form displayed
+
+**Test 2: Editor User (editor)**
+1. ✅ Logged in as editor
+2. ✅ Admin menu shows Posts, Media, Pages, Comments, Profile, Tools (no Settings)
+3. ✅ Direct URL access to /wp-admin/options-general.php?page=bwg-rentals
+4. ✅ Response: "Sorry, you are not allowed to access this page."
+5. ✅ No settings form displayed
+
+**Test 3: Admin User (admin) - Control Test**
+1. ✅ Logged in as admin
+2. ✅ Settings menu visible with "BWG Rentals" submenu item
+3. ✅ Direct URL access successful - settings page loads
+4. ✅ Full settings form displayed (API Key, Org ID, Cache Duration, etc.)
+5. ✅ All action buttons visible (Save Changes, Test Connection, Clear All Cache)
+
+**Console Check:**
+- ✅ No JavaScript console errors on any test
+
+#### Screenshots:
+- feature-42-subscriber-admin-no-settings-menu.png - Subscriber admin menu (no Settings)
+- feature-42-subscriber-access-denied.png - Access denied for subscriber
+- feature-42-editor-access-denied.png - Access denied for editor
+- feature-42-admin-access-allowed.png - Admin can access settings page
+
+#### Result:
+Feature #42 PASSING - Non-admin users (subscriber, editor) cannot access the BWG Rentals settings page. Access is properly denied with appropriate error message.
+
+---
+
 ## Session: 2026-01-30 (Feature #13 - Parallel Agent)
 
 ### Feature #13: API client fetches single property - PASSED
@@ -2163,3 +2238,5 @@ Feature #6 PASSING - API credentials (API Key and Organization ID) are stored en
 - This Session: Feature #6 completed
 - Feature #6 unblocks: Feature #45 (API key not exposed in page source)
 
+
+[Testing] Feature #27 verified - still passing (regression test 2026-01-30 16:58)
