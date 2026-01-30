@@ -5789,3 +5789,162 @@ Feature #61 PASSING - Error logging to debug.log works correctly when WP_DEBUG_L
 - This Session: Feature #61 completed
 - Feature #61 unblocks: None (leaf feature)
 
+
+---
+
+## Session: 2026-01-30 (Feature #77 - Regression Test)
+
+### Feature #77: Accessibility: form fields have labels - VERIFIED ✓
+
+**Status: NO REGRESSION - Feature still passing**
+
+#### Feature Definition:
+- ID: 77
+- Name: Accessibility: form fields have labels
+- Description: All form fields in settings have associated labels
+- Category: functional
+- Dependencies: Feature #4
+
+#### Verification Steps Performed:
+
+**Step 1: Navigate to settings page** ✅
+- Navigated to /wp-admin/admin.php?page=bwg-rentals
+- Page loaded successfully
+
+**Step 2: Inspect each form field** ✅
+- Found 4 BWG Rentals form fields:
+  1. bwg_rentals_api_key (password)
+  2. bwg_rentals_organization_id (text)
+  3. bwg_rentals_cache_duration (number)
+  4. bwg_rentals_button_text (text)
+
+**Step 3: Verify each has a label element with 'for' attribute** ✅
+- API Key: label[for='bwg_rentals_api_key'] present
+- Organization ID: label[for='bwg_rentals_organization_id'] present  
+- Cache Duration: label[for='bwg_rentals_cache_duration'] present
+- Default Button Text: label[for='bwg_rentals_button_text'] present
+
+**Step 4: Verify labels are descriptive** ✅
+- All labels have meaningful text (>3 characters)
+- All fields have helper text providing additional context
+- Clicking any label focuses the corresponding input field
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-77-settings-page.png - Settings page showing form fields with labels
+
+#### Result:
+Feature #77 VERIFIED - No regression found. All form fields have properly associated labels.
+
+[Testing] Feature #77 verified - still passing (regression test 2026-01-30 18:01)
+
+
+---
+
+## Session: 2026-01-30 (Feature #67 - Parallel Agent)
+
+### Feature #67: Rate limiting is handled with retry - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 67
+- Name: Rate limiting is handled with retry
+- Description: API client handles 429 responses with appropriate retry logic
+- Category: functional
+- Dependencies: Feature #17 (API errors are handled gracefully) PASSED
+- Steps:
+  1. Simulate API rate limit (429 response)
+  2. Verify client retries after delay
+  3. Verify retry succeeds on subsequent attempt
+  4. Verify no user-facing errors during retry
+
+#### Implementation Details:
+
+**1. Rate Limiting Constants (includes/class-bwg-api.php):**
+- Added `MAX_RETRIES = 3` - Maximum number of retry attempts
+- Added `BASE_DELAY = 2` - Base delay in seconds for exponential backoff
+
+**2. Enhanced Request Method:**
+- Added `$retry_count` parameter to track retry attempts
+- Implemented exponential backoff: 2, 4, 8 seconds between retries
+- Added Retry-After header support to respect server-specified delays
+- Returns user-friendly error after max retries exceeded:
+  "The API is currently busy. Please try again in a few minutes."
+
+**3. Mock API Rate Limit Simulation:**
+- Added `MOCK_RATELIMIT_` API key prefix support
+- Uses transient counter to track simulated rate limit responses
+- First 2 requests return 429 (Too Many Requests)
+- 3rd request succeeds with normal data
+- Returns Retry-After: 2 header to test header parsing
+
+**4. Logging:**
+- Logs rate limit warnings with retry count and delay
+- Logs final success after retries complete
+- Logs error if max retries exceeded
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Test 1: Admin Test Connection**
+- Set API key to `MOCK_RATELIMIT_TEST`
+- Clicked "Test Connection" button
+- Results:
+  - ✅ First request returned 429 (logged: "Mock API: Simulating rate limit (attempt 1/2)")
+  - ✅ Client waited 2 seconds and retried (logged: "API rate limited. Retry 1/3 in 2 seconds.")
+  - ✅ Second request returned 429 (logged: "Mock API: Simulating rate limit (attempt 2/2)")
+  - ✅ Client waited 2 seconds and retried (logged: "API rate limited. Retry 2/3 in 2 seconds.")
+  - ✅ Third request succeeded (logged: "Mock API: Rate limit retry successful, returning data.")
+  - ✅ UI showed "Connection successful! API is responding."
+  - ✅ No user-visible error during retry process
+
+**Test 2: Frontend Shortcode Rendering**
+- Navigated to /bwg-properties-grid-test-feature-20/
+- Results:
+  - ✅ Rate limiting retry worked identically on frontend
+  - ✅ Properties grid displayed successfully after retries
+  - ✅ 3 properties visible (Oceanfront Beach House, Mountain Retreat Cabin, Downtown Luxury Condo)
+  - ✅ No console errors
+
+**Debug Log Evidence:**
+```
+[30-Jan-2026 23:02:26 UTC] [BWG Rentals DEBUG] Mock API: Simulating rate limit (attempt 1/2)
+[30-Jan-2026 23:02:26 UTC] [BWG Rentals WARNING] API rate limited. Retry 1/3 in 2 seconds.
+[30-Jan-2026 23:02:28 UTC] [BWG Rentals DEBUG] Mock API: Simulating rate limit (attempt 2/2)
+[30-Jan-2026 23:02:28 UTC] [BWG Rentals WARNING] API rate limited. Retry 2/3 in 2 seconds.
+[30-Jan-2026 23:02:30 UTC] [BWG Rentals DEBUG] Mock API: Rate limit retry successful, returning data.
+```
+
+#### Screenshots:
+- feature-67-rate-limit-test-success.png - Settings page showing successful connection after retry
+- feature-67-properties-after-ratelimit-retry.png - Properties grid displayed after retry
+
+#### Files Modified:
+- includes/class-bwg-api.php - Added rate limiting retry logic with exponential backoff
+
+#### Git Commit:
+- Hash: b85d6a6
+- Message: "Implement Feature #67: Rate limiting is handled with retry"
+
+#### Result:
+Feature #67 PASSING - Rate limiting is handled with proper retry logic:
+- Exponential backoff (2, 4, 8 seconds)
+- Respects Retry-After header
+- Maximum 3 retries before failing
+- User-friendly error message on final failure
+- No user-visible errors during normal retry process
+
+---
+
+### Updated Statistics
+- Total Passing: 59/90 features (65.6%)
+- This Session: Feature #67 completed
+- Feature #67 unblocks: None (leaf feature)
+
