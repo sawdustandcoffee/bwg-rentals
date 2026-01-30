@@ -13,7 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="wrap">
     <h1><?php esc_html_e( 'BWG Rentals Settings', 'bwg-rentals' ); ?></h1>
 
-    <form method="post" action="options.php">
+    <?php settings_errors( 'bwg_rentals_settings' ); ?>
+
+    <form method="post" action="options.php" id="bwg-settings-form" novalidate>
         <?php settings_fields( 'bwg_rentals_settings' ); ?>
 
         <table class="form-table" role="presentation">
@@ -30,7 +32,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                             value="<?php echo esc_attr( $api_key ); ?>"
                             class="regular-text"
                             autocomplete="off"
+                            data-validate="api-key"
+                            minlength="8"
+                            pattern="[a-zA-Z0-9_\-]+"
                         />
+                        <span class="bwg-field-error" id="bwg_rentals_api_key-error" role="alert"></span>
                         <p class="description">
                             <?php esc_html_e( 'Enter your Direct Software API key.', 'bwg-rentals' ); ?>
                         </p>
@@ -48,7 +54,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                             id="bwg_rentals_organization_id"
                             value="<?php echo esc_attr( $org_id ); ?>"
                             class="regular-text"
+                            data-validate="org-id"
+                            minlength="2"
+                            pattern="[a-zA-Z0-9_\-]+"
                         />
+                        <span class="bwg-field-error" id="bwg_rentals_organization_id-error" role="alert"></span>
                         <p class="description">
                             <?php esc_html_e( 'Enter your Direct Software organization ID.', 'bwg-rentals' ); ?>
                         </p>
@@ -68,10 +78,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                             class="small-text"
                             min="1"
                             max="168"
+                            data-validate="cache-duration"
+                            required
                         />
                         <?php esc_html_e( 'hours', 'bwg-rentals' ); ?>
+                        <span class="bwg-field-error" id="bwg_rentals_cache_duration-error" role="alert"></span>
                         <p class="description">
-                            <?php esc_html_e( 'How long to cache property data. Availability data is cached for 15 minutes regardless of this setting.', 'bwg-rentals' ); ?>
+                            <?php esc_html_e( 'How long to cache property data (1-168 hours). Availability data is cached for 15 minutes regardless of this setting.', 'bwg-rentals' ); ?>
                         </p>
                     </td>
                 </tr>
@@ -87,9 +100,12 @@ if ( ! defined( 'ABSPATH' ) ) {
                             id="bwg_rentals_button_text"
                             value="<?php echo esc_attr( $btn_text ); ?>"
                             class="regular-text"
+                            data-validate="button-text"
+                            maxlength="50"
                         />
+                        <span class="bwg-field-error" id="bwg_rentals_button_text-error" role="alert"></span>
                         <p class="description">
-                            <?php esc_html_e( 'Default text for the booking button shortcode.', 'bwg-rentals' ); ?>
+                            <?php esc_html_e( 'Default text for the booking button shortcode (max 50 characters).', 'bwg-rentals' ); ?>
                         </p>
                     </td>
                 </tr>

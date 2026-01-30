@@ -3225,3 +3225,116 @@ Verified deactivation hook in bwg-rentals.php (lines 108-115):
 Feature #2 VERIFIED - Plugin deactivates cleanly with no PHP errors, shows as inactive, and scheduled cron events are properly cleared. No regression found.
 
 [Testing] Feature #2 verified - still passing (regression test 2026-01-30 17:20)
+
+---
+
+## Session: 2026-01-30 (Feature #25 - Parallel Agent)
+
+### Feature #25: [bwg_property_gallery] displays image gallery - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "[bwg_property_gallery] displays image gallery"
+- Description: "The gallery shortcode shows property images in slider format"
+- Category: functional
+- Dependencies: Feature #13 (API client fetches single property) ✓
+- Steps:
+  1. Get a property ID with multiple images
+  2. Add [bwg_property_gallery id='X'] to a page
+  3. View page on frontend
+  4. Verify images are displayed
+  5. Verify slider navigation works
+
+#### Implementation Details:
+
+**Shortcode Method (class-bwg-shortcodes.php, lines 195-223):**
+- Registered as bwg_property_gallery
+- Accepts attributes: id (required), layout (slider/grid/lightbox), thumbnail_size
+- Fetches property data via API
+- Uses property-gallery.php template
+- Output is filterable via bwg_property_gallery_output filter
+
+**Template (templates/property-gallery.php):**
+- Slider layout: Displays one image at a time with prev/next navigation
+- Grid layout: Displays all images in responsive CSS grid
+- Lightbox support: Grid images are clickable to open lightbox modal
+
+**CSS (assets/css/bwg-rentals-public.css, lines 195-308):**
+- .bwg-property-gallery - Main container
+- .bwg-property-gallery__slider - Slider wrapper
+- .bwg-property-gallery__slides - Flexbox container for slides
+- .bwg-property-gallery__slide - Individual slide
+- .bwg-property-gallery__nav - Navigation buttons (44px circular)
+- .bwg-property-gallery--grid - Grid layout with auto-fill columns
+- .bwg-lightbox - Fullscreen lightbox overlay
+
+**JavaScript (assets/js/bwg-rentals-public.js, lines 15-102):**
+- BWGSlider object: Handles slider navigation with prev/next buttons
+- BWGLightbox object: Creates/manages lightbox for grid images
+- Lightbox closes on: close button click, backdrop click, Escape key
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials: MOCK_API_KEY_FOR_TESTING
+
+**Test 1: Slider Layout (default)**
+1. ✅ Created page "Gallery Test - Feature 25"
+2. ✅ Added shortcode: [bwg_property_gallery id="1"]
+3. ✅ Published page at /gallery-test-feature-25/
+4. ✅ Gallery rendered with 4 images from "Oceanfront Beach House" property
+5. ✅ Previous (‹) and Next (›) buttons visible
+6. ✅ Clicked Next button - different image displayed
+7. ✅ Clicked Next again - third image displayed
+8. ✅ Clicked Previous button - returned to previous image
+9. ✅ Navigation loops correctly through all images
+10. ✅ CSS transitions are smooth
+
+**Test 2: Grid Layout**
+1. ✅ Created page "Gallery Grid Test - Feature 25"
+2. ✅ Added shortcode: [bwg_property_gallery id="2" layout="grid"]
+3. ✅ Published page at /gallery-grid-test-feature-25/
+4. ✅ Gallery rendered with 3 images in responsive grid
+5. ✅ Images from "Mountain Retreat Cabin" property (ID 2)
+6. ✅ Images maintain 4:3 aspect ratio
+7. ✅ Grid is responsive with auto-fill columns
+
+**Test 3: Lightbox Functionality**
+1. ✅ Clicked on first image in grid
+2. ✅ Lightbox overlay opened with dark background
+3. ✅ Large image displayed centered
+4. ✅ Close button (×) visible in top right
+5. ✅ Clicked close button - lightbox closed
+6. ✅ Page returned to normal state
+
+**Console Errors:** None
+
+#### Screenshots:
+- feature-25-gallery-slider-view.png - Initial slider view with image
+- feature-25-gallery-with-nav-buttons.png - Slider with navigation buttons visible
+- feature-25-gallery-slide-2.png - Second slide (after clicking Next)
+- feature-25-gallery-slide-3.png - Third slide
+- feature-25-gallery-prev-button-works.png - After clicking Previous
+- feature-25-gallery-grid-layout.png - Grid layout with 3 images
+- feature-25-gallery-lightbox-open.png - Lightbox modal open
+
+#### Code Locations:
+- Shortcode: includes/class-bwg-shortcodes.php (lines 195-223)
+- Template: templates/property-gallery.php
+- CSS: assets/css/bwg-rentals-public.css (lines 195-308)
+- JavaScript: assets/js/bwg-rentals-public.js (lines 15-102)
+
+#### Result:
+Feature #25 PASSING - The [bwg_property_gallery] shortcode correctly displays property images in both slider and grid layouts. Slider navigation (prev/next) works correctly. Grid layout shows clickable images that open in a lightbox modal.
+
+---
+
+### Updated Statistics
+- Total Passing: 35/90 features (38.9%)
+- This Session: Feature #25 completed
+- Feature #25 unblocks: Features #26, #63, #74

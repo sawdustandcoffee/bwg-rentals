@@ -85,7 +85,7 @@ class BWG_Admin {
             'bwg_rentals_api_key',
             array(
                 'type'              => 'string',
-                'sanitize_callback' => array( $this, 'encrypt_value' ),
+                'sanitize_callback' => array( $this, 'sanitize_api_key' ),
             )
         );
 
@@ -95,7 +95,7 @@ class BWG_Admin {
             'bwg_rentals_organization_id',
             array(
                 'type'              => 'string',
-                'sanitize_callback' => array( $this, 'encrypt_value' ),
+                'sanitize_callback' => array( $this, 'sanitize_organization_id' ),
             )
         );
 
@@ -105,7 +105,7 @@ class BWG_Admin {
             'bwg_rentals_cache_duration',
             array(
                 'type'              => 'integer',
-                'sanitize_callback' => 'absint',
+                'sanitize_callback' => array( $this, 'sanitize_cache_duration' ),
                 'default'           => 24,
             )
         );
@@ -116,10 +116,151 @@ class BWG_Admin {
             'bwg_rentals_button_text',
             array(
                 'type'              => 'string',
-                'sanitize_callback' => 'sanitize_text_field',
+                'sanitize_callback' => array( $this, 'sanitize_button_text' ),
                 'default'           => __( 'Book Now', 'bwg-rentals' ),
             )
         );
+    }
+
+    /**
+     * Sanitize and validate API key
+     *
+     * @param string $value API key value.
+     * @return string Encrypted API key or existing value on error.
+     */
+    public function sanitize_api_key( $value ) {
+        $value = sanitize_text_field( $value );
+
+        // Allow empty value (user clearing the field)
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        // Check for minimum length (most API keys are at least 16 characters)
+        if ( strlen( $value ) < 8 ) {
+            add_settings_error(
+                'bwg_rentals_api_key',
+                'api_key_too_short',
+                __( 'API Key appears to be too short. Please verify your API key.', 'bwg-rentals' ),
+                'error'
+            );
+            // Return existing value to prevent saving invalid data
+            return get_option( 'bwg_rentals_api_key' );
+        }
+
+        // Check for invalid characters (API keys typically only have alphanumeric, dash, underscore)
+        if ( ! preg_match( '/^[a-zA-Z0-9_\-]+$/', $value ) ) {
+            add_settings_error(
+                'bwg_rentals_api_key',
+                'api_key_invalid_chars',
+                __( 'API Key contains invalid characters. Only letters, numbers, dashes, and underscores are allowed.', 'bwg-rentals' ),
+                'error'
+            );
+            return get_option( 'bwg_rentals_api_key' );
+        }
+
+        return $this->encrypt_value( $value );
+    }
+
+    /**
+     * Sanitize and validate Organization ID
+     *
+     * @param string $value Organization ID value.
+     * @return string Encrypted Organization ID or existing value on error.
+     */
+    public function sanitize_organization_id( $value ) {
+        $value = sanitize_text_field( $value );
+
+        // Allow empty value
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        // Check for minimum length
+        if ( strlen( $value ) < 2 ) {
+            add_settings_error(
+                'bwg_rentals_organization_id',
+                'org_id_too_short',
+                __( 'Organization ID appears to be too short. Please verify your Organization ID.', 'bwg-rentals' ),
+                'error'
+            );
+            return get_option( 'bwg_rentals_organization_id' );
+        }
+
+        // Check for invalid characters
+        if ( ! preg_match( '/^[a-zA-Z0-9_\-]+$/', $value ) ) {
+            add_settings_error(
+                'bwg_rentals_organization_id',
+                'org_id_invalid_chars',
+                __( 'Organization ID contains invalid characters. Only letters, numbers, dashes, and underscores are allowed.', 'bwg-rentals' ),
+                'error'
+            );
+            return get_option( 'bwg_rentals_organization_id' );
+        }
+
+        return $this->encrypt_value( $value );
+    }
+
+    /**
+     * Sanitize and validate cache duration
+     *
+     * @param mixed $value Cache duration value.
+     * @return int Sanitized cache duration.
+     */
+    public function sanitize_cache_duration( $value ) {
+        $value = absint( $value );
+
+        // Check minimum value (at least 1 hour)
+        if ( $value < 1 ) {
+            add_settings_error(
+                'bwg_rentals_cache_duration',
+                'cache_duration_too_low',
+                __( 'Cache duration must be at least 1 hour.', 'bwg-rentals' ),
+                'error'
+            );
+            return 1; // Return minimum valid value
+        }
+
+        // Check maximum value (168 hours = 1 week)
+        if ( $value > 168 ) {
+            add_settings_error(
+                'bwg_rentals_cache_duration',
+                'cache_duration_too_high',
+                __( 'Cache duration cannot exceed 168 hours (1 week).', 'bwg-rentals' ),
+                'error'
+            );
+            return 168; // Return maximum valid value
+        }
+
+        return $value;
+    }
+
+    /**
+     * Sanitize and validate button text
+     *
+     * @param string $value Button text value.
+     * @return string Sanitized button text.
+     */
+    public function sanitize_button_text( $value ) {
+        $value = sanitize_text_field( $value );
+
+        // Set default if empty
+        if ( empty( $value ) ) {
+            return __( 'Book Now', 'bwg-rentals' );
+        }
+
+        // Check for maximum length
+        if ( strlen( $value ) > 50 ) {
+            add_settings_error(
+                'bwg_rentals_button_text',
+                'button_text_too_long',
+                __( 'Button text is too long. Maximum 50 characters allowed.', 'bwg-rentals' ),
+                'error'
+            );
+            return substr( $value, 0, 50 );
+        }
+
+        return $value;
     }
 
     /**
@@ -207,11 +348,20 @@ class BWG_Admin {
                 'nonce'    => wp_create_nonce( 'bwg_rentals_admin' ),
                 'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
                 'strings'  => array(
-                    'testing'       => __( 'Testing connection...', 'bwg-rentals' ),
-                    'success'       => __( 'Connection successful!', 'bwg-rentals' ),
-                    'error'         => __( 'Connection failed.', 'bwg-rentals' ),
-                    'clearing'      => __( 'Clearing cache...', 'bwg-rentals' ),
-                    'cacheCleared'  => __( 'Cache cleared successfully!', 'bwg-rentals' ),
+                    'testing'              => __( 'Testing connection...', 'bwg-rentals' ),
+                    'success'              => __( 'Connection successful!', 'bwg-rentals' ),
+                    'error'                => __( 'Connection failed.', 'bwg-rentals' ),
+                    'clearing'             => __( 'Clearing cache...', 'bwg-rentals' ),
+                    'cacheCleared'         => __( 'Cache cleared successfully!', 'bwg-rentals' ),
+                    // Validation messages
+                    'apiKeyTooShort'       => __( 'API Key must be at least 8 characters.', 'bwg-rentals' ),
+                    'apiKeyInvalidChars'   => __( 'API Key can only contain letters, numbers, dashes, and underscores.', 'bwg-rentals' ),
+                    'orgIdTooShort'        => __( 'Organization ID must be at least 2 characters.', 'bwg-rentals' ),
+                    'orgIdInvalidChars'    => __( 'Organization ID can only contain letters, numbers, dashes, and underscores.', 'bwg-rentals' ),
+                    'cacheDurationRequired' => __( 'Cache duration is required.', 'bwg-rentals' ),
+                    'cacheDurationTooLow'  => __( 'Cache duration must be at least 1 hour.', 'bwg-rentals' ),
+                    'cacheDurationTooHigh' => __( 'Cache duration cannot exceed 168 hours.', 'bwg-rentals' ),
+                    'buttonTextTooLong'    => __( 'Button text cannot exceed 50 characters.', 'bwg-rentals' ),
                 ),
             )
         );
