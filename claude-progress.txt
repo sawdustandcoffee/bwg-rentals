@@ -6361,3 +6361,134 @@ Feature #19 PASSING - Availability cache correctly configured to expire in 15 mi
 - Feature #19 unblocks: None (leaf feature)
 
 [Testing] Feature #19 verified - availability cache expires in 15 minutes (2026-01-30 23:20)
+
+
+---
+
+## Session: 2026-01-30 (Feature #43 - Testing Agent)
+
+### Feature #43: Settings form uses nonce verification - VERIFIED ✓
+
+**Status: PASSING - No Regression Found**
+
+#### Feature Definition:
+- ID: 43
+- Name: Settings form uses nonce verification
+- Description: Settings form submission validates WordPress nonce
+- Category: security
+- Dependencies: Feature #4 (Settings page exists)
+- Steps:
+  1. View page source of settings form
+  2. Verify nonce field is present
+  3. Submit form with invalid/missing nonce
+  4. Verify submission is rejected
+
+#### Verification Performed:
+
+**Step 1 & 2: Nonce Field Present** ✅
+- Template uses `settings_fields('bwg_rentals_settings')` which generates nonce
+- Found hidden field: `<input type="hidden" name="_wpnonce" value="fb6d8838cd...">`
+
+**Step 3 & 4: Invalid/Missing Nonce Rejected** ✅
+- POST without nonce: HTTP 403 Forbidden
+- POST with invalid nonce: HTTP 403 Forbidden
+- AJAX bwg_test_connection without nonce: HTTP 403 ("-1" response)
+- AJAX bwg_clear_cache without nonce: HTTP 403 ("-1" response)
+
+#### Code Review Confirms:
+- `class-bwg-admin.php` line 395-396: AJAX handlers use `check_ajax_referer('bwg_rentals_admin', 'nonce')`
+- `admin-settings.php` line 19: Form uses `settings_fields('bwg_rentals_settings')`
+- Both AJAX handlers also verify `current_user_can('manage_options')`
+
+#### Screenshots:
+- feature-43-nonce-verification.png - Settings page with form
+
+#### Console Errors: Only 403 errors from intentional invalid requests (expected)
+
+#### Result:
+Feature #43 VERIFIED - Settings form properly validates WordPress nonce. All form submissions and AJAX requests without valid nonces are rejected with HTTP 403 Forbidden.
+
+[Testing] Feature #43 verified - still passing (regression test)
+
+
+---
+
+## Session: 2026-01-30 (Feature #26 - Parallel Agent)
+
+### Feature #26: [bwg_property_gallery] layout attribute works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 26
+- Name: [bwg_property_gallery] layout attribute works
+- Description: Gallery layout can be changed to grid or slider mode
+- Category: functional
+- Dependencies: Feature #25 ([bwg_property_gallery] displays image gallery) PASSED
+- Steps:
+  1. Add [bwg_property_gallery id='X' layout='slider']
+  2. Verify slider layout renders
+  3. Change to layout='grid'
+  4. Verify grid layout renders
+
+#### Test Environment:
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials: MOCK_API_KEY_FOR_TESTING / test-org-123
+
+#### Testing Performed (Browser Automation):
+
+**Test 1: Slider Layout (layout="slider")**
+- Created test page "Feature 26 - Slider Layout Test" at /feature-26-slider-layout-test/
+- Shortcode: [bwg_property_gallery id="1" layout="slider"]
+- Results:
+  - Gallery has class bwg-property-gallery--slider
+  - Gallery does NOT have class bwg-property-gallery--grid
+  - 4 images loaded (Oceanfront Beach House property)
+  - Previous/Next navigation buttons present (2 buttons)
+  - Slider shows one image at a time
+  - Clicking Next button moves to next slide (translateX(-100%))
+  - CSS transition is smooth (0.3s ease)
+
+**Test 2: Grid Layout (layout="grid")**
+- Created test page "Feature 26 - Grid Layout Test" at /feature-26-grid-layout-test/
+- Shortcode: [bwg_property_gallery id="1" layout="grid"]
+- Results:
+  - Gallery has class bwg-property-gallery--grid
+  - Gallery does NOT have class bwg-property-gallery--slider
+  - 4 images loaded (same Oceanfront Beach House property)
+  - NO navigation buttons (0 buttons) - grid shows all at once
+  - All images visible simultaneously in responsive 2x2 grid
+  - Images have cursor:pointer (clickable for modal view)
+
+**Verified HTML Structure:**
+- Slider: div class="bwg-property-gallery bwg-property-gallery--slider"
+- Grid: div class="bwg-property-gallery bwg-property-gallery--grid"
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-26-slider-layout.png - Slider layout with one image visible
+- feature-26-grid-layout.png - Grid layout header
+- feature-26-grid-layout-full.png - Grid layout with 3 images visible
+- feature-26-explicit-grid-layout.png - Explicit grid layout test
+- feature-26-grid-all-images.png - All 4 images in 2x2 grid
+
+#### Test Pages Created:
+- /feature-26-slider-layout-test/ (Post ID: 172)
+- /feature-26-grid-layout-test/ (Post ID: 173)
+
+#### Result:
+Feature #26 PASSING - The layout attribute correctly switches between:
+- slider: Shows one image at a time with prev/next navigation
+- grid: Shows all images in a responsive CSS grid layout
+
+---
+
+### Updated Statistics
+- Total Passing: 62/90 features (68.9%)
+- This Session: Feature #26 completed
+- Feature #26 unblocks: Feature #63 (Gallery slider has smooth transitions)
+
+[Testing] Feature #26 verified - layout attribute works (2026-01-30 23:35)
