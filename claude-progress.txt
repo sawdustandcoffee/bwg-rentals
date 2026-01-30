@@ -1,5 +1,77 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Feature #13 - Parallel Agent)
+
+### Feature #13: API client fetches single property - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "API client fetches single property"
+- Description: "API client retrieves detailed data for a specific property"
+- Category: functional
+- Dependencies: Feature #12 (API client fetches properties list)
+- Steps:
+  1. Configure valid API credentials
+  2. Get a valid property ID from properties list
+  3. Make API call to single property endpoint
+  4. Verify response contains property details
+  5. Verify all expected fields are present
+
+#### Implementation Details:
+
+The get_property() method is implemented in includes/class-bwg-api.php (lines 424-442).
+Key features:
+- Accepts property ID parameter
+- Optional caching with use_cache parameter
+- Cache key namespaced by property ID
+- Calls /properties/{id} endpoint
+- Returns property data array or WP_Error
+
+#### Testing Performed (Browser Automation):
+
+**Environment Setup:**
+1. WordPress container running at localhost:8088 (bwg-igf-wordpress)
+2. Logged into WordPress admin as admin user
+3. BWG Rentals plugin activated
+4. Mock API credentials configured (MOCK_API_KEY_12345)
+
+**Test Page Created:**
+- URL: /feature-13-test-single-property-api/
+- Contains 4 shortcodes that use get_property() API method
+
+**Test Results:**
+1. bwg_property_title shortcode (id=1) - Displays "Oceanfront Beach House"
+2. bwg_property_description shortcode (id=1) - Displays full description text
+3. bwg_property_specs shortcode (id=1) - Displays "4 Bedrooms", "3 Bathrooms"
+4. bwg_property_card shortcode (id=2) - Displays "Mountain Retreat Cabin" with "3 Beds", "2 Baths"
+
+**Cache Verification:**
+1. Cleared all cache via admin settings
+2. Cached Items showed 0 after clear
+3. Navigated to test page - data fetched fresh from mock API
+4. All shortcodes still display correct property data
+
+**Console Verification:**
+- No JavaScript console errors
+
+#### Screenshots:
+- feature-13-single-property-api-working.png
+- feature-13-verified-after-cache-clear.png
+
+#### Result:
+Feature #13 PASSING - The get_property() API method correctly fetches single property data.
+
+#### Git Commit:
+- 40175b9 - Verify Feature #13: API client fetches single property
+
+### Updated Statistics
+- Total Passing: 17/90 features (18.9%)
+- This Session: Feature #13 completed
+- Feature #13 unblocks: Features #14, #15, #24, #25, #27, #29, #31, #33, #38, #40, #41
+
+---
+
 ## Session: 2026-01-30 (Session 16 - Feature #20)
 
 ### Feature #20: [bwg_properties] shortcode renders property grid - PASSED
