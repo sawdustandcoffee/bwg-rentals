@@ -82,8 +82,12 @@ class BWG_API {
             // Mock single property data
             $mock_data = $this->get_mock_property( (int) $matches[1] );
         } elseif ( strpos( $url, '/properties' ) !== false ) {
-            // Mock properties list
-            $mock_data = $this->get_mock_properties();
+            // Mock properties list - check for empty mock key
+            if ( strpos( $credentials['api_key'], 'MOCK_EMPTY_' ) === 0 ) {
+                $mock_data = array(); // Return empty array to test empty state
+            } else {
+                $mock_data = $this->get_mock_properties();
+            }
         }
 
         // Return mock HTTP response

@@ -106,6 +106,23 @@ class BWG_Shortcodes {
     }
 
     /**
+     * Render empty state message
+     *
+     * @param string $message Empty state message.
+     * @param string $icon    Optional icon character (emoji or Unicode).
+     * @return string HTML output.
+     */
+    private function render_empty( $message, $icon = '🏠' ) {
+        $output = '<div class="bwg-empty">';
+        if ( ! empty( $icon ) ) {
+            $output .= '<div class="bwg-empty__icon">' . esc_html( $icon ) . '</div>';
+        }
+        $output .= '<p class="bwg-empty__message">' . esc_html( $message ) . '</p>';
+        $output .= '</div>';
+        return $output;
+    }
+
+    /**
      * Properties grid/list shortcode
      *
      * @param array $atts Shortcode attributes.
@@ -132,7 +149,7 @@ class BWG_Shortcodes {
         }
 
         if ( empty( $properties ) ) {
-            return $this->render_error( __( 'No properties found.', 'bwg-rentals' ) );
+            return $this->render_empty( __( 'No properties available at this time. Please check back later.', 'bwg-rentals' ) );
         }
 
         // Apply limit

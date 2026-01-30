@@ -37,6 +37,29 @@
     font-family: var(--bwg-font-family);
 }
 
+/* Empty State */
+.bwg-empty {
+    padding: var(--bwg-spacing-lg);
+    background-color: #f8f9fa;
+    border: 1px dashed var(--bwg-border-color);
+    border-radius: var(--bwg-border-radius);
+    text-align: center;
+    font-family: var(--bwg-font-family);
+    color: var(--bwg-text-light);
+}
+
+.bwg-empty__icon {
+    font-size: 3rem;
+    margin-bottom: var(--bwg-spacing-md);
+    opacity: 0.5;
+}
+
+.bwg-empty__message {
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
 /* Properties Grid */
 .bwg-properties {
     display: grid;
