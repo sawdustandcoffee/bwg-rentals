@@ -3802,3 +3802,161 @@ Feature #31 PASSING - The [bwg_property_description] shortcode correctly renders
 - Total Passing: 38/90 features (42.2%)
 - This Session: Feature #31 completed
 - Feature #31 unblocks: Feature #32 (excerpt_length truncates text), Feature #74 (multiple shortcodes on same page)
+
+## Session: 2026-01-30 (Regression Test - Feature #42)
+
+### Feature #42: Non-admin cannot access settings page - VERIFIED ✓
+
+**Status: PASSING - No regression found**
+
+#### Feature Definition:
+- Name: "Non-admin cannot access settings page"
+- Description: "Users without administrator capability cannot view settings"
+- Category: security
+- Dependencies: Feature #4 (Settings page exists under Settings > BWG Rentals) ✓
+- Steps:
+  1. Log in as subscriber or editor user
+  2. Try to access /wp-admin/options-general.php?page=bwg-rentals directly
+  3. Verify access is denied
+  4. Verify no settings form is displayed
+
+#### Regression Test Results:
+
+**Step 1: Log in as editor user**
+- ✅ Logged in as 'editor' user (role: editor)
+- ✅ Admin menu only shows: Dashboard, Posts, Media, Pages, Comments, Profile, Tools
+- ✅ No 'Settings' menu visible to editor
+
+**Step 2: Try to access BWG Rentals settings directly**
+- ✅ Navigated to /wp-admin/options-general.php?page=bwg-rentals
+- ✅ Page returned 'WordPress › Error' title
+
+**Step 3: Verify access is denied**
+- ✅ Page displays: 'Sorry, you are not allowed to access this page.'
+- ✅ Standard WordPress permission denied message
+
+**Step 4: Verify no settings form is displayed**
+- ✅ No API Key field visible
+- ✅ No Organization ID field visible
+- ✅ No Save Changes button visible
+- ✅ Only error message shown
+
+**Additional Testing (subscriber role):**
+- ✅ Logged in as 'testsubscriber' user (role: subscriber)
+- ✅ Same access denied behavior confirmed
+- ✅ Page displays: 'Sorry, you are not allowed to access this page.'
+
+**Admin Access Verification (control test):**
+- ✅ Logged in as 'admin' user (role: administrator)
+- ✅ Successfully accessed BWG Rentals Settings page
+- ✅ Full settings form displayed with all fields
+
+**Console Errors:** None
+
+#### Screenshots:
+- feature-42-editor-access-denied.png - Editor user denied access
+- feature-42-subscriber-access-denied.png - Subscriber user denied access  
+- feature-42-admin-can-access.png - Admin user can access settings
+
+#### Result:
+Feature #42 VERIFIED - Non-admin users correctly cannot access the BWG Rentals settings page. Security feature working as expected. No regression found.
+
+[Testing] Feature #42 verified - still passing (regression test 2026-01-30 17:27)
+
+
+---
+
+## Session: 2026-01-30 (Feature #33 - Parallel Agent)
+
+### Feature #33: [bwg_property_amenities] displays amenities list - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 33
+- Name: "[bwg_property_amenities] displays amenities list"
+- Description: "The amenities shortcode shows property amenities"
+- Category: functional
+- Dependencies: Feature #13 (API client fetches single property) ✓
+- Steps:
+  1. Add [bwg_property_amenities id='X'] to a page
+  2. View page on frontend
+  3. Verify amenities list displays
+  4. Verify amenities come from API data
+
+#### Implementation Details:
+
+**Shortcode Method (class-bwg-shortcodes.php, lines 352-381):**
+- Registered as bwg_property_amenities
+- Accepts attributes: id (required), show_icons (true/false), columns (2/3/4), limit
+- Fetches property data via API get_property()
+- Uses property-amenities.php template
+- Output is filterable via bwg_property_amenities_output filter
+
+**Template (templates/property-amenities.php):**
+- Extracts amenities array from property data
+- Supports show_icons attribute (displays ✓ checkmark when true)
+- Supports columns attribute for multi-column layout
+- Supports limit attribute to restrict number of amenities shown
+- Empty state: Returns nothing if amenities array is empty
+- Handles both string and array amenity formats
+
+**Mock API Data:**
+- Property 1 (Oceanfront Beach House): ['WiFi', 'Air Conditioning', 'Beach Access', 'Pool', 'Hot Tub', 'Grill', 'Parking']
+- Property 2 (Mountain Retreat Cabin): ['WiFi', 'Fireplace', 'Hot Tub', 'Hiking Trails', 'BBQ Grill', 'Mountain Views']
+- Property 3 (Downtown Luxury Condo): ['WiFi', 'Air Conditioning', 'Gym Access', 'Rooftop Pool', 'Parking', 'Concierge']
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials: MOCK_API_KEY_FOR_TESTING / test-org-123
+
+**Test 1: Property ID 1 (Oceanfront Beach House)**
+1. ✅ Created page "Amenities Test - Feature 33"
+2. ✅ Added shortcode: [bwg_property_amenities id="1"]
+3. ✅ Published page at /amenities-test-feature-33/
+4. ✅ Amenities displayed with checkmarks:
+   - ✓ WiFi
+   - ✓ Air Conditioning
+   - ✓ Beach Access
+   - ✓ Pool
+   - ✓ Hot Tub
+   - ✓ Grill
+   - ✓ Parking
+5. ✅ No console errors
+
+**Test 2: Property ID 2 (Mountain Retreat Cabin)**
+1. ✅ Created page "Amenities Test Property 2 - Feature 33"
+2. ✅ Added shortcode: [bwg_property_amenities id="2"]
+3. ✅ Published page at /amenities-test-property-2-feature-33/
+4. ✅ Amenities displayed with different data (confirming API data source):
+   - ✓ WiFi
+   - ✓ Fireplace
+   - ✓ Hot Tub
+   - ✓ Hiking Trails
+   - ✓ BBQ Grill
+   - ✓ Mountain Views
+5. ✅ No console errors
+
+#### Screenshots:
+- feature-33-amenities-list-displays.png - Property 1 amenities with checkmarks
+- feature-33-amenities-property-2.png - Property 2 amenities (different data)
+
+#### Code Locations:
+- Shortcode: includes/class-bwg-shortcodes.php (lines 352-381)
+- Template: templates/property-amenities.php
+- CSS: assets/css/bwg-rentals-public.css (amenities styling)
+
+#### Result:
+Feature #33 PASSING - The [bwg_property_amenities] shortcode correctly displays property amenities from API data. Icons display with checkmarks, and different properties show different amenities confirming data comes from the API.
+
+---
+
+### Updated Statistics
+- Total Passing: 39/90 features (43.3%)
+- This Session: Feature #33 completed
+- Feature #33 unblocks: Features #34 (columns attribute), #69 (amenities icons display)
