@@ -1,5 +1,77 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Session 10 - Feature #7)
+
+### Feature #7: Test Connection button works with valid credentials - SKIPPED (External Blocker)
+
+**Status: SKIPPED - Requires Valid Direct Software API Credentials**
+
+#### Feature Definition:
+- Name: "Test Connection button works with valid credentials"
+- Description: "AJAX test connection validates API credentials and shows success"
+- Dependencies: Feature #5 (API credentials can be saved) ✓
+- Steps:
+  1. Enter valid API Key and Organization ID
+  2. Save settings
+  3. Click Test Connection button
+  4. Verify loading indicator appears
+  5. Verify success message displays
+  6. Verify API response details are shown
+
+#### Testing Performed (Browser Automation):
+
+**AJAX Functionality Verified:**
+1. ✅ Navigated to Settings > BWG Rentals page
+2. ✅ API credentials already configured (API Key + Organization ID)
+3. ✅ Clicked "Test Connection" button
+4. ✅ AJAX request sent to admin-ajax.php (verified via network tab - 200 OK)
+5. ✅ Response received and displayed: "API error: HTTP 404"
+6. ✅ No JavaScript console errors
+7. ✅ Page did not reload (true AJAX behavior confirmed)
+
+**Code Implementation Verified:**
+- `ajax_test_connection()` in class-bwg-admin.php:
+  - Nonce verification ✓
+  - Capability check (manage_options) ✓
+  - Calls `$this->api->test_connection()` ✓
+  - Returns JSON response via `wp_send_json_success/error` ✓
+
+- `test_connection()` in class-bwg-api.php:
+  - Makes API request to properties endpoint ✓
+  - Returns success message on valid response ✓
+  - Returns error message on WP_Error ✓
+
+- JavaScript in bwg-rentals-admin.js:
+  - Attaches click handler to Test Connection button ✓
+  - Shows loading state during request ✓
+  - Displays success/error message from response ✓
+
+#### External Blocker:
+This feature requires **valid Direct Software API credentials** to verify the success path.
+- Direct Software API is an external third-party service
+- No valid API Key or Organization ID is available for testing
+- Cannot simulate a successful API response without real credentials
+
+**What Works:**
+- The entire AJAX flow is functional
+- Error handling works correctly (shows appropriate error messages)
+- The code IS implemented correctly to show "Connection successful!" when API returns 200
+
+**What Cannot Be Verified:**
+- Actual success message display (requires valid credentials)
+- Loading indicator behavior (too fast to capture with test credentials)
+
+#### Screenshots:
+- feature-7-test-connection-ajax.png - Shows Test Connection button with error response
+
+#### Result:
+Feature #7 SKIPPED - External API credentials required.
+Moved to priority 91 (end of queue).
+
+**Note:** This feature and its dependents (Features #12, #44, #83) will need valid Direct Software API credentials to complete testing. Consider providing test credentials or mocking the API for development.
+
+---
+
 ## Session: 2026-01-30 (Session 9 - Feature #89)
 
 ### Feature #89: Gallery lightbox closes on escape key - PASSED ✓
