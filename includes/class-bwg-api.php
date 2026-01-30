@@ -100,6 +100,8 @@ class BWG_API {
 
         // Determine which endpoint is being called
         $mock_data = array();
+        $status_code = 200;
+        $status_message = 'OK';
 
         if ( strpos( $url, '/properties/' ) !== false && strpos( $url, '/availability' ) !== false ) {
             // Mock availability data
@@ -110,6 +112,16 @@ class BWG_API {
         } elseif ( preg_match( '/\/properties\/(\d+)$/', $url, $matches ) ) {
             // Mock single property data
             $mock_data = $this->get_mock_property( (int) $matches[1] );
+
+            // Return 404 if property not found
+            if ( null === $mock_data ) {
+                $status_code = 404;
+                $status_message = 'Not Found';
+                $mock_data = array(
+                    'error'   => 'not_found',
+                    'message' => 'Property not found.',
+                );
+            }
         } elseif ( strpos( $url, '/properties' ) !== false ) {
             // Mock properties list - check for empty mock key
             if ( strpos( $credentials['api_key'], 'MOCK_EMPTY_' ) === 0 ) {
@@ -124,8 +136,8 @@ class BWG_API {
             'headers'  => array( 'content-type' => 'application/json' ),
             'body'     => wp_json_encode( $mock_data ),
             'response' => array(
-                'code'    => 200,
-                'message' => 'OK',
+                'code'    => $status_code,
+                'message' => $status_message,
             ),
             'cookies'  => array(),
             'filename' => '',
@@ -294,7 +306,7 @@ class BWG_API {
      * Get mock single property
      *
      * @param int $property_id Property ID.
-     * @return array Mock property data.
+     * @return array|null Mock property data or null if not found.
      */
     private function get_mock_property( $property_id ) {
         $properties = $this->get_mock_properties();
@@ -317,14 +329,8 @@ class BWG_API {
             }
         }
 
-        // Return first property if ID not found
-        $properties[0]['policies'] = array(
-            'check_in'     => '4:00 PM',
-            'check_out'    => '10:00 AM',
-            'cancellation' => 'Free cancellation up to 7 days before check-in.',
-            'house_rules'  => array( 'No smoking', 'No pets' ),
-        );
-        return $properties[0];
+        // Return null if property ID not found (will trigger 404 response)
+        return null;
     }
 
     /**
@@ -545,13 +551,33 @@ class BWG_API {
 
         // Handle errors
         if ( $status_code >= 400 ) {
-            $error_message = sprintf(
-                /* translators: %d: HTTP status code */
-                __( 'API error: HTTP %d', 'bwg-rentals' ),
-                $status_code
-            );
-            BWG_Rentals::log( $error_message );
-            return new WP_Error( 'api_error', $error_message, array( 'status' => $status_code ) );
+            // Provide user-friendly error messages for common status codes
+            switch ( $status_code ) {
+                case 404:
+                    $error_message = __( 'Property not found. Please check the property ID.', 'bwg-rentals' );
+                    $error_code = 'property_not_found';
+                    break;
+                case 401:
+                case 403:
+                    $error_message = __( 'API authentication failed. Please check your API credentials.', 'bwg-rentals' );
+                    $error_code = 'auth_error';
+                    break;
+                case 500:
+                case 502:
+                case 503:
+                    $error_message = __( 'The property service is temporarily unavailable. Please try again later.', 'bwg-rentals' );
+                    $error_code = 'server_error';
+                    break;
+                default:
+                    $error_message = sprintf(
+                        /* translators: %d: HTTP status code */
+                        __( 'API error: HTTP %d', 'bwg-rentals' ),
+                        $status_code
+                    );
+                    $error_code = 'api_error';
+            }
+            BWG_Rentals::log( sprintf( 'API error: HTTP %d - %s', $status_code, $error_message ) );
+            return new WP_Error( $error_code, $error_message, array( 'status' => $status_code ) );
         }
 
         // Parse JSON response
