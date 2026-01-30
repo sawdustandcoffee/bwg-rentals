@@ -1,3 +1,67 @@
+## Session: 2026-01-30 (Feature #22 - Parallel Agent)
+
+### Feature #22: [bwg_properties] columns attribute works - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 22
+- Name: "[bwg_properties] columns attribute works"
+- Description: "The columns attribute controls grid column count"
+- Category: functional
+- Dependencies: Feature #20 ([bwg_properties] shortcode renders property grid) ✓
+- Steps:
+  1. Add [bwg_properties columns="2"] to a page
+  2. View the page on frontend
+  3. Verify 2-column grid is applied
+  4. Test other column values
+
+#### Implementation Details:
+
+**Shortcode Logic (includes/class-bwg-shortcodes.php):**
+- Line 117: Default columns is '3'
+- Template passes columns value to generate appropriate CSS class
+
+**Template (templates/properties-grid.php):**
+- Generates class: `bwg-properties--grid-{columns}`
+- Example: columns="2" → `bwg-properties--grid-2`
+
+**CSS (assets/css/bwg-rentals-public.css):**
+- `.bwg-properties--grid-2`: `grid-template-columns: repeat(2, 1fr)`
+- `.bwg-properties--grid-3`: `grid-template-columns: repeat(3, 1fr)` (default)
+- `.bwg-properties--grid-4`: `grid-template-columns: repeat(4, 1fr)`
+
+#### Browser Verification:
+
+**Test Page 1:** /feature-22-columns-test/
+- Shortcode: `[bwg_properties columns="2"]`
+
+**Step 1: View page on frontend** ✅
+- Navigated to test page
+- Page loads correctly
+
+**Step 2: Verify 2-column grid applied** ✅
+- Container has class: `bwg-properties bwg-properties--grid bwg-properties--grid-2`
+- 2-column layout confirmed via JavaScript evaluation
+
+**Test Page 2:** Default grid (no columns attribute)
+- Shortcode: `[bwg_properties]`
+
+**Step 3: Verify default 3-column grid** ✅
+- Container has class: `bwg-properties bwg-properties--grid bwg-properties--grid-3`
+- Default 3-column layout confirmed
+
+#### Screenshots:
+- feature-22-columns-2-test.png - 2-column grid layout
+- feature-22-columns-3-default.png - Default 3-column grid layout
+
+#### Console Errors: None
+
+#### Result:
+Feature #22 PASSING - The columns attribute correctly controls grid column count. Tested columns="2" (applies bwg-properties--grid-2) and default (applies bwg-properties--grid-3).
+
+---
+
 ## Session: 2026-01-30 (Feature #21 - Parallel Agent)
 
 ### Feature #21: [bwg_properties] layout attribute switches to list - PASSED ✓
@@ -5198,3 +5262,55 @@ Feature #37 PASSING - The [bwg_property_rates] shortcode correctly displays a co
 - Total Passing: 51/90 features (56.7%)
 - This Session: Feature #37 completed
 - Feature #37 unblocks: None (leaf feature)
+
+## Session: 2026-01-30 22:47 (Regression Test - Feature #3)
+
+### Feature #3: Settings menu item appears for administrators - VERIFIED ✓
+
+**Status: PASSING - No regression found**
+
+#### Feature Definition:
+- ID: 3
+- Name: Settings menu item appears for administrators
+- Description: BWG Rentals settings link appears under Settings menu for admin users
+- Category: functional
+- Dependencies: Feature #1
+
+#### Verification Steps:
+
+**Step 1: Log in as WordPress administrator** ✅
+- Logged in as 'admin' user (WordPress administrator)
+- Dashboard loaded successfully at /wp-admin/
+
+**Step 2: Navigate to Settings menu** ✅
+- Settings menu visible in WordPress admin sidebar
+- Expanded Settings menu to view submenus
+
+**Step 3: Verify 'BWG Rentals' submenu item exists** ✅
+- 'BWG Rentals' link found under Settings menu
+- URL: options-general.php?page=bwg-rentals
+
+**Step 4: Verify menu item is visible and clickable** ✅
+- Menu item clickable (cursor: pointer)
+- Clicked and navigated to BWG Rentals Settings page
+- Page title: 'BWG Rentals Settings'
+- Settings page displays correctly with:
+  - API Key field (masked)
+  - Organization ID field
+  - Cache Duration setting
+  - Default Button Text setting
+  - Test Connection button
+  - Clear All Cache button
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-3-regression-settings-menu.png - WordPress admin dashboard
+- feature-3-bwg-rentals-in-settings-menu.png - Settings menu with BWG Rentals visible
+- feature-3-bwg-rentals-settings-page.png - BWG Rentals settings page
+
+#### Result:
+Feature #3 VERIFIED - No regression found. Settings menu item appears correctly for administrators.
+
+[Testing] Feature #3 verified - still passing (regression test 2026-01-30 22:47)
+
