@@ -1,3 +1,81 @@
+## Session: 2026-01-30 (Feature #35 - Parallel Agent)
+
+### Feature #35: [bwg_property_availability] renders calendar - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 35
+- Name: "[bwg_property_availability] renders calendar"
+- Description: "The availability shortcode shows a booking calendar"
+- Category: functional
+- Dependencies: Feature #14 (API client fetches availability data) ✓
+- Steps:
+  1. Add [bwg_property_availability id='X'] to a page
+  2. View page on frontend
+  3. Verify calendar displays
+  4. Verify available/unavailable dates are marked
+
+#### Implementation Details:
+
+**Shortcode Registration (includes/class-bwg-shortcodes.php):**
+- Shortcode: `[bwg_property_availability]`
+- Attributes: `id`, `months_to_show` (default 3), `start_month` (default 'current')
+- Method: `property_availability()` at lines 389-417
+
+**Template (templates/property-availability.php):**
+- Renders multi-month calendar grid
+- Uses PHP DateTime for month calculations
+- Shows navigation buttons (Previous/Next)
+- Displays availability data with color coding
+
+**API Data (includes/class-bwg-api.php):**
+- `get_availability()` method fetches availability data
+- Mock data generates 90 days of random availability
+- Returns array with 'date' and 'available' fields
+
+#### Bugs Fixed:
+
+**1. Month Calculation Overflow Bug:**
+- Issue: When starting from January 30, adding 1 month skipped February
+- Cause: PHP DateTime's `modify('+1 month')` on Jan 30 goes to March 2
+- Fix: Changed from `clone $current_date` to `new DateTime($current_date->format('Y-m-01'))`
+- This ensures month calculations always start from the 1st day
+
+**2. Availability Data Not Used:**
+- Issue: Calendar showed all days as available (hardcoded)
+- Fix: Added availability lookup array that maps dates to their status
+- Now properly checks API data for each date's availability
+
+#### Browser Verification:
+
+**Test Page 1:** /availability-test-feature-35/
+- Shortcode: `[bwg_property_availability id="1"]`
+- Result: Calendar renders with 3 months (January, February, March 2026)
+- Availability colors display correctly (green=available, pink=unavailable)
+
+**Test Page 2:** /availability-test-property-2-feature-35/
+- Shortcode: `[bwg_property_availability id="2"]`
+- Result: Different availability data displayed (mock data varies by property)
+
+**Screenshots captured:**
+- feature-35-availability-calendar-renders.png
+- feature-35-calendar-fixed-months.png
+- feature-35-calendar-with-legend.png
+- feature-35-calendar-legend.png
+
+#### Calendar Features Working:
+- Month title displays correctly (e.g., "January 2026")
+- Day headers (Sun-Sat) display
+- Empty cells before first day of month
+- Day numbers display in correct positions
+- Available days shown in green
+- Unavailable days shown in pink
+- Legend at bottom explains colors
+- Navigation buttons present
+
+---
+
 # BWG Rentals - Claude Progress Notes
 
 ## Session: 2026-01-30 (Feature #83 - Parallel Agent)
@@ -4589,3 +4667,123 @@ Feature #40 PASSING - The [bwg_property_location] shortcode correctly displays p
 ### Updated Statistics
 - Total Passing: 46/90 features (51.1%)
 - This Session: Feature #40 completed
+
+## Session: 2026-01-30 (Regression Test - Feature #83)
+
+### Feature #83: Loading state shown during AJAX operations - VERIFIED ✓
+
+**Status: PASSING - No regression found**
+
+#### Feature Definition:
+- ID: 83
+- Name: Loading state shown during AJAX operations
+- Description: Spinner or loading indicator during async operations
+- Category: style
+- Dependencies: Feature #7 (passing)
+
+#### Verification Steps:
+
+**Step 1: Click Test Connection button** ✅
+- Navigated to BWG Rentals Settings page
+- Clicked the Test Connection button
+
+**Step 2: Verify loading spinner appears** ✅
+- `loadingClassFound: true` - Button received 'loading' CSS class
+- `statusLoadingFound: true` - Status element received 'loading' CSS class
+- Status text changed to 'Testing connection...'
+
+**Step 3: Verify button is disabled during loading** ✅
+- `buttonDisabledFound: true` - Button properly disabled during AJAX request
+- State capture shows `buttonDisabled: true` during loading phase
+
+**Step 4: Verify spinner disappears on completion** ✅
+- Final state shows `buttonHasLoadingClass: false`
+- Final state shows `buttonDisabled: false`
+- Status text changed to 'Connection successful! API is responding.'
+
+#### State Transitions Captured:
+1. Initial: buttonDisabled=false, buttonHasLoadingClass=false, statusText=''
+2. Loading: buttonDisabled=true, buttonHasLoadingClass=true, statusText='Testing connection...'
+3. Complete: buttonDisabled=false, buttonHasLoadingClass=false, statusText='Connection successful! API is responding.'
+4. Final: Same as complete - stable state
+
+#### Technical Verification:
+- JavaScript: assets/js/bwg-rentals-admin.js (lines 146-181)
+- Loading state implemented via `.addClass('loading').prop('disabled', true)`
+- State cleared on success via `.removeClass('loading').prop('disabled', false)`
+- No console errors detected
+
+#### Screenshots:
+- feature-83-regression-initial-state.png - Settings page before test
+- feature-83-regression-after-test.png - Connection result shown
+- feature-83-regression-verified.png - Final verified state
+
+#### Result:
+Feature #83 VERIFIED - No regression found. Loading state correctly shows during AJAX operations.
+
+[Testing] Feature #83 verified - still passing (regression test 2026-01-30 17:42)
+
+
+
+---
+
+## Session: 2026-01-30 (Feature #46 - Parallel Agent)
+
+### Feature #46: CSS classes use BEM naming convention - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 46
+- Name: "CSS classes use BEM naming convention"
+- Description: "All plugin CSS classes follow BEM methodology with bwg- prefix"
+- Category: style
+- Dependencies: Feature #20 (bwg_properties shortcode renders property grid) PASSED
+- Steps:
+  1. View a page with shortcode output
+  2. Inspect HTML elements
+  3. Verify classes use bwg- prefix
+  4. Verify BEM structure (block__element--modifier)
+
+#### CSS File Analysis (assets/css/bwg-rentals-public.css):
+
+**BEM Convention Compliance:**
+- All CSS classes properly use bwg- namespace prefix
+- Block naming: .bwg-properties, .bwg-property-card, .bwg-availability-calendar, etc.
+- Element naming: __ separator (e.g., .bwg-property-card__image)
+- Modifier naming: -- separator (e.g., .bwg-properties--grid-3)
+
+#### Browser Automation Verification:
+
+**Test 1: Property Grid Page**
+- Total BEM classes found: 13
+- Non-BEM classes: 0 (100% compliant)
+
+**Test 2: Amenities Page**
+- Total BEM classes found: 9
+- Non-BEM classes: 0 (100% compliant)
+
+**Test 3: Gallery Page**
+- Total BEM classes found: 12
+- Non-BEM classes: 0 (100% compliant)
+
+**Test 4: Availability Calendar Page**
+- Total BEM classes found: 25
+- Non-BEM classes: 0 (100% compliant)
+
+#### Screenshots:
+- feature-46-bem-classes-property-grid.png
+- feature-46-bem-classes-availability-calendar.png
+
+#### Console Errors: None
+
+#### Result:
+Feature #46 PASSING - All CSS classes follow BEM naming convention with bwg- prefix.
+
+---
+
+### Updated Statistics
+- Total Passing: 48/90 features (53.3%)
+- This Session: Feature #46 completed
+- Feature #46 unblocks: Feature #51 (CSS custom properties enable theming)
+
