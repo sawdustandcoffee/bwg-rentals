@@ -1,3 +1,65 @@
+## Session: 2026-01-30 (Feature #39 - Parallel Agent)
+
+### Feature #39: [bwg_property_booking_button] text attribute customizes label - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 39
+- Name: [bwg_property_booking_button] text attribute customizes label
+- Description: The button text can be customized via attribute
+- Category: functional
+- Dependencies: Feature #38 ([bwg_property_booking_button] renders and links to Direct Software) PASSED
+- Steps:
+  1. Add [bwg_property_booking_button id='X' text='Reserve Now']
+  2. View page on frontend
+  3. Verify button shows 'Reserve Now' text
+
+#### Implementation Details (Already Implemented):
+
+**Shortcode Logic (includes/class-bwg-shortcodes.php):**
+- Line 529: Default text from WordPress options `get_option('bwg_rentals_button_text', __('Book Now', 'bwg-rentals'))`
+- Line 534: `'text' => $default_text` attribute definition
+- Line 553: `$text = apply_filters('bwg_booking_button_text', esc_html($atts['text']), $property);`
+
+**Template (templates/property-booking-button.php):**
+- Line 25: `<?php echo esc_html( $text ); ?>`
+
+#### Browser Verification:
+
+**Test 1: Custom text attribute (text="Reserve Now")** ✅
+- Test page: /feature-39-custom-booking-button-text-test/
+- Shortcode: `[bwg_property_booking_button id="1" text="Reserve Now"]`
+- Button text displayed: "Reserve Now"
+- Button URL: https://app.getdirect.io/listings/test-org-123/1
+- Screenshot: feature-39-reserve-now-button.png
+
+**Test 2: Default text (no text attribute)** ✅
+- Test page: /feature-39-default-button-text-test/
+- Shortcode: `[bwg_property_booking_button id="1"]`
+- Button text displayed: "Book Now" (default)
+- Button URL: https://app.getdirect.io/listings/test-org-123/1
+- Screenshot: feature-39-default-book-now.png
+
+#### Console Errors: None
+
+#### Result:
+Feature #39 PASSING - The text attribute correctly customizes the booking button label:
+- Custom text "Reserve Now" displays correctly when specified
+- Default text "Book Now" displays when no text attribute is provided
+- Both buttons correctly link to Direct Software booking site
+
+---
+
+### Updated Statistics
+- Total Passing: 67/90 features (74.4%)
+- This Session: Feature #39 completed
+- Feature #39 unblocks: None (leaf feature)
+
+[Testing] Feature #39 verified - text attribute customizes button label (2026-01-30)
+
+---
+
 ## Session: 2026-01-30 (Feature #28 - Parallel Agent)
 
 ### Feature #28: [bwg_property_title] tag attribute changes heading level - PASSED
@@ -6896,3 +6958,48 @@ Feature #34 PASSING - The columns attribute correctly controls amenities grid la
 - This Session: Feature #34 completed
 
 [Testing] Feature #34 verified - columns attribute works (2026-01-30)
+
+
+---
+
+## Session: 2026-01-30 (Feature #28 - Testing Agent Regression Test)
+
+### Feature #28: [bwg_property_title] tag attribute changes heading level - VERIFIED
+
+**Status: PASSING - No Regression Found**
+
+#### Feature Definition:
+- ID: 28
+- Name: [bwg_property_title] tag attribute changes heading level
+- Description: The tag attribute controls h1/h2/h3 heading level
+- Category: functional
+- Dependencies: Feature #27
+
+#### Verification Steps Performed (Browser Automation):
+
+**Step 1: Test tag='h1'**
+- Test page: /feature-28-tag-attribute-test-h1/
+- Shortcode: [bwg_property_title id="1" tag="h1"]
+- Result: Property title "Oceanfront Beach House" rendered as H1 tag
+- Verified via DOM inspection: H1 tag with class "bwg-property-title"
+
+**Step 2: Test tag='h3'**
+- Test page: /feature-28-tag-attribute-test-h3/
+- Shortcode: [bwg_property_title id="1" tag="h3"]
+- Result: Property title "Oceanfront Beach House" rendered as H3 tag
+- Verified via DOM inspection: H3 tag with class "bwg-property-title"
+
+**Step 3: Visual verification**
+- Screenshots show clear size difference between H1 and H3
+- H1 is significantly larger than H3 (as expected)
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-28-regression-test-h1.png - H1 tag test
+- feature-28-regression-test-h3.png - H3 tag test
+
+#### Result:
+Feature #28 VERIFIED - The tag attribute correctly controls heading level. No regression found.
+
+[Testing] Feature #28 verified - still passing (regression test) (2026-01-30)
