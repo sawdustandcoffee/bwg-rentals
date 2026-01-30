@@ -5714,3 +5714,78 @@ Feature #54 PASSING - The [bwg_properties] shortcode correctly displays a friend
 - Total Passing: 56/90 features (62.2%)
 - This Session: Feature #54 completed
 
+---
+
+## Session: 2026-01-30 (Feature #61 - Parallel Agent)
+
+### Feature #61: Error logging to debug.log works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 61
+- Name: Error logging to debug.log works
+- Description: Plugin errors are logged when WP_DEBUG_LOG is enabled
+- Category: functional
+- Dependencies: Feature #17 (API client handles missing credentials gracefully) PASSED
+- Steps:
+  1. Enable WP_DEBUG and WP_DEBUG_LOG
+  2. Trigger an API error
+  3. Check wp-content/debug.log
+  4. Verify BWG Rentals error is logged
+
+#### Verification Steps:
+
+**Step 1: Verify WP_DEBUG and WP_DEBUG_LOG are enabled**
+- Checked wp-config.php in WordPress container
+- WP_DEBUG = true (ENABLED)
+- WP_DEBUG_LOG = true (ENABLED)
+
+**Step 2: Verify error logging code exists in plugin**
+- File: includes/class-bwg-rentals.php lines 192-203
+- Static method: BWG_Rentals::log(message, level)
+- Format: [BWG Rentals LEVEL] message
+- Checks WP_DEBUG_LOG before logging
+
+**Error logging locations in API class (includes/class-bwg-api.php):**
+- Line 339: Logs WP_Error messages from failed requests
+- Line 348: Logs rate limiting warnings
+- Line 360: Logs HTTP error status codes
+- Line 368: Logs JSON parsing failures
+
+**Step 3: Trigger an API error**
+- Changed API key from MOCK_API_KEY_FOR_TESTING to INVALID_API_KEY_FOR_ERROR_TEST
+- This bypasses the mock API handler (which only intercepts MOCK_ keys)
+- Clicked Test Connection button
+- Result: API error: HTTP 404 displayed in UI
+
+**Step 4: Verify BWG Rentals error is logged**
+- Checked /var/www/html/wp-content/debug.log
+- Found entry: [30-Jan-2026 22:57:08 UTC] [BWG Rentals ERROR] API error: HTTP 404
+- Log format matches expected pattern
+
+#### Additional Log Entries Found:
+- [BWG Rentals INFO] Cache cleared. Removed 12 items.
+- [BWG Rentals INFO] Cache cleared. Removed 8 items.
+- [BWG Rentals INFO] Cache cleared. Removed 2 items.
+
+This confirms the logging system works for both ERROR and INFO levels.
+
+#### Screenshots:
+- feature-61-api-error-displayed.png - Settings page showing API error: HTTP 404
+
+#### Console Errors: None
+
+#### Cleanup:
+- Restored API key to MOCK_API_KEY_FOR_TESTING
+
+#### Result:
+Feature #61 PASSING - Error logging to debug.log works correctly when WP_DEBUG_LOG is enabled.
+
+---
+
+### Updated Statistics
+- Total Passing: 56/90 features (62.2%)
+- This Session: Feature #61 completed
+- Feature #61 unblocks: None (leaf feature)
+
