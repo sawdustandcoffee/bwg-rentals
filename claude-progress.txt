@@ -1,5 +1,77 @@
 # BWG Rentals - Claude Progress Notes
 
+## Session: 2026-01-30 (Session 11 - Feature #12)
+
+### Feature #12: API client fetches properties list - SKIPPED (External Blocker)
+
+**Status: SKIPPED - Requires Valid Direct Software API Credentials**
+
+#### Feature Definition:
+- Name: "API client fetches properties list"
+- Description: "API client successfully retrieves list of all properties from Direct Software"
+- Category: functional
+- Dependencies: Feature #7 (Test Connection button works with valid credentials) - ALSO BLOCKED
+- Steps:
+  1. Configure valid API credentials
+  2. Make API call to properties endpoint
+  3. Verify 200 response status
+  4. Verify response contains property array
+  5. Verify property data is properly parsed
+
+#### Code Implementation (VERIFIED):
+The API client implementation in `class-bwg-api.php` (lines 152-169) is complete:
+```php
+public function get_properties( $use_cache = true ) {
+    $cache_key = 'properties';
+    if ( $use_cache ) {
+        $cached = $this->cache->get( $cache_key );
+        if ( false !== $cached ) {
+            return $cached;
+        }
+    }
+    $data = $this->request( 'properties' );
+    if ( ! is_wp_error( $data ) ) {
+        $this->cache->set( $cache_key, $data );
+    }
+    return $data;
+}
+```
+
+**Implementation Analysis:**
+- ✅ Method `get_properties()` implemented correctly
+- ✅ Caching integration working (checks cache first, stores result after fetch)
+- ✅ Makes API request to `/properties` endpoint via `$this->request()` method
+- ✅ Returns cached data if available, otherwise fetches fresh
+- ✅ Returns WP_Error on API failure (handled by `request()` method)
+- ✅ Request method includes proper headers:
+  - `Authorization: Token {api_key}`
+  - `Accept: application/vnd.direct.v1`
+  - `Content-Type: application/json`
+
+#### External Blocker:
+This feature **cannot be verified** because:
+1. It depends on Feature #7 (Test Connection) which also requires valid API credentials
+2. The Direct Software API (`https://app.getdirect.io/api/public/`) is an external third-party service
+3. No test/demo API credentials are available in the project
+4. Cannot mock the external API without modifying production code
+
+#### Downstream Impact:
+The following features also depend on Feature #12 and are blocked:
+- Feature #13: API client fetches single property
+- Feature #16: API requests include correct authentication header
+- Feature #17: API errors are handled gracefully
+- Feature #18: Property data is cached after fetch
+- Feature #20: [bwg_properties] shortcode renders property grid
+- (And many more shortcode features)
+
+#### Recommendation:
+To unblock this feature and its dependents, the project owner needs to:
+1. Provide valid Direct Software API credentials (API Key + Organization ID)
+2. Or set up a mock API server for testing purposes
+3. Or create a test/sandbox account with Direct Software
+
+---
+
 ## Session: 2026-01-30 (Session 10 - Feature #7)
 
 ### Feature #7: Test Connection button works with valid credentials - SKIPPED (External Blocker)
