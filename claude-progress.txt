@@ -6814,3 +6814,85 @@ Feature #32 PASSING - The excerpt_length attribute correctly truncates text:
 - This Session: Feature #32 completed
 
 [Testing] Feature #32 verified - excerpt_length truncates text correctly (2026-01-30)
+
+
+---
+
+## Session: 2026-01-30 (Feature #34 - Parallel Agent)
+
+### Feature #34: [bwg_property_amenities] columns attribute works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 34
+- Name: [bwg_property_amenities] columns attribute works
+- Description: Amenities can be displayed in multiple columns
+- Category: functional
+- Dependencies: Feature #33 ([bwg_property_amenities] displays amenities list) PASSED
+- Steps:
+  1. Add [bwg_property_amenities id='X' columns='3']
+  2. Verify amenities display in 3-column layout
+  3. Change to columns='2'
+  4. Verify 2-column layout
+
+#### Implementation Details:
+
+**PHP (includes/class-bwg-shortcodes.php):**
+- Line 424: Default columns value is 2
+- Attribute passed to template via $atts['columns']
+
+**Template (templates/property-amenities.php):**
+- Line 17: Extracts columns from $atts: $columns = absint( $atts['columns'] );
+- Line 28: Generates CSS class: bwg-property-amenities__list--columns-{n}
+
+**CSS (assets/css/bwg-rentals-public.css):**
+- Line 197-199: .bwg-property-amenities__list--columns-2 { grid-template-columns: repeat(2, 1fr); }
+- Line 201-203: .bwg-property-amenities__list--columns-3 { grid-template-columns: repeat(3, 1fr); }
+- Line 205-207: .bwg-property-amenities__list--columns-4 { grid-template-columns: repeat(4, 1fr); } (added)
+
+**Responsive Breakpoints:**
+- @768px: 3 and 4 columns collapse to 2 columns
+- @480px: All multi-column layouts collapse to 1 column
+
+#### Browser Verification:
+
+**Test 1: columns="3"**
+- Test page: /feature-34-amenities-3-columns-test/
+- Shortcode: [bwg_property_amenities id="1" columns="3"]
+- CSS class verified: bwg-property-amenities__list bwg-property-amenities__list--columns-3
+- Computed grid: 198px 198px 198px (3 equal columns)
+- Visual layout: WiFi | Air Conditioning | Beach Access (row 1), Pool | Hot Tub | Grill (row 2)
+- Screenshot: feature-34-amenities-3-columns.png
+
+**Test 2: columns="2"**
+- Test page: /feature-34-amenities-2-columns-test/
+- Shortcode: [bwg_property_amenities id="1" columns="2"]
+- CSS class verified: bwg-property-amenities__list bwg-property-amenities__list--columns-2
+- Computed grid: 301px 301px (2 equal columns)
+- Visual layout: WiFi | Air Conditioning (row 1), Beach Access | Pool (row 2)
+- Screenshot: feature-34-amenities-2-columns.png
+
+#### Console Errors: None
+
+#### Files Modified:
+- assets/css/bwg-rentals-public.css - Added columns-4 CSS class and responsive breakpoints
+
+#### Git Commit:
+- Hash: 40e84b3
+- Message: "Implement Feature #34: [bwg_property_amenities] columns attribute works"
+
+#### Result:
+Feature #34 PASSING - The columns attribute correctly controls amenities grid layout:
+- columns="2": 2-column CSS grid layout
+- columns="3": 3-column CSS grid layout
+- columns="4": 4-column CSS grid layout (CSS added)
+- Responsive breakpoints collapse to fewer columns on smaller screens
+
+---
+
+### Updated Statistics
+- Total Passing: 67/90 features (74.4%)
+- This Session: Feature #34 completed
+
+[Testing] Feature #34 verified - columns attribute works (2026-01-30)
