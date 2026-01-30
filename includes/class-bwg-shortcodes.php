@@ -106,6 +106,53 @@ class BWG_Shortcodes {
     }
 
     /**
+     * Sort properties array based on orderby parameter
+     *
+     * @param array  $properties Array of property data.
+     * @param string $orderby    Field to sort by (name, beds, sleeps, sqft).
+     * @return array Sorted properties array.
+     */
+    private function sort_properties( $properties, $orderby ) {
+        if ( empty( $properties ) || ! is_array( $properties ) ) {
+            return $properties;
+        }
+
+        // Define sort field mapping
+        $sort_mappings = array(
+            'name'     => 'name',
+            'beds'     => 'bedrooms',
+            'bedrooms' => 'bedrooms',
+            'sleeps'   => 'sleeps',
+            'guests'   => 'sleeps',
+            'sqft'     => 'sqft',
+            'size'     => 'sqft',
+        );
+
+        // Get the actual field to sort by
+        $sort_field = isset( $sort_mappings[ $orderby ] ) ? $sort_mappings[ $orderby ] : 'name';
+
+        // Sort the properties
+        usort(
+            $properties,
+            function ( $a, $b ) use ( $sort_field ) {
+                // Get values, default to empty string/0 if not set
+                $val_a = isset( $a[ $sort_field ] ) ? $a[ $sort_field ] : '';
+                $val_b = isset( $b[ $sort_field ] ) ? $b[ $sort_field ] : '';
+
+                // Numeric comparison for numeric fields
+                if ( in_array( $sort_field, array( 'bedrooms', 'sleeps', 'sqft' ), true ) ) {
+                    return intval( $val_a ) - intval( $val_b );
+                }
+
+                // String comparison for name (case-insensitive)
+                return strcasecmp( strval( $val_a ), strval( $val_b ) );
+            }
+        );
+
+        return $properties;
+    }
+
+    /**
      * Render empty state message
      *
      * @param string $message Empty state message.
@@ -152,13 +199,14 @@ class BWG_Shortcodes {
             return $this->render_empty( __( 'No properties available at this time. Please check back later.', 'bwg-rentals' ) );
         }
 
-        // Apply limit
+        // Apply sorting based on orderby attribute
+        $orderby = sanitize_text_field( $atts['orderby'] );
+        $properties = $this->sort_properties( $properties, $orderby );
+
+        // Apply limit (after sorting so we get the right items)
         if ( $atts['limit'] > 0 ) {
             $properties = array_slice( $properties, 0, absint( $atts['limit'] ) );
         }
-
-        // Apply sorting
-        // TODO: Implement sorting logic based on $atts['orderby']
 
         ob_start();
 
