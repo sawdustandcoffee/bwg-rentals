@@ -20,6 +20,7 @@ $options = array(
     'bwg_rentals_organization_id',
     'bwg_rentals_cache_duration',
     'bwg_rentals_button_text',
+    'bwg_rentals_cache_metadata',
 );
 
 foreach ( $options as $option ) {
