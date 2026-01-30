@@ -1,0 +1,51 @@
+/**
+ * BWG Rentals Admin Styles
+ *
+ * @package BWG_Rentals
+ */
+
+/* Connection Status */
+#bwg-connection-status,
+#bwg-cache-status {
+    margin-left: 10px;
+    font-weight: 600;
+}
+
+#bwg-connection-status.success,
+#bwg-cache-status.success {
+    color: #00a32a;
+}
+
+#bwg-connection-status.error,
+#bwg-cache-status.error {
+    color: #d63638;
+}
+
+#bwg-connection-status.loading,
+#bwg-cache-status.loading {
+    color: #646970;
+}
+
+/* Button Loading State */
+.button.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.button.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: bwg-spin 0.8s linear infinite;
+}
+
+@keyframes bwg-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

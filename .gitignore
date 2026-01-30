@@ -1,0 +1,58 @@
+# BWG Rentals - Git Ignore
+
+# IDE and editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node.js (if any build tools added)
+node_modules/
+package-lock.json
+yarn.lock
+
+# PHP dependencies (dev only)
+vendor/
+!vendor/plugin-update-checker/
+composer.lock
+
+# Development/testing
+.phpunit.result.cache
+phpunit.xml
+tests/
+coverage/
+.coverage
+
+# Environment files
+.env
+.env.local
+.env.*.local
+wp-config.php
+
+# Logs
+*.log
+debug.log
+
+# Build artifacts
+*.zip
+dist/
+
+# Agent/automation files
+features.db
+features.db-shm
+features.db-wal
+.agent.lock
+.claude_settings.json
+app_spec.txt
+prompts/
+
+# CLAUDE.md - Remove before production
+CLAUDE.md

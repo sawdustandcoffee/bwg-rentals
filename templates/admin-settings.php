@@ -1,0 +1,148 @@
+<?php
+/**
+ * Admin Settings Page Template
+ *
+ * @package BWG_Rentals
+ */
+
+// Prevent direct access
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+?>
+<div class="wrap">
+    <h1><?php esc_html_e( 'BWG Rentals Settings', 'bwg-rentals' ); ?></h1>
+
+    <form method="post" action="options.php">
+        <?php settings_fields( 'bwg_rentals_settings' ); ?>
+
+        <table class="form-table" role="presentation">
+            <tbody>
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_api_key"><?php esc_html_e( 'API Key', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <input
+                            type="password"
+                            name="bwg_rentals_api_key"
+                            id="bwg_rentals_api_key"
+                            value="<?php echo esc_attr( $api_key ); ?>"
+                            class="regular-text"
+                            autocomplete="off"
+                        />
+                        <p class="description">
+                            <?php esc_html_e( 'Enter your Direct Software API key.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_organization_id"><?php esc_html_e( 'Organization ID', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <input
+                            type="text"
+                            name="bwg_rentals_organization_id"
+                            id="bwg_rentals_organization_id"
+                            value="<?php echo esc_attr( $org_id ); ?>"
+                            class="regular-text"
+                        />
+                        <p class="description">
+                            <?php esc_html_e( 'Enter your Direct Software organization ID.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_cache_duration"><?php esc_html_e( 'Cache Duration', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <input
+                            type="number"
+                            name="bwg_rentals_cache_duration"
+                            id="bwg_rentals_cache_duration"
+                            value="<?php echo esc_attr( $cache_dur ); ?>"
+                            class="small-text"
+                            min="1"
+                            max="168"
+                        />
+                        <?php esc_html_e( 'hours', 'bwg-rentals' ); ?>
+                        <p class="description">
+                            <?php esc_html_e( 'How long to cache property data. Availability data is cached for 15 minutes regardless of this setting.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_button_text"><?php esc_html_e( 'Default Button Text', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <input
+                            type="text"
+                            name="bwg_rentals_button_text"
+                            id="bwg_rentals_button_text"
+                            value="<?php echo esc_attr( $btn_text ); ?>"
+                            class="regular-text"
+                        />
+                        <p class="description">
+                            <?php esc_html_e( 'Default text for the booking button shortcode.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <?php submit_button(); ?>
+    </form>
+
+    <hr />
+
+    <h2><?php esc_html_e( 'API Connection', 'bwg-rentals' ); ?></h2>
+    <p>
+        <button type="button" class="button" id="bwg-test-connection">
+            <?php esc_html_e( 'Test Connection', 'bwg-rentals' ); ?>
+        </button>
+        <span id="bwg-connection-status"></span>
+    </p>
+
+    <hr />
+
+    <h2><?php esc_html_e( 'Cache Management', 'bwg-rentals' ); ?></h2>
+    <table class="form-table" role="presentation">
+        <tbody>
+            <tr>
+                <th scope="row"><?php esc_html_e( 'Cache Status', 'bwg-rentals' ); ?></th>
+                <td>
+                    <p>
+                        <strong><?php esc_html_e( 'Last Updated:', 'bwg-rentals' ); ?></strong>
+                        <?php echo esc_html( $cache_status['last_updated'] ); ?>
+                    </p>
+                    <p>
+                        <strong><?php esc_html_e( 'Cached Items:', 'bwg-rentals' ); ?></strong>
+                        <?php echo esc_html( $cache_status['item_count'] ); ?>
+                    </p>
+                    <p>
+                        <strong><?php esc_html_e( 'Duration:', 'bwg-rentals' ); ?></strong>
+                        <?php echo esc_html( $cache_status['duration'] ); ?>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><?php esc_html_e( 'Clear Cache', 'bwg-rentals' ); ?></th>
+                <td>
+                    <button type="button" class="button" id="bwg-clear-cache">
+                        <?php esc_html_e( 'Clear All Cache', 'bwg-rentals' ); ?>
+                    </button>
+                    <span id="bwg-cache-status"></span>
+                    <p class="description">
+                        <?php esc_html_e( 'Clear all cached property data. Fresh data will be fetched from the API on next page load.', 'bwg-rentals' ); ?>
+                    </p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
