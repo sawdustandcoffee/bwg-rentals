@@ -2521,3 +2521,73 @@ Feature #77 PASSING - All form fields have properly associated labels.
 - Total Passing: 27/90 features (30.0%)
 - This Session: Feature #77 completed
 
+---
+
+## Session: 2026-01-30 (Feature #14 - Parallel Agent)
+
+### Feature #14: API client fetches availability data - PASSED
+
+**Status: VERIFIED via Browser Automation and Code Review**
+
+#### Feature Definition:
+- Name: "API client fetches availability data"
+- Description: "API client retrieves availability calendar for a property"
+- Category: functional
+- Dependencies: Feature #13 (API client fetches single property)
+- Steps:
+  1. Configure valid API credentials
+  2. Get a valid property ID
+  3. Make API call to availability endpoint
+  4. Verify response contains availability data
+  5. Verify date ranges are properly parsed
+
+#### Implementation Details:
+
+**1. API Method get_availability() (class-bwg-api.php, lines 451-469):**
+- Takes property_id and optional use_cache parameter
+- Checks cache first using 'availability' cache type (15-min duration)
+- Makes request to properties/{property_id}/availability endpoint
+- Returns availability data array or WP_Error on failure
+- Caches successful responses
+
+**2. Mock API Response Structure (lines 229-248):**
+- Returns array of 90 days of availability data
+- Each entry contains: date (Y-m-d), available (boolean), min_stay (integer)
+
+**3. Shortcode Integration (class-bwg-shortcodes.php, line 406):**
+- property_availability() method calls api->get_availability()
+- Handles WP_Error gracefully with render_error()
+- Passes availability data to template for rendering
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Steps Verified:**
+1. Configured mock API credentials (MOCK_TEST_API_KEY_FOR_FEATURE_14)
+2. Cleared all cache via admin settings
+3. Test Connection returned "Connection successful! API is responding."
+4. Navigated to page with [bwg_property_availability id="1"] shortcode
+5. Availability calendar rendered with dates for multiple months
+6. Calendar displays navigation buttons (Previous/Next)
+7. Calendar shows legend with "Available" and "Unavailable" indicators
+8. No JavaScript console errors
+
+#### Screenshots:
+- feature-14-availability-calendar.png - Calendar header and navigation
+- feature-14-availability-calendar-full.png - Full calendar with dates displayed
+
+#### Result:
+Feature #14 PASSING - The API client successfully fetches availability data for properties.
+
+---
+
+### Updated Statistics
+- Total Passing: 27/90 features (30.0%)
+- This Session: Feature #14 completed
+- Feature #14 unblocks: Features #19, #35
+
