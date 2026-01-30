@@ -1267,3 +1267,137 @@ Feature #88 PASSING - Clicking the backdrop/overlay outside the lightbox image c
 #### Result:
 No regression detected. Plugin Update Checker initializes correctly and is configured for GitHub updates.
 
+
+
+---
+
+## Session: 2026-01-30 (Feature #90 - Parallel Agent)
+
+### Feature #90: Calendar navigation shows next/previous months - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Calendar navigation shows next/previous months"
+- Description: "Availability calendar has navigation to view different months"
+- Category: functional
+- Dependencies: None
+- Steps:
+  1. View availability calendar shortcode
+  2. Locate next/previous month navigation
+  3. Click next month button
+  4. Verify calendar advances to next month
+  5. Click previous month button
+  6. Verify calendar returns to previous month
+
+#### Implementation Details:
+
+**1. Template Updates (templates/property-availability.php):**
+- Added data attributes for JavaScript: property-id, months-to-show, base-date, offset
+- Added navigation container with Previous/Next buttons
+- Previous button has `disabled` attribute when offset is 0
+- Buttons use accessible `aria-label` attributes
+- Icons use HTML entities (« and »)
+
+**2. CSS Updates (assets/css/bwg-rentals-public.css):**
+- Added `.bwg-availability-calendar__navigation` flexbox container
+- Styled navigation buttons with hover/focus/disabled states
+- Responsive mobile styles (text hidden, icon-only on small screens)
+- Proper touch target size (min 44px) for accessibility
+
+**3. JavaScript Updates (assets/js/bwg-rentals-public.js):**
+- Complete rewrite of BWGCalendar module
+- Client-side month generation with proper calendar grid calculation
+- Navigation by offset (advances by months_to_show value)
+- Previous button disabled state management
+- Supports configurable months_to_show attribute
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- Test page: "Calendar Navigation Test - Feature 90" (post ID 107)
+- Shortcode: [bwg_property_availability id="1" months_to_show="3"]
+
+**Test Steps Executed:**
+1. ✅ Navigated to test page with calendar shortcode
+2. ✅ Verified navigation buttons are visible (Previous disabled, Next enabled)
+3. ✅ Screenshot captured: feature-90-calendar-initial-state.png
+4. ✅ Clicked "Next" button
+5. ✅ Verified calendar advanced from Jan/Feb/Mar to Apr/May/Jun
+6. ✅ Verified Previous button became enabled
+7. ✅ Screenshot captured: feature-90-calendar-after-next-click.png
+8. ✅ Clicked "Previous" button
+9. ✅ Verified calendar returned to Jan/Feb/Mar
+10. ✅ Verified Previous button became disabled again
+11. ✅ Screenshot captured: feature-90-calendar-after-prev-click.png
+12. ✅ Checked browser console - no JavaScript errors
+
+#### Screenshots:
+- feature-90-calendar-initial-state.png - Initial calendar with navigation
+- feature-90-calendar-after-next-click.png - After clicking Next
+- feature-90-calendar-after-prev-click.png - After clicking Previous (returned)
+
+#### Git Commit:
+- 88ab90b - Implement Feature #90: Calendar navigation shows next/previous months
+
+#### Result:
+Feature #90 PASSING - Calendar navigation buttons work correctly, allowing users to navigate between months.
+
+---
+
+### Updated Statistics
+- Total Passing: 13/90 features (14.4%)
+- This Session: Feature #90 completed
+
+---
+
+## Session: 2026-01-30 (Session 13 - Feature #10)
+
+### Feature #10: Manual cache clear button works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: Manual cache clear button works
+- Description: Administrator can clear all cached data manually
+- Category: functional
+- Dependencies: Feature #5 (API credentials can be saved)
+
+#### Testing Performed:
+
+**Step 1: Navigate to Settings > BWG Rentals**
+- Logged into WordPress admin at localhost:8088
+- Navigated to Settings > BWG Rentals
+- Page title: BWG Rentals Settings
+
+**Step 2: Verify Clear Cache button exists**
+- Cache Management section present on page
+- Clear All Cache button visible (id=bwg-clear-cache)
+- Cache Status displays: Last Updated: Never, Cached Items: 0, Duration: 24 hours
+- Screenshot captured: feature-10-clear-cache-button-visible.png
+
+**Step 3-4: Click Clear Cache button and verify success**
+- Created test transients via WP-CLI before testing
+- Clicked Clear All Cache button
+- AJAX request sent to admin-ajax.php with action=bwg_clear_cache
+- Success message appears briefly, then page reloads
+
+**Step 5: Verify transients are deleted from database**
+- All bwg_rentals_* transients successfully deleted
+- Verified with wp transient list --search=bwg_rentals* returning empty
+
+#### Screenshots:
+- feature-10-settings-page-clear-cache-button.png
+- feature-10-clear-cache-button-visible.png
+- feature-10-cache-cleared-success.png
+
+#### Result:
+Feature #10 PASSING - Manual cache clear button works correctly.
+
+---
+
+### Updated Statistics
+- Total Passing: 14/90 features (15.6%)
+- This Session: Feature #10 completed
+
