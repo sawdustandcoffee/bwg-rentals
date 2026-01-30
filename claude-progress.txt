@@ -6552,3 +6552,139 @@ Feature #26 PASSING - The layout attribute correctly switches between:
 - Feature #26 unblocks: Feature #63 (Gallery slider has smooth transitions)
 
 [Testing] Feature #26 verified - layout attribute works (2026-01-30 23:35)
+
+
+---
+
+## Session: 2026-01-30 (Feature #7 - Testing Agent Regression Test)
+
+### Feature #7: Test Connection button works with valid credentials - VERIFIED
+
+**Status: PASSING - No Regression Found**
+
+#### Feature Definition:
+- ID: 7
+- Name: Test Connection button works with valid credentials
+- Description: AJAX test connection validates API credentials and shows success
+- Category: functional
+- Dependencies: Feature #5 (Settings are stored in wp_options)
+
+#### Verification Performed (Browser Automation):
+
+**Step 1 and 2: Valid Credentials Configured**
+- API Key: MOCK_API_KEY_FOR_TESTING (already saved)
+- Organization ID: test-org-123 (already saved)
+- Settings persistent from previous sessions
+
+**Step 3: Click Test Connection**
+- Button located at API Connection section
+- Clicked via browser automation
+
+**Step 4: Loading Indicator**
+- AJAX call completed quickly (loading state brief)
+
+**Step 5: Success Message Displayed**
+- Message: Connection successful! API is responding.
+- Displayed in green text next to the button
+
+**Step 6: API Response Details**
+- Success message confirms API is responding
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-7-settings-page-before-test.png
+- feature-7-test-connection-success.png
+
+#### Result:
+Feature #7 VERIFIED - Test Connection button works correctly with valid credentials.
+
+[Testing] Feature #7 verified - still passing (regression test) (2026-01-30)
+
+
+---
+
+## Session: 2026-01-30 (Feature #30 - Parallel Agent)
+
+### Feature #30: [bwg_property_specs] show_icons attribute works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 30
+- Name: [bwg_property_specs] show_icons attribute works
+- Description: Icons can be toggled on/off for property specs
+- Category: functional
+- Dependencies: Feature #29 ([bwg_property_specs] displays beds, baths, guests) PASSED
+- Steps:
+  1. Add [bwg_property_specs id='X' show_icons='true']
+  2. Verify icons display next to specs
+  3. Change to show_icons='false'
+  4. Verify icons are hidden
+
+#### Implementation Details (Already Implemented):
+
+**1. Shortcode Class (includes/class-bwg-shortcodes.php):**
+- Line 346: Default show_icons attribute is set to 'true'
+- Attribute passed to template via $atts array
+
+**2. Template File (templates/property-specs.php):**
+- Line 15: $show_icons = 'true' === $atts['show_icons'];
+- Lines 30-32, 39-41, 48-50, 57-59: Conditional display of icons
+- Icons used: bed (bedrooms), shower (bathrooms), people (guests), ruler (sqft)
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials: MOCK_API_KEY_FOR_TESTING / test-org-123
+
+**Test 1: show_icons='true' (explicit)**
+- Page: /feature-30-show-icons-true-test/
+- Shortcode: [bwg_property_specs id="1" show_icons="true"]
+- Results:
+  - Icon displayed next to "4 Bedrooms"
+  - Icon displayed next to "3 Bathrooms"
+  - Icon displayed next to "10 Guests"
+  - Icon displayed next to "2,500 sq ft"
+
+**Test 2: show_icons='false'**
+- Page: /feature-30-show-icons-false-test/
+- Shortcode: [bwg_property_specs id="1" show_icons="false"]
+- Results:
+  - NO icons displayed - just text values
+  - "4 Bedrooms" (no icon)
+  - "3 Bathrooms" (no icon)
+  - "10 Guests" (no icon)
+  - "2,500 sq ft" (no icon)
+
+**Test 3: Default behavior (show_icons defaults to 'true')**
+- Page: /feature-29-property-specs-test/
+- Shortcode: [bwg_property_specs id="1"] (no show_icons attribute)
+- Results: All icons displayed (default is true)
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-30-specs-with-icons.png - Default behavior with icons
+- feature-30-specs-without-icons.png - show_icons='false' hides icons
+- feature-30-specs-with-icons-explicit.png - show_icons='true' shows icons
+
+#### Result:
+Feature #30 PASSING - The show_icons attribute correctly controls icon visibility:
+- show_icons='true' displays icons next to spec values
+- show_icons='false' hides icons, showing only text values
+- Default behavior is show_icons='true'
+
+---
+
+### Updated Statistics
+- Total Passing: 64/90 features (71.1%)
+- This Session: Feature #30 completed
+- Feature #30 unblocks: None (leaf feature)
+
+[Testing] Feature #30 verified - show_icons attribute works (2026-01-30)
+
