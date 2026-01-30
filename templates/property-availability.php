@@ -57,10 +57,22 @@ $day_names = array(
         </button>
     </div>
 
+    <?php
+    // Build lookup array for availability data
+    $availability_lookup = array();
+    if ( is_array( $availability ) ) {
+        foreach ( $availability as $day_data ) {
+            if ( isset( $day_data['date'] ) ) {
+                $availability_lookup[ $day_data['date'] ] = isset( $day_data['available'] ) ? $day_data['available'] : true;
+            }
+        }
+    }
+    ?>
     <div class="bwg-availability-calendar">
         <?php for ( $m = 0; $m < $months_to_show; $m++ ) : ?>
             <?php
-            $month_date  = clone $current_date;
+            // Use first day of current month to avoid day overflow issues
+            $month_date  = new DateTime( $current_date->format( 'Y-m-01' ) );
             $month_date->modify( '+' . $m . ' months' );
             $month_start = new DateTime( $month_date->format( 'Y-m-01' ) );
             $month_end   = new DateTime( $month_date->format( 'Y-m-t' ) );
@@ -90,9 +102,12 @@ $day_names = array(
                     for ( $day = 1; $day <= $days_in_month; $day++ ) :
                         $date_str = $month_date->format( 'Y-m-' ) . str_pad( $day, 2, '0', STR_PAD_LEFT );
 
-                        // TODO: Check availability data for this date
+                        // Check availability data for this date
                         $is_available = true; // Default to available
-                        $day_class    = $is_available
+                        if ( isset( $availability_lookup[ $date_str ] ) ) {
+                            $is_available = (bool) $availability_lookup[ $date_str ];
+                        }
+                        $day_class = $is_available
                             ? 'bwg-availability-calendar__day bwg-availability-calendar__day--available'
                             : 'bwg-availability-calendar__day bwg-availability-calendar__day--unavailable';
                     ?>
