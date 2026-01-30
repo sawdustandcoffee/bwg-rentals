@@ -2936,3 +2936,108 @@ Feature #9 PASSING - Cache duration setting is saved correctly. Administrator ca
 ### Updated Statistics
 - Total Passing: 31/90 features (34.4%)
 - This Session: Feature #9 completed
+
+---
+
+## Session: 2026-01-30 (Feature #18 - Parallel Agent)
+
+### Feature #18: Property data is cached after fetch - PASSED ✓
+
+**Status: VERIFIED via Browser Automation and WP-CLI**
+
+#### Feature Definition:
+- Name: "Property data is cached after fetch"
+- Description: "Fetched property data is stored in WordPress transients"
+- Category: functional
+- Dependencies: Feature #10 (Manual cache clear button works) ✓, Feature #12 (API client fetches properties list) ✓
+- Steps:
+  1. Clear all cache
+  2. Fetch properties via API
+  3. Verify transient is created
+  4. Fetch same data again
+  5. Verify second request uses cached data (no API call)
+
+#### Implementation Details:
+
+The caching system is implemented in two classes:
+
+1. **BWG_Cache (includes/class-bwg-cache.php):**
+   - Uses WordPress Transients API for storage
+   - Cache prefix: `bwg_rentals_`
+   - Default duration: 24 hours (configurable via settings)
+   - Availability cache: 15 minutes (fixed)
+   - Tracks metadata (last_updated, item count)
+
+2. **BWG_API (includes/class-bwg-api.php):**
+   - `get_properties()` method checks cache first (line 401-405)
+   - Caches successful responses with `$this->cache->set()` (line 411)
+   - `get_property()` similarly caches individual property data
+   - Cache key format: `properties`, `property_{id}`
+
+#### Testing Performed (Browser Automation + WP-CLI):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials configured
+
+**Step 1: Clear all cache**
+1. ✅ Navigated to Settings > BWG Rentals
+2. ✅ Initial cache status: Last Updated: January 30, 2026 10:06 pm, Cached Items: 2
+3. ✅ Clicked "Clear All Cache" button
+4. ✅ Cache status updated: Last Updated: Never, Cached Items: 0
+
+**Step 2: Fetch properties via API**
+1. ✅ Navigated to /bwg-properties-grid-test-feature-20/
+2. ✅ [bwg_properties] shortcode rendered successfully
+3. ✅ 3 properties displayed: Oceanfront Beach House, Mountain Retreat Cabin, Downtown Luxury Condo
+4. ✅ No console errors
+
+**Step 3: Verify transient is created**
+1. ✅ Returned to Settings > BWG Rentals
+2. ✅ Cache status updated: Last Updated: January 30, 2026 10:12 pm, Cached Items: 2
+3. ✅ Verified via WP-CLI: `wp transient list` shows:
+   - `bwg_rentals_properties` - Contains all 3 properties
+   - `bwg_rentals_property_1` - Contains detailed data for property ID 1
+
+**Step 4: Verify transient expiration time**
+1. ✅ Checked transient timeout via WP-CLI: `wp option get _transient_timeout_bwg_rentals_properties`
+2. ✅ Expiration timestamp: 1769854341 (approx 12 hours from creation)
+3. ✅ Matches Cache Duration setting of 12 hours
+
+**Step 5: Verify second request uses cached data**
+1. ✅ Reloaded /bwg-properties-grid-test-feature-20/
+2. ✅ Page loaded quickly with all 3 properties
+3. ✅ No console errors
+4. ✅ Cache status unchanged (still shows 2 items, same timestamp)
+5. ✅ Properties displayed from cache without new API call
+
+#### Technical Evidence (WP-CLI Transient Verification):
+```
+bwg_rentals_properties - Contains serialized array with all 3 properties:
+  - id:1, name:"Oceanfront Beach House", bedrooms:4, bathrooms:3, sleeps:10
+  - id:2, name:"Mountain Retreat Cabin", bedrooms:3, bathrooms:2, sleeps:8
+  - id:3, name:"Downtown Luxury Condo", bedrooms:2, bathrooms:2, sleeps:4
+
+bwg_rentals_property_1 - Contains detailed data including policies
+```
+
+#### Screenshots:
+- feature-18-cache-populated.png - Settings page (top) after property fetch
+- feature-18-cache-status-populated.png - Cache Management section showing 2 cached items
+- feature-18-properties-from-cache.png - Frontend properties grid loaded from cache
+
+#### Git Commit:
+- aacc9da - Verify Feature #18: Property data is cached after fetch
+
+#### Result:
+Feature #18 PASSING - Property data is correctly cached after fetch using WordPress Transients API. Cache respects the duration setting and serves subsequent requests from cache.
+
+---
+
+### Updated Statistics
+- Total Passing: 32/90 features (35.6%)
+- This Session: Feature #18 completed
+- Feature #18 unblocks: Features #57, #73
