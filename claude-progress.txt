@@ -1,6 +1,53 @@
 # BWG Rentals - Claude Progress Notes
 
-## Session: 2026-01-30
+## Session: 2026-01-30 (Session 2 - Feature #1)
+
+### Feature #1: Plugin activates without errors - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Testing Performed:
+1. ✅ Copied plugin to WordPress container (bwg-igf-wordpress on port 8088)
+2. ✅ Navigated to WordPress admin plugins page
+3. ✅ Verified BWG Rentals plugin appeared in plugins list correctly:
+   - Name: BWG Rentals
+   - Version: 1.0.0
+   - Author: Sawdust and Coffee
+   - Description matches app_spec.txt
+4. ✅ Clicked "Activate" button
+5. ✅ No PHP errors or warnings appeared
+6. ✅ "Plugin activated" success message displayed
+7. ✅ Plugin status shows as "Active" (Deactivate link visible)
+8. ✅ BWG Rentals menu item appeared under Settings > BWG Rentals
+9. ✅ Admin notice displayed: "Please configure your API credentials..."
+10. ✅ Settings page loads correctly at /wp-admin/options-general.php?page=bwg-rentals
+11. ✅ All settings fields present: API Key, Org ID, Cache Duration, Button Text
+12. ✅ Default options created in database:
+    - bwg_rentals_cache_duration = 24
+    - bwg_rentals_button_text = "Book Now"
+    - bwg_rentals_api_key = "" (empty as expected)
+    - bwg_rentals_organization_id = "" (empty as expected)
+13. ✅ No JavaScript console errors
+
+#### Testing Environment:
+- WordPress container: bwg-igf-wordpress (port 8088)
+- Database: bwg-igf-db (MariaDB)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+
+#### Screenshots:
+- feature1-plugin-activated.png - Plugins page after activation
+- feature1-settings-page.png - Settings page with all fields
+
+#### Features Now Unblocked:
+- Feature #2: Plugin deactivates cleanly
+- Feature #3: Settings menu item appears for administrators
+- Feature #55: Plugin Update Checker initializes correctly
+- Feature #75: i18n text domain is properly registered
+
+---
+
+## Session: 2026-01-30 (Session 1 - Feature #84)
 
 ### Feature #84: Shortcode works in Gutenberg blocks
 
@@ -64,10 +111,19 @@ The plugin's shortcode implementation follows WordPress best practices and will 
 ---
 
 ### Statistics
+- Feature #1: Passing ✓
 - Feature #84: Passing ✓
-- Progress: 1/90 features (1.1%)
+- Progress: 2/90 features (2.2%)
 
 ### Next Session
 - Continue with next available feature
 - Most features are blocked by Feature #1 (Plugin activates without errors)
 - Consider testing Feature #85, #86, #87, etc. which have no dependencies
+
+---
+
+[Testing] 2026-01-30 16:18 - Feature #84 regression test
+- Verified shortcode registration in class-bwg-shortcodes.php
+- Confirmed 12 shortcodes use standard add_shortcode() API
+- Verified plugin initialization in class-bwg-rentals.php
+- Result: STILL PASSING - No regression detected
