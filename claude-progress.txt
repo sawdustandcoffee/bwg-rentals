@@ -1969,3 +1969,86 @@ Feature #17 PASSING - API errors are handled gracefully without PHP crashes, wit
 ### Updated Statistics
 - Total Passing: 21/90 features (23.3%)
 - This Session: Feature #17 completed
+[Testing] Feature #87 verified - still passing
+
+---
+
+## Session: 2026-01-30 (Feature #27 - Parallel Agent)
+
+### Feature #27: [bwg_property_title] renders property name - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "[bwg_property_title] renders property name"
+- Description: "The title shortcode displays the property name/headline"
+- Category: functional
+- Dependencies: Feature #13 (API client fetches single property)
+- Steps:
+  1. Add [bwg_property_title id='X'] to a page
+  2. View page on frontend
+  3. Verify property name displays
+  4. Verify correct heading tag is used
+
+#### Implementation Details:
+The property_title() method is implemented in includes/class-bwg-shortcodes.php (lines 231-267).
+
+Key features:
+- Accepts attributes: id (required), tag (h1-h6, p, span, div), class
+- Validates ID is required
+- Fetches property via API
+- Whitelist validation for allowed HTML tags
+- Proper escaping with esc_html() and esc_attr()
+- Filter hook: bwg_property_title_output
+- CSS class: bwg-property-title
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Test Setup:**
+1. ✅ Logged into WordPress admin
+2. ✅ Configured mock API credentials (MOCK_TEST_KEY_12345)
+3. ✅ Verified mock API connection works
+
+**Test Page Created:**
+- Title: "Property Title Test - Feature 27"
+- URL: /property-title-test-feature-27/
+- Content: [bwg_property_title id="1"]
+
+**Test Verification:**
+1. ✅ Page published successfully
+2. ✅ Navigated to frontend page
+3. ✅ Property title "Oceanfront Beach House" displays correctly
+4. ✅ Verified HTML structure via JavaScript evaluation:
+   - tagName: H1 (correct default tag)
+   - className: bwg-property-title (correct BEM class)
+   - textContent: Oceanfront Beach House (correct API data)
+5. ✅ No console errors detected
+6. ✅ Screenshots captured: feature-27-property-title-renders.png, feature-27-property-title-full.png
+
+#### Error Handling Verified:
+- When API credentials not configured: Shows "API credentials not configured." error message
+- Shortcode handles missing credentials gracefully without PHP errors
+
+#### Screenshots:
+- feature-27-property-title-renders.png - Property title rendered on frontend
+- feature-27-property-title-full.png - Full page view showing property title
+
+#### Git Commit:
+- Feature #27 verified via browser automation
+
+#### Result:
+Feature #27 PASSING - The [bwg_property_title] shortcode correctly renders the property name from the API with proper HTML structure and escaping.
+
+---
+
+### Updated Statistics
+- Total Passing: 21/90 features (23.3%)
+- This Session: Feature #27 completed
+- Feature #27 unblocks: Features #28, #52, #53, #60, #70, #71, #74
+
