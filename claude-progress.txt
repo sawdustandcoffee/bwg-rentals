@@ -1,3 +1,80 @@
+## Session: 2026-01-30 (Feature #53 - Parallel Agent)
+
+### Feature #53: Shortcode without required ID attribute shows error - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 53
+- Name: Shortcode without required ID attribute shows error
+- Description: Single property shortcodes show error when ID is missing
+- Category: functional
+- Dependencies: Feature #27 ([bwg_property_title] renders property name) PASSED
+- Steps:
+  1. Add shortcode without ID: [bwg_property_title]
+  2. View page on frontend
+  3. Verify helpful error message displays
+  4. Verify no PHP warnings
+
+#### Implementation Details (Already Implemented):
+
+**Shortcode Class (includes/class-bwg-shortcodes.php):**
+- All shortcodes that require ID check for `empty( $atts['id'] )`
+- Error returned via `render_error( __( 'Property ID is required.', 'bwg-rentals' ) )`
+- Shortcodes with ID validation:
+  - property_card (line 239)
+  - property_gallery (line 273)
+  - property_title (line 309)
+  - property_specs (line 353)
+  - property_description (line 389)
+  - property_amenities (line 431)
+  - property_availability (line 467)
+  - property_rates (line 503)
+  - property_booking_button (line 542)
+  - property_location (line 583)
+  - property_policies (line 618)
+
+**Error Styling (assets/css/bwg-rentals-public.css):**
+- Lines 32-38: .bwg-error class
+- Red background (#fef7f7)
+- Left border (4px solid red)
+- Red text color
+
+#### Browser Verification:
+
+**Test 1: Single shortcode without ID**
+- Created test page: /feature-53-missing-id-test/
+- Shortcode: [bwg_property_title] (no ID attribute)
+- Result: "Property ID is required." displayed in red styled error box
+- Screenshot: feature-53-missing-id-error.png
+
+**Test 2: Multiple shortcodes without ID**
+- Created test page: /feature-53-multiple-missing-ids/
+- Shortcodes:
+  - [bwg_property_gallery]
+  - [bwg_property_specs]
+  - [bwg_property_description]
+  - [bwg_property_booking_button]
+- Result: 4 error messages displayed, each showing "Property ID is required."
+- Screenshot: feature-53-multiple-errors-scrolled.png
+
+**HTML Verification:**
+- Error div uses class="bwg-error"
+- 4 error elements found on test page
+- All styled consistently
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-53-missing-id-error.png - Single shortcode error
+- feature-53-multiple-missing-ids.png - Multiple shortcodes page header
+- feature-53-multiple-errors-scrolled.png - All 4 error messages visible
+
+#### Result:
+Feature #53 PASSING - Shortcodes without required ID attribute show helpful "Property ID is required." error message with consistent red styling. No PHP warnings or JavaScript errors.
+
+---
+
 ## Session: 2026-01-30 (Feature #58 - Parallel Agent)
 
 ### Feature #58: Default booking button text setting works - PASSED
