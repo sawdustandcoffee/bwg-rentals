@@ -1,3 +1,92 @@
+## Session: 2026-01-30 (Feature #23 - Parallel Agent)
+
+### Feature #23: [bwg_properties] limit attribute restricts count - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 23
+- Name: [bwg_properties] limit attribute restricts count
+- Description: The limit attribute controls maximum properties shown
+- Category: functional
+- Dependencies: Feature #20 ([bwg_properties] shortcode renders property grid) PASSED
+- Steps:
+  1. Add [bwg_properties limit='3'] to a page
+  2. View page on frontend
+  3. Count displayed properties
+  4. Verify no more than 3 properties show
+
+#### Implementation Details:
+
+**Shortcode Logic (includes/class-bwg-shortcodes.php):**
+- Line 121: Default limit is -1 (no limit)
+- Lines 138-141: Apply limit with `array_slice()`:
+  ```php
+  if ( $atts['limit'] > 0 ) {
+      $properties = array_slice( $properties, 0, absint( $atts['limit'] ) );
+  }
+  ```
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- Mock API credentials: MOCK_API_KEY_FOR_TESTING / test-org-123
+
+**Test 1: No Limit (shows all 3 properties)**
+- URL: /bwg-properties-grid-test-feature-20/
+- Shortcode: `[bwg_properties]`
+- Results:
+  - ✅ 3 properties displayed:
+    1. Oceanfront Beach House (4 Beds, 3 Baths)
+    2. Mountain Retreat Cabin (3 Beds, 2 Baths)
+    3. Downtown Luxury Condo (2 Beds, 2 Baths)
+  - ✅ No console errors
+
+**Test 2: limit="2" (shows 2 properties)**
+- URL: /feature-23-limit-attribute-test/
+- Shortcode: `[bwg_properties limit="2"]`
+- Results:
+  - ✅ 2 properties displayed:
+    1. Oceanfront Beach House (4 Beds, 3 Baths)
+    2. Mountain Retreat Cabin (3 Beds, 2 Baths)
+  - ✅ Downtown Luxury Condo NOT shown (limit applied)
+  - ✅ No console errors
+
+**Test 3: limit="1" (shows 1 property)**
+- URL: /feature-23-limit-1-test-2/
+- Shortcode: `[bwg_properties limit="1"]`
+- Results:
+  - ✅ 1 property displayed:
+    1. Oceanfront Beach House (4 Beds, 3 Baths)
+  - ✅ Mountain Retreat Cabin NOT shown (limit applied)
+  - ✅ Downtown Luxury Condo NOT shown (limit applied)
+  - ✅ No console errors
+
+#### Screenshots:
+- feature-23-no-limit-all-properties.png - All 3 properties (no limit)
+- feature-23-limit-2-properties.png - 2 properties with limit="2"
+- feature-23-limit-1-property.png - 1 property with limit="1"
+
+#### Code Location:
+- Shortcode: includes/class-bwg-shortcodes.php (lines 114-152)
+- Limit logic: lines 138-141
+
+#### Result:
+Feature #23 PASSING - The limit attribute correctly restricts the number of properties displayed. Different limit values show the expected number of properties.
+
+---
+
+### Updated Statistics
+- Total Passing: 53/90 features (58.9%)
+- This Session: Feature #23 completed
+- Feature #23 unblocks: None (no dependent features)
+
+---
+
 ## Session: 2026-01-30 (Feature #47 - Parallel Agent)
 
 ### Feature #47: CSS only loads when shortcodes are used - PASSED
