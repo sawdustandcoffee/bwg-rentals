@@ -1526,3 +1526,80 @@ Feature #10 PASSING - Manual cache clear button works correctly.
 - Upgrade WordPress to 6.6+ in test environment to enable proper Elementor testing
 - After upgrade, re-verify this feature through actual Elementor editor
 
+
+---
+
+## Session: 2026-01-30 (Feature #75 - Parallel Agent)
+
+### Feature #75: i18n text domain is properly registered - PASSED ✓
+
+**Status: VERIFIED via Browser Automation and Code Review**
+
+#### Feature Definition:
+- Name: "i18n text domain is properly registered"
+- Description: "Plugin text domain is loaded for translations"
+- Category: functional
+- Dependencies: Feature #1 (Plugin activates without errors)
+- Steps:
+  1. Check plugin header for Text Domain
+  2. Verify load_plugin_textdomain is called
+  3. Verify .pot file exists in languages folder
+
+#### Verification Performed:
+
+**1. Plugin Header Check ✅**
+- `Text Domain: bwg-rentals` (line 11 of bwg-rentals.php)
+- `Domain Path: /languages` (line 12 of bwg-rentals.php)
+
+**2. load_plugin_textdomain() Call ✅**
+- Located in bwg_rentals_init() function (lines 69-73)
+- Called with correct parameters:
+  - Text domain: 'bwg-rentals'
+  - Deprecated parameter: false
+  - Path: dirname( BWG_RENTALS_PLUGIN_BASENAME ) . '/languages'
+- Hooked to 'plugins_loaded' action
+
+**3. POT File Verification ✅**
+- File exists: /languages/bwg-rentals.pot
+- Contains 73 translatable strings
+- Properly formatted GNU gettext template
+
+**4. Code-Level Translation Usage ✅**
+- 99 occurrences of 'bwg-rentals' text domain across 15 PHP files
+- All translatable strings use __(), _e(), esc_html__(), esc_attr__() functions
+- Files using translations:
+  - bwg-rentals.php (2)
+  - includes/class-bwg-admin.php (13)
+  - includes/class-bwg-api.php (4)
+  - includes/class-bwg-cache.php (2)
+  - includes/class-bwg-rentals.php (4)
+  - includes/class-bwg-shortcodes.php (13)
+  - templates/admin-settings.php (20)
+  - templates/*.php (various)
+
+**5. Browser Automation Testing ✅**
+- Settings page: All labels display correctly (API Key, Organization ID, Cache Duration, etc.)
+- Frontend shortcodes: "Beds" and "Baths" strings render correctly
+- No JavaScript console errors
+
+#### Screenshots:
+- feature-75-settings-i18n-strings.png - Admin settings page with translated strings
+- feature-75-frontend-i18n-strings.png - Frontend with property cards
+- feature-75-i18n-verification-complete.png - Full page view
+
+#### Testing Environment:
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+
+#### Git Commit:
+- 98ca32c - Verify Feature #75: i18n text domain is properly registered
+
+#### Result:
+Feature #75 PASSING - The i18n text domain 'bwg-rentals' is properly registered and all translatable strings are ready for translation.
+
+---
+
+### Updated Statistics
+- Total Passing: 16/90 features (17.8%)
+- This Session: Feature #75 completed
