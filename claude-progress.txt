@@ -2764,3 +2764,102 @@ Feature #8 PASSING - Test Connection correctly shows error message when invalid 
 ### Updated Statistics
 - Total Passing: 29/90 features (32.2%)
 - This Session: Feature #8 completed
+[Testing] Feature #43 verified - still passing (regression test 2026-01-30 17:12)
+
+---
+
+## Session: 2026-01-30 (Feature #9 - Parallel Agent)
+
+### Feature #9: Cache duration setting is saved - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Cache duration setting is saved"
+- Description: "Administrator can configure cache duration and setting persists"
+- Category: functional
+- Dependencies: Feature #5 (API credentials can be saved) ✓
+- Steps:
+  1. Navigate to Settings > BWG Rentals
+  2. Locate cache duration field
+  3. Change value to 12 hours
+  4. Save settings
+  5. Refresh page
+  6. Verify 12 hour value persisted
+
+#### Implementation Details:
+
+**Cache Duration Setting (templates/admin-settings.php, lines 57-64):**
+- Label: "Cache Duration"
+- Input: Number field with ID `bwg_rentals_cache_duration`
+- Helper text: "hours" suffix
+- Description: "How long to cache property data. Availability data is cached for 15 minutes regardless of this setting."
+
+**Setting Registration (includes/class-bwg-admin.php, lines 102-107):**
+- Registered via WordPress Settings API
+- Option name: `bwg_rentals_cache_duration`
+- Default value: 24 (hours)
+- Sanitize callback: `absint` for integer validation
+
+**Setting Usage (includes/class-bwg-cache.php):**
+- `get_duration()` method retrieves the setting
+- Falls back to DEFAULT_DURATION (24 hours) if not set
+- Converted to seconds for transient expiration
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+
+**Step 1: Navigate to settings page**
+1. ✅ Logged into WordPress admin as administrator
+2. ✅ Navigated to Settings > BWG Rentals
+3. ✅ Settings page title: "BWG Rentals Settings"
+
+**Step 2: Locate cache duration field**
+1. ✅ Cache Duration field visible on settings page
+2. ✅ Current value: 24 (hours)
+3. ✅ Field type: number (spinbutton)
+4. ✅ "hours" label displayed after field
+
+**Step 3: Change value to 12 hours**
+1. ✅ Clicked on Cache Duration field
+2. ✅ Changed value from 24 to 12
+3. ✅ Field accepted the new value
+
+**Step 4: Save settings**
+1. ✅ Clicked "Save Changes" button
+2. ✅ "Settings saved." success message displayed
+3. ✅ Cache Duration shows "12" in form field
+4. ✅ Cache Status section shows "Duration: 12 hours"
+
+**Step 5: Refresh page**
+1. ✅ Navigated to settings page again (page refresh)
+2. ✅ Page loaded successfully
+
+**Step 6: Verify 12 hour value persisted**
+1. ✅ Cache Duration field still shows "12"
+2. ✅ Cache Status section still shows "Duration: 12 hours"
+3. ✅ Setting persisted in WordPress options database
+4. ✅ No console errors
+
+**Cleanup:**
+1. ✅ Restored Cache Duration to 24 hours (default)
+2. ✅ Saved settings successfully
+
+#### Screenshots:
+- feature-9-initial-cache-duration-24-hours.png - Initial state showing 24 hours
+- feature-9-cache-duration-saved-12-hours.png - After saving with 12 hours + success message
+- feature-9-cache-duration-persisted-after-refresh.png - After page refresh, still shows 12 hours
+
+#### Result:
+Feature #9 PASSING - Cache duration setting is saved correctly. Administrator can change the value, save it, and the setting persists across page refreshes.
+
+---
+
+### Updated Statistics
+- Total Passing: 31/90 features (34.4%)
+- This Session: Feature #9 completed
