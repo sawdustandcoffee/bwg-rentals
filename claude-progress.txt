@@ -4049,3 +4049,120 @@ Feature #44 PASSING - Both AJAX actions (bwg_test_connection and bwg_clear_cache
 ### Updated Statistics
 - Total Passing: 40/90 features (44.4%)
 - This Session: Feature #44 completed
+
+---
+
+## Session: 2026-01-30 (Feature #45 - Parallel Agent)
+
+### Feature #45: API key not exposed in page source - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 45
+- Name: "API key not exposed in page source"
+- Description: "The API key is never output to frontend HTML"
+- Category: security
+- Dependencies: Feature #6 (API credentials are stored encrypted) ✓
+- Steps:
+  1. Configure API credentials
+  2. View a page with shortcodes
+  3. View page source
+  4. Search for API key value
+  5. Verify API key is not present in HTML
+
+#### Implementation Details:
+
+**How the API Key is Protected:**
+
+1. **Storage (class-bwg-admin.php):**
+   - API key is stored encrypted in WordPress options using AES-256-CBC
+   - Uses `encrypt_value()` and `decrypt_value()` methods
+   - Key never stored in plaintext
+
+2. **Retrieval (class-bwg-api.php, lines 297-302):**
+   - `get_credentials()` method decrypts credentials server-side
+   - Returns array with api_key and org_id
+   - Credentials only used in `request()` method for HTTP headers
+
+3. **API Calls (class-bwg-api.php, lines 311-369):**
+   - API key used only in `Authorization: Token {api_key}` header
+   - Request made via `wp_remote_get()` server-side
+   - Response data (not credentials) passed to templates
+
+4. **Templates:**
+   - Templates receive only property data, never credentials
+   - No `wp_localize_script()` passes API key to frontend
+   - Booking URL uses org_id only (acceptable to expose)
+
+#### Testing Performed (Browser Automation):
+
+**Test Environment:**
+- WordPress container: bwg-igf-wordpress (port 8088)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- BWG Rentals plugin: 1.0.0
+- API Key configured: MOCK_API_KEY_FOR_TESTING
+- Organization ID: test-org-123
+
+**Test 1: Properties Grid Page (/bwg-properties-grid-test-feature-20/)**
+1. ✅ Navigated to page with [bwg_properties] shortcode
+2. ✅ Executed JavaScript to search HTML for API key
+3. ✅ Result: apiKeyFound = false
+4. ✅ No suspicious patterns found (api_key, apiKey, Authorization, Token)
+5. ✅ HTML length: 36,319 characters - no API key present
+
+**Test 2: Booking Button Page (/booking-button-test-feature-38/)**
+1. ✅ Navigated to page with [bwg_property_booking_button] shortcode
+2. ✅ Verified booking URL: https://app.getdirect.io/listings/test-org-123/1
+3. ✅ URL contains org_id (acceptable) but NOT api_key
+4. ✅ apiKeyInHtml: false
+5. ✅ scriptsWithApiKey: 0
+6. ✅ dataAttributesWithApiKey: []
+7. ✅ No wp_localize_script data with credentials
+
+**Test 3: Gallery Page (/gallery-test-feature-25/)**
+1. ✅ Navigated to page with [bwg_property_gallery] shortcode
+2. ✅ Searched all script tags - no API key found
+3. ✅ Checked image sources - no API key in URLs
+4. ✅ Checked AJAX requests - no frontend API calls with credentials
+5. ✅ No console errors
+
+**Test 4: Rates Page (/rates-test-feature-15/)**
+1. ✅ Navigated to page with [bwg_property_rates] shortcode
+2. ✅ Comprehensive security check:
+   - apiKeyExact: false
+   - apiKeyPartial: false
+   - anyApiKey: false
+   - authHeader: false
+   - tokenPattern: false
+3. ✅ isSecure: true
+
+**Security Verification Checklist:**
+- [x] API key not in HTML source
+- [x] API key not in JavaScript variables
+- [x] API key not in data attributes
+- [x] API key not in image URLs
+- [x] API key not passed via wp_localize_script
+- [x] API key not in AJAX requests from frontend
+- [x] Only org_id appears in booking URLs (acceptable)
+
+#### Screenshots:
+- feature-45-booking-button-page-no-api-key.png - Booking button page
+- feature-45-gallery-page-no-api-key.png - Gallery page with slider
+- feature-45-rates-page-no-api-key.png - Rates table page
+
+#### Code Locations:
+- API credentials retrieval: includes/class-bwg-api.php (get_credentials method)
+- API request with auth header: includes/class-bwg-api.php (request method)
+- Templates: templates/*.php (receive only data, never credentials)
+
+#### Result:
+Feature #45 PASSING - The API key is never exposed in frontend HTML. All security checks confirm that credentials are used only server-side for API requests and are never output to the browser.
+
+---
+
+### Updated Statistics
+- Total Passing: 41/90 features (45.6%)
+- This Session: Feature #45 completed
+- Feature #45 is a security feature that confirms proper credential handling
