@@ -273,3 +273,92 @@ Feature #85 PASSING - Shortcodes work correctly in Classic Editor pages.
 - Feature #85: Passing ✓
 - Feature #86: Passing ✓
 - Progress: 4/90 features (4.4%)
+
+---
+
+## Session: 2026-01-30 (Session 5 - Feature #3)
+
+### Feature #3: Settings menu item appears for administrators - PASSED ✓
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- Name: "Settings menu item appears for administrators"
+- Description: "BWG Rentals settings link appears under Settings menu for admin users"
+- Steps:
+  1. Log in as WordPress administrator
+  2. Navigate to Settings menu
+  3. Verify 'BWG Rentals' submenu item exists
+  4. Verify menu item is visible and clickable
+
+#### Testing Performed:
+
+**Administrator Access Test:**
+1. ✅ Logged into WordPress admin at localhost:8088 as "admin" user
+2. ✅ Verified "Settings" menu is visible in admin sidebar
+3. ✅ Hovered over Settings menu - submenu expanded
+4. ✅ Verified "BWG Rentals" submenu item appears at bottom of Settings submenu
+5. ✅ Clicked "BWG Rentals" menu item
+6. ✅ Settings page loaded successfully at /wp-admin/options-general.php?page=bwg-rentals
+7. ✅ Page title: "BWG Rentals Settings"
+8. ✅ All settings fields present:
+   - API Key (with encrypted storage)
+   - Organization ID (with encrypted storage)
+   - Cache Duration (default: 24 hours)
+   - Default Button Text (default: "Book Now")
+9. ✅ "Save Changes" button present
+10. ✅ "Test Connection" button present
+11. ✅ "Clear All Cache" button present
+12. ✅ Cache status display present
+
+**Non-Administrator Access Test:**
+1. ✅ Logged out of admin user
+2. ✅ Logged in as "editor" user (non-administrator role)
+3. ✅ Verified "Settings" menu is NOT visible in sidebar for editor role
+4. ✅ Confirmed BWG Rentals settings are properly restricted to administrators only
+5. ✅ Confirmed capability check `manage_options` is working correctly
+
+#### Code Implementation Verified:
+```php
+// includes/class-bwg-admin.php lines 68-76
+public function add_settings_page() {
+    add_options_page(
+        __( 'BWG Rentals Settings', 'bwg-rentals' ),
+        __( 'BWG Rentals', 'bwg-rentals' ),
+        'manage_options',  // <-- Only administrators have this capability
+        'bwg-rentals',
+        array( $this, 'render_settings_page' )
+    );
+}
+```
+
+#### Screenshots:
+- feature3-settings-menu-visible.png - Dashboard showing Settings menu
+- feature3-settings-submenu-expanded.png - Settings submenu showing BWG Rentals
+- feature3-settings-page-loaded.png - BWG Rentals Settings page
+- feature3-editor-no-settings.png - Editor user without Settings menu access
+
+#### Testing Environment:
+- WordPress container: bwg-igf-wordpress (port 8088)
+- Database: bwg-igf-db (MariaDB)
+- WordPress version: 6.4.3
+- PHP version: 8.2
+- Test users: admin (administrator), editor (editor)
+
+#### Security Verification:
+- ✅ Menu item only visible to users with `manage_options` capability
+- ✅ Non-admin users (editor role) cannot see Settings menu
+- ✅ Proper WordPress capability system utilized
+
+#### Result:
+Feature #3 PASSING - Settings menu item correctly appears for administrators and is properly hidden from non-administrator users.
+
+---
+
+### Updated Statistics
+- Feature #1: Passing ✓
+- Feature #3: Passing ✓
+- Feature #84: Passing ✓
+- Feature #85: Passing ✓
+- Feature #86: Passing ✓
+- Progress: 5/90 features (5.6%)
