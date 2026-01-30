@@ -6688,3 +6688,129 @@ Feature #30 PASSING - The show_icons attribute correctly controls icon visibilit
 
 [Testing] Feature #30 verified - show_icons attribute works (2026-01-30)
 
+
+---
+
+## Session: 2026-01-30 (Feature #55 - Testing Agent Regression Test)
+
+### Feature #55: Plugin Update Checker initializes correctly - VERIFIED
+
+**Status: PASSING - No Regression Found**
+
+#### Feature Definition:
+- ID: 55
+- Name: Plugin Update Checker initializes correctly
+- Description: Update checker library loads and configures for GitHub
+- Category: functional
+- Dependencies: Feature #1 (Plugin activates without errors)
+
+#### Verification Steps Performed (Browser Automation):
+
+**Step 1: Plugin is activated**
+- BWG Rentals plugin shows "Deactivate" link on plugins page
+- Version 1.0.0 displayed
+
+**Step 2: Update checker class is loaded**
+- "Check for updates" link present in plugin row
+- Plugin Update Checker (PUC) library integrated
+
+**Step 3: GitHub repository is configured**
+- Update check detects version 2.0.0 available
+- URL: plugins.php?puc_update_check_result=update_available&puc_slug=bwg-rentals
+- Notification: "A new version of the BWG Rentals plugin is available."
+
+**Step 4: No PHP errors during load**
+- Zero console errors
+- Page loads cleanly
+
+#### Code Verification:
+- init_updater() method in class-bwg-rentals.php (lines 113-138)
+- Uses YahnisElsts\PluginUpdateChecker\v5\PucFactory
+- Configured for GitHub: https://github.com/sawdustandcoffee/bwg-rentals
+- Branch set to 'main'
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-55-regression-test-plugins-page.png - Plugins page showing BWG Rentals active with update checker
+- feature-55-regression-update-check-result.png - Update check result notification
+
+#### Result:
+Feature #55 VERIFIED - Plugin Update Checker initializes correctly. No regression found.
+
+[Testing] Feature #55 verified - still passing (regression test) (2026-01-30)
+
+
+---
+
+## Session: 2026-01-30 (Feature #32 - Parallel Agent)
+
+### Feature #32: [bwg_property_description] excerpt_length truncates text - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 32
+- Name: [bwg_property_description] excerpt_length truncates text
+- Description: The excerpt_length attribute limits displayed text
+- Category: functional
+- Dependencies: Feature #31 ([bwg_property_description] renders property description) PASSED
+- Steps:
+  1. Add [bwg_property_description id='X' excerpt_length='100']
+  2. Verify text is truncated
+  3. Verify 'read more' link appears if applicable
+
+#### Implementation Details (Already Implemented):
+
+**Shortcode Logic (includes/class-bwg-shortcodes.php, lines 376-409):**
+- Line 402-404: Truncates when excerpt_length > 0
+- Uses wp_trim_words() for proper word-boundary truncation
+- Automatically adds ellipsis at the end
+
+#### Browser Verification:
+
+**Test 1: excerpt_length="5"**
+- Test page: /feature-32-excerpt-5-words-test/
+- Shortcode: [bwg_property_description id="1" excerpt_length="5"]
+- Expected: 5 words + ellipsis
+- Output: "Experience luxury living in this..."
+- Word count: 5 words VERIFIED
+- Screenshot: feature-32-excerpt-length-5-words.png
+
+**Test 2: excerpt_length="10"**
+- Test page: /feature-32-excerpt-length-test/
+- Shortcode: [bwg_property_description id="1" excerpt_length="10"]
+- Expected: 10 words + ellipsis
+- Output: "Experience luxury living in this beautiful 4-bedroom oceanfront beach house..."
+- Word count: 10 words VERIFIED
+- Screenshot: feature-32-excerpt-length-10-words.png
+
+**Test 3: No excerpt_length (full description)**
+- Test page: /feature-32-full-description-test/
+- Shortcode: [bwg_property_description id="1"]
+- Expected: Full description text
+- Output: "Experience luxury living in this beautiful 4-bedroom oceanfront beach house. Wake up to stunning ocean views, enjoy morning coffee on your private deck, and take a short walk to your own private beach."
+- Word count: 38 words (full text) VERIFIED
+- Screenshot: feature-32-full-description-no-truncation.png
+
+#### Console Errors: None
+
+#### Test Pages Created:
+- /feature-32-excerpt-length-test/ (Post ID: 182) - 10 word excerpt
+- /feature-32-full-description-test/ (Post ID: 184) - Full description
+- /feature-32-excerpt-5-words-test/ (Post ID: 187) - 5 word excerpt
+
+#### Result:
+Feature #32 PASSING - The excerpt_length attribute correctly truncates text:
+- excerpt_length="5" produces exactly 5 words + ellipsis
+- excerpt_length="10" produces exactly 10 words + ellipsis
+- No excerpt_length (or 0) shows full description
+- Uses WordPress wp_trim_words() for proper word-boundary truncation
+
+---
+
+### Updated Statistics
+- Total Passing: 66/90 features (73.3%)
+- This Session: Feature #32 completed
+
+[Testing] Feature #32 verified - excerpt_length truncates text correctly (2026-01-30)
