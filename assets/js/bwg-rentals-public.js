@@ -10,33 +10,97 @@
     'use strict';
 
     /**
-     * Gallery Slider
+     * Gallery Slider with Thumbnails
      */
     var BWGSlider = {
         init: function() {
-            var $sliders = $('.bwg-property-gallery__slider');
+            var self = this;
+            var $galleries = $('.bwg-property-gallery--slider');
 
-            $sliders.each(function() {
-                var $slider = $(this);
-                var $slides = $slider.find('.bwg-property-gallery__slides');
-                var $slideItems = $slides.children();
+            $galleries.each(function() {
+                var $gallery = $(this);
+                var $slides = $gallery.find('.bwg-property-gallery__slide');
+                var $thumbnails = $gallery.find('.bwg-property-gallery__thumbnail');
+                var $counter = $gallery.find('.bwg-property-gallery__current');
                 var currentIndex = 0;
-                var totalSlides = $slideItems.length;
+                var totalSlides = $slides.length;
+
+                // Update slide display
+                function showSlide(index) {
+                    currentIndex = index;
+
+                    // Update main slides
+                    $slides.removeClass('bwg-property-gallery__slide--active');
+                    $slides.eq(index).addClass('bwg-property-gallery__slide--active');
+
+                    // Update thumbnails
+                    $thumbnails.removeClass('bwg-property-gallery__thumbnail--active');
+                    $thumbnails.eq(index).addClass('bwg-property-gallery__thumbnail--active');
+
+                    // Update counter
+                    if ($counter.length) {
+                        $counter.text(index + 1);
+                    }
+                }
 
                 // Navigation handlers
-                $slider.find('.bwg-property-gallery__nav--prev').on('click', function() {
-                    currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-                    updateSlider();
+                $gallery.find('.bwg-property-gallery__nav--prev').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide((currentIndex - 1 + totalSlides) % totalSlides);
                 });
 
-                $slider.find('.bwg-property-gallery__nav--next').on('click', function() {
-                    currentIndex = (currentIndex + 1) % totalSlides;
-                    updateSlider();
+                $gallery.find('.bwg-property-gallery__nav--next').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide((currentIndex + 1) % totalSlides);
                 });
 
-                function updateSlider() {
-                    $slides.css('transform', 'translateX(-' + (currentIndex * 100) + '%)');
+                // Thumbnail click handlers
+                $thumbnails.on('click', function(e) {
+                    e.preventDefault();
+                    var index = parseInt($(this).data('index'), 10);
+                    showSlide(index);
+                });
+
+                // Main image click opens lightbox
+                $slides.on('click keydown', function(e) {
+                    if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') {
+                        return;
+                    }
+                    e.preventDefault();
+                    var galleryId = $gallery.attr('id');
+                    BWGLightbox.open(galleryId, currentIndex);
+                });
+
+                // Keyboard navigation when gallery is focused
+                $gallery.on('keydown', function(e) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        showSlide((currentIndex - 1 + totalSlides) % totalSlides);
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        showSlide((currentIndex + 1) % totalSlides);
+                    }
+                });
+            });
+
+            // Initialize grid/lightbox galleries
+            self.initGridGalleries();
+        },
+
+        initGridGalleries: function() {
+            // Grid items open lightbox
+            $(document).on('click keydown', '.bwg-property-gallery__grid-item', function(e) {
+                if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') {
+                    return;
                 }
+                e.preventDefault();
+                var $item = $(this);
+                var $gallery = $item.closest('.bwg-property-gallery');
+                var galleryId = $gallery.attr('id');
+                var index = parseInt($item.data('index'), 10);
+                BWGLightbox.open(galleryId, index);
             });
         }
     };
@@ -45,59 +109,126 @@
      * Gallery Lightbox
      */
     var BWGLightbox = {
-        $lightbox: null,
+        currentGalleryId: null,
+        currentIndex: 0,
+        images: [],
 
         init: function() {
             var self = this;
 
-            // Create lightbox element if it doesn't exist
-            if ($('#bwg-lightbox').length === 0) {
-                $('body').append(
-                    '<div id="bwg-lightbox" class="bwg-lightbox">' +
-                        '<button class="bwg-lightbox__close" aria-label="Close">&times;</button>' +
-                        '<img class="bwg-lightbox__image" src="" alt="" />' +
-                    '</div>'
-                );
-            }
-
-            self.$lightbox = $('#bwg-lightbox');
-
-            // Open lightbox on gallery grid image click
-            $(document).on('click', '.bwg-property-gallery--grid img', function() {
-                var src = $(this).attr('src');
-                var alt = $(this).attr('alt');
-
-                self.$lightbox.find('.bwg-lightbox__image')
-                    .attr('src', src)
-                    .attr('alt', alt);
-
-                self.$lightbox.addClass('bwg-lightbox--active');
-                $('body').css('overflow', 'hidden');
-            });
-
             // Close lightbox on close button click
-            self.$lightbox.find('.bwg-lightbox__close').on('click', function() {
+            $(document).on('click', '.bwg-lightbox__close', function() {
                 self.close();
             });
 
-            // Close lightbox on backdrop click
-            self.$lightbox.on('click', function(e) {
-                if (e.target === this) {
-                    self.close();
-                }
+            // Close lightbox on overlay click
+            $(document).on('click', '.bwg-lightbox__overlay', function() {
+                self.close();
             });
 
-            // Close lightbox on escape key
+            // Navigation handlers
+            $(document).on('click', '.bwg-lightbox__nav--prev', function(e) {
+                e.stopPropagation();
+                self.prev();
+            });
+
+            $(document).on('click', '.bwg-lightbox__nav--next', function(e) {
+                e.stopPropagation();
+                self.next();
+            });
+
+            // Keyboard navigation
             $(document).on('keydown', function(e) {
-                if (e.key === 'Escape' && self.$lightbox.hasClass('bwg-lightbox--active')) {
+                var $activeLightbox = $('.bwg-lightbox--active');
+                if ($activeLightbox.length === 0) return;
+
+                if (e.key === 'Escape') {
                     self.close();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    self.prev();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    self.next();
                 }
             });
         },
 
+        open: function(galleryId, index) {
+            var self = this;
+            var $lightbox = $('#' + galleryId + '-lightbox');
+
+            if ($lightbox.length === 0) return;
+
+            self.currentGalleryId = galleryId;
+            self.currentIndex = index || 0;
+
+            // Load images data from JSON
+            var $dataScript = $lightbox.find('.bwg-lightbox__data');
+            if ($dataScript.length) {
+                try {
+                    self.images = JSON.parse($dataScript.text());
+                } catch (e) {
+                    console.error('Error parsing lightbox images:', e);
+                    return;
+                }
+            }
+
+            // Show the image
+            self.showImage($lightbox);
+
+            // Open lightbox
+            $lightbox.addClass('bwg-lightbox--active');
+            $('body').css('overflow', 'hidden');
+
+            // Focus the lightbox for keyboard navigation
+            $lightbox.attr('tabindex', '-1').focus();
+        },
+
+        showImage: function($lightbox) {
+            var self = this;
+            if (self.images.length === 0) return;
+
+            var image = self.images[self.currentIndex];
+            var $img = $lightbox.find('.bwg-lightbox__image');
+            var $counter = $lightbox.find('.bwg-lightbox__current');
+
+            $img.attr('src', image.url);
+            $img.attr('alt', image.alt);
+
+            // Update counter
+            if ($counter.length) {
+                $counter.text(self.currentIndex + 1);
+            }
+        },
+
+        prev: function() {
+            var self = this;
+            if (self.images.length === 0) return;
+
+            self.currentIndex = (self.currentIndex - 1 + self.images.length) % self.images.length;
+            var $lightbox = $('#' + self.currentGalleryId + '-lightbox');
+            self.showImage($lightbox);
+        },
+
+        next: function() {
+            var self = this;
+            if (self.images.length === 0) return;
+
+            self.currentIndex = (self.currentIndex + 1) % self.images.length;
+            var $lightbox = $('#' + self.currentGalleryId + '-lightbox');
+            self.showImage($lightbox);
+        },
+
         close: function() {
-            this.$lightbox.removeClass('bwg-lightbox--active');
+            var self = this;
+            var $lightbox = $('#' + self.currentGalleryId + '-lightbox');
+
+            $lightbox.removeClass('bwg-lightbox--active');
             $('body').css('overflow', '');
+            self.currentGalleryId = null;
+            self.currentIndex = 0;
+            self.images = [];
         }
     };
 
