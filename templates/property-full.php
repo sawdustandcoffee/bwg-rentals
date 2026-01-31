@@ -1,0 +1,313 @@
+<?php
+/**
+ * Property Full Page Template
+ *
+ * Displays a complete property page with all sections.
+ *
+ * @package BWG_Rentals
+ * @var array $property     Property data.
+ * @var array $availability Availability data.
+ * @var array $rates        Rates data.
+ * @var array $atts         Shortcode attributes.
+ */
+
+// Prevent direct access
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$layout = isset( $atts['layout'] ) ? $atts['layout'] : 'standard';
+$org_id = get_option( 'bwg_rentals_org_id', 'test-org-123' );
+
+// Decrypt org_id if encrypted
+if ( strpos( $org_id, '::' ) !== false ) {
+	list( $encrypted_data, $iv ) = explode( '::', base64_decode( $org_id ), 2 );
+	$key    = wp_salt( 'auth' );
+	$org_id = openssl_decrypt( $encrypted_data, 'AES-256-CBC', $key, 0, $iv );
+}
+
+$booking_url = 'https://app.getdirect.io/listings/' . $org_id . '/' . $property['id'];
+?>
+
+<div class="bwg-property-full bwg-property-full--<?php echo esc_attr( $layout ); ?>">
+
+	<?php if ( 'true' === $atts['show_gallery'] && ! empty( $property['images'] ) ) : ?>
+		<div class="bwg-property-full__gallery">
+			<div class="bwg-property-gallery bwg-property-gallery--slider">
+				<div class="bwg-property-gallery__slider">
+					<div class="bwg-property-gallery__slides">
+						<?php foreach ( $property['images'] as $index => $image ) : ?>
+							<div class="bwg-property-gallery__slide <?php echo 0 === $index ? 'bwg-property-gallery__slide--active' : ''; ?>">
+								<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $property['name'] ); ?>" />
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<?php if ( count( $property['images'] ) > 1 ) : ?>
+						<button class="bwg-property-gallery__nav bwg-property-gallery__nav--prev" aria-label="<?php esc_attr_e( 'Previous image', 'bwg-rentals' ); ?>">‹</button>
+						<button class="bwg-property-gallery__nav bwg-property-gallery__nav--next" aria-label="<?php esc_attr_e( 'Next image', 'bwg-rentals' ); ?>">›</button>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+	<?php endif; ?>
+
+	<div class="bwg-property-full__content">
+
+		<?php if ( 'true' === $atts['show_title'] ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--title">
+				<h1 class="bwg-property-title"><?php echo esc_html( $property['name'] ?? '' ); ?></h1>
+				<?php if ( ! empty( $property['headline'] ) ) : ?>
+					<p class="bwg-property-headline"><?php echo esc_html( $property['headline'] ); ?></p>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_specs'] ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--specs">
+				<div class="bwg-property-specs">
+					<?php if ( isset( $property['bedrooms'] ) ) : ?>
+						<span class="bwg-property-specs__item">
+							<span class="bwg-property-specs__icon">🛏️</span>
+							<span class="bwg-property-specs__value"><?php echo esc_html( $property['bedrooms'] ); ?></span>
+							<span class="bwg-property-specs__label"><?php echo esc_html( _n( 'Bed', 'Beds', $property['bedrooms'], 'bwg-rentals' ) ); ?></span>
+						</span>
+					<?php endif; ?>
+					<?php if ( isset( $property['bathrooms'] ) ) : ?>
+						<span class="bwg-property-specs__item">
+							<span class="bwg-property-specs__icon">🚿</span>
+							<span class="bwg-property-specs__value"><?php echo esc_html( $property['bathrooms'] ); ?></span>
+							<span class="bwg-property-specs__label"><?php echo esc_html( _n( 'Bath', 'Baths', $property['bathrooms'], 'bwg-rentals' ) ); ?></span>
+						</span>
+					<?php endif; ?>
+					<?php if ( isset( $property['guests'] ) ) : ?>
+						<span class="bwg-property-specs__item">
+							<span class="bwg-property-specs__icon">👥</span>
+							<span class="bwg-property-specs__value"><?php echo esc_html( $property['guests'] ); ?></span>
+							<span class="bwg-property-specs__label"><?php echo esc_html( _n( 'Guest', 'Guests', $property['guests'], 'bwg-rentals' ) ); ?></span>
+						</span>
+					<?php endif; ?>
+					<?php if ( isset( $property['sqft'] ) ) : ?>
+						<span class="bwg-property-specs__item">
+							<span class="bwg-property-specs__icon">📏</span>
+							<span class="bwg-property-specs__value"><?php echo esc_html( number_format( $property['sqft'] ) ); ?></span>
+							<span class="bwg-property-specs__label"><?php esc_html_e( 'sq ft', 'bwg-rentals' ); ?></span>
+						</span>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_description'] && ! empty( $property['description'] ) ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--description">
+				<h2><?php esc_html_e( 'Description', 'bwg-rentals' ); ?></h2>
+				<div class="bwg-property-description">
+					<?php echo wp_kses_post( wpautop( $property['description'] ) ); ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_amenities'] && ! empty( $property['amenities'] ) ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--amenities">
+				<h2><?php esc_html_e( 'Amenities', 'bwg-rentals' ); ?></h2>
+				<ul class="bwg-property-amenities bwg-property-amenities--columns-2">
+					<?php foreach ( $property['amenities'] as $amenity ) : ?>
+						<li class="bwg-property-amenities__item">
+							<span class="bwg-property-amenities__icon">✓</span>
+							<span class="bwg-property-amenities__name"><?php echo esc_html( $amenity ); ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_availability'] && ! is_wp_error( $availability ) && ! empty( $availability['availability'] ) ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--availability">
+				<h2><?php esc_html_e( 'Availability', 'bwg-rentals' ); ?></h2>
+				<div class="bwg-property-availability">
+					<div class="bwg-property-availability__calendar">
+						<?php
+						// Group availability by month
+						$availability_by_month = array();
+						foreach ( $availability['availability'] as $day ) {
+							$month_key = date( 'Y-m', strtotime( $day['date'] ) );
+							if ( ! isset( $availability_by_month[ $month_key ] ) ) {
+								$availability_by_month[ $month_key ] = array();
+							}
+							$availability_by_month[ $month_key ][] = $day;
+						}
+
+						// Show first 3 months
+						$months_shown = 0;
+						foreach ( $availability_by_month as $month_key => $days ) :
+							if ( $months_shown >= 3 ) {
+								break;
+							}
+							$month_name = date( 'F Y', strtotime( $month_key . '-01' ) );
+							?>
+							<div class="bwg-property-availability__month">
+								<h3 class="bwg-property-availability__month-name"><?php echo esc_html( $month_name ); ?></h3>
+								<div class="bwg-property-availability__grid">
+									<?php foreach ( $days as $day ) : ?>
+										<div class="bwg-property-availability__day <?php echo $day['available'] ? 'bwg-property-availability__day--available' : 'bwg-property-availability__day--unavailable'; ?>">
+											<span class="bwg-property-availability__date"><?php echo esc_html( date( 'j', strtotime( $day['date'] ) ) ); ?></span>
+										</div>
+									<?php endforeach; ?>
+								</div>
+							</div>
+							<?php
+							$months_shown++;
+						endforeach;
+						?>
+					</div>
+					<div class="bwg-property-availability__legend">
+						<span class="bwg-property-availability__legend-item">
+							<span class="bwg-property-availability__legend-color bwg-property-availability__legend-color--available"></span>
+							<?php esc_html_e( 'Available', 'bwg-rentals' ); ?>
+						</span>
+						<span class="bwg-property-availability__legend-item">
+							<span class="bwg-property-availability__legend-color bwg-property-availability__legend-color--unavailable"></span>
+							<?php esc_html_e( 'Unavailable', 'bwg-rentals' ); ?>
+						</span>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_rates'] && ! is_wp_error( $rates ) ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--rates">
+				<h2><?php esc_html_e( 'Rates', 'bwg-rentals' ); ?></h2>
+				<div class="bwg-property-rates">
+					<?php if ( isset( $rates['base_rate'] ) ) : ?>
+						<div class="bwg-property-rates__base">
+							<span class="bwg-property-rates__label"><?php esc_html_e( 'Base Rate:', 'bwg-rentals' ); ?></span>
+							<span class="bwg-property-rates__value">
+								<?php echo esc_html( '$' . number_format( $rates['base_rate'] ) ); ?>
+								<span class="bwg-property-rates__period"><?php esc_html_e( '/ night', 'bwg-rentals' ); ?></span>
+							</span>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( ! empty( $rates['seasonal_rates'] ) ) : ?>
+						<div class="bwg-property-rates__seasonal">
+							<h3><?php esc_html_e( 'Seasonal Rates', 'bwg-rentals' ); ?></h3>
+							<ul class="bwg-property-rates__list">
+								<?php foreach ( $rates['seasonal_rates'] as $season ) : ?>
+									<li class="bwg-property-rates__item">
+										<span class="bwg-property-rates__season"><?php echo esc_html( $season['season'] ); ?></span>
+										<span class="bwg-property-rates__amount"><?php echo esc_html( '$' . number_format( $season['rate'] ) ); ?></span>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( ! empty( $rates['discounts'] ) ) : ?>
+						<div class="bwg-property-rates__discounts">
+							<h3><?php esc_html_e( 'Discounts', 'bwg-rentals' ); ?></h3>
+							<ul class="bwg-property-rates__list">
+								<?php foreach ( $rates['discounts'] as $discount ) : ?>
+									<li class="bwg-property-rates__item">
+										<span class="bwg-property-rates__type"><?php echo esc_html( $discount['type'] ); ?></span>
+										<span class="bwg-property-rates__amount"><?php echo esc_html( $discount['amount'] ); ?></span>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_location'] && ! empty( $property['address'] ) ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--location">
+				<h2><?php esc_html_e( 'Location', 'bwg-rentals' ); ?></h2>
+				<div class="bwg-property-location">
+					<div class="bwg-property-location__address">
+						<?php
+						$address_parts = array();
+						if ( ! empty( $property['address']['street'] ) ) {
+							$address_parts[] = $property['address']['street'];
+						}
+						$city_state_zip = array();
+						if ( ! empty( $property['address']['city'] ) ) {
+							$city_state_zip[] = $property['address']['city'];
+						}
+						if ( ! empty( $property['address']['state'] ) ) {
+							$city_state_zip[] = $property['address']['state'];
+						}
+						if ( ! empty( $property['address']['zip'] ) ) {
+							$city_state_zip[] = $property['address']['zip'];
+						}
+						if ( ! empty( $city_state_zip ) ) {
+							$address_parts[] = implode( ', ', $city_state_zip );
+						}
+						if ( ! empty( $property['address']['country'] ) ) {
+							$address_parts[] = $property['address']['country'];
+						}
+						echo esc_html( implode( ', ', $address_parts ) );
+						?>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--policies">
+				<h2><?php esc_html_e( 'Policies', 'bwg-rentals' ); ?></h2>
+				<div class="bwg-property-policies">
+					<?php if ( ! empty( $property['policies']['check_in'] ) ) : ?>
+						<div class="bwg-property-policies__item">
+							<strong class="bwg-property-policies__label"><?php esc_html_e( 'Check-in:', 'bwg-rentals' ); ?></strong>
+							<span class="bwg-property-policies__value"><?php echo esc_html( $property['policies']['check_in'] ); ?></span>
+						</div>
+					<?php endif; ?>
+					<?php if ( ! empty( $property['policies']['check_out'] ) ) : ?>
+						<div class="bwg-property-policies__item">
+							<strong class="bwg-property-policies__label"><?php esc_html_e( 'Check-out:', 'bwg-rentals' ); ?></strong>
+							<span class="bwg-property-policies__value"><?php echo esc_html( $property['policies']['check_out'] ); ?></span>
+						</div>
+					<?php endif; ?>
+					<?php if ( ! empty( $property['policies']['cancellation'] ) ) : ?>
+						<div class="bwg-property-policies__item">
+							<strong class="bwg-property-policies__label"><?php esc_html_e( 'Cancellation:', 'bwg-rentals' ); ?></strong>
+							<span class="bwg-property-policies__value"><?php echo esc_html( $property['policies']['cancellation'] ); ?></span>
+						</div>
+					<?php endif; ?>
+					<?php if ( ! empty( $property['policies']['house_rules'] ) ) : ?>
+						<div class="bwg-property-policies__item">
+							<strong class="bwg-property-policies__label"><?php esc_html_e( 'House Rules:', 'bwg-rentals' ); ?></strong>
+							<span class="bwg-property-policies__value"><?php echo esc_html( $property['policies']['house_rules'] ); ?></span>
+						</div>
+					<?php endif; ?>
+					<?php if ( ! empty( $property['policies']['cleaning_fee'] ) ) : ?>
+						<div class="bwg-property-policies__item">
+							<strong class="bwg-property-policies__label"><?php esc_html_e( 'Cleaning Fee:', 'bwg-rentals' ); ?></strong>
+							<span class="bwg-property-policies__value"><?php echo esc_html( $property['policies']['cleaning_fee'] ); ?></span>
+						</div>
+					<?php endif; ?>
+					<?php if ( ! empty( $property['policies']['security_deposit'] ) ) : ?>
+						<div class="bwg-property-policies__item">
+							<strong class="bwg-property-policies__label"><?php esc_html_e( 'Security Deposit:', 'bwg-rentals' ); ?></strong>
+							<span class="bwg-property-policies__value"><?php echo esc_html( $property['policies']['security_deposit'] ); ?></span>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( 'true' === $atts['show_booking_button'] ) : ?>
+			<div class="bwg-property-full__section bwg-property-full__section--booking">
+				<a
+					href="<?php echo esc_url( $booking_url ); ?>"
+					class="bwg-property-booking-button"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<?php echo esc_html( get_option( 'bwg_rentals_booking_button_text', 'Book Now' ) ); ?>
+				</a>
+			</div>
+		<?php endif; ?>
+
+	</div>
+
+</div>

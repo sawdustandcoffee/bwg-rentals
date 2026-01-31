@@ -50,6 +50,7 @@ class BWG_Shortcodes {
         add_shortcode( 'bwg_property_card', array( $this, 'property_card' ) );
 
         // Single property shortcodes
+        add_shortcode( 'bwg_property', array( $this, 'property_full' ) ); // Full property page
         add_shortcode( 'bwg_property_gallery', array( $this, 'property_gallery' ) );
         add_shortcode( 'bwg_property_title', array( $this, 'property_title' ) );
         add_shortcode( 'bwg_property_specs', array( $this, 'property_specs' ) );
@@ -630,5 +631,54 @@ class BWG_Shortcodes {
         $output = ob_get_clean();
 
         return apply_filters( 'bwg_property_policies_output', $output, $property );
+    }
+
+    /**
+     * Render full property page
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string HTML output.
+     */
+    public function property_full( $atts ) {
+        $atts = shortcode_atts(
+            array(
+                'id'                   => '',
+                'layout'               => 'standard', // standard, compact, minimal
+                'show_gallery'         => 'true',
+                'show_title'           => 'true',
+                'show_specs'           => 'true',
+                'show_description'     => 'true',
+                'show_amenities'       => 'true',
+                'show_availability'    => 'true',
+                'show_rates'           => 'true',
+                'show_location'        => 'true',
+                'show_policies'        => 'true',
+                'show_booking_button'  => 'true',
+            ),
+            $atts,
+            'bwg_property'
+        );
+
+        $this->enqueue_assets();
+
+        if ( empty( $atts['id'] ) ) {
+            return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
+        }
+
+        $property = $this->api->get_property( $atts['id'] );
+
+        if ( is_wp_error( $property ) ) {
+            return $this->render_error( $property->get_error_message() );
+        }
+
+        // Get availability and rates data for the full property view
+        $availability = 'true' === $atts['show_availability'] ? $this->api->get_availability( $atts['id'] ) : null;
+        $rates        = 'true' === $atts['show_rates'] ? $this->api->get_rates( $atts['id'] ) : null;
+
+        ob_start();
+        include $this->get_template( 'property-full.php' );
+        $output = ob_get_clean();
+
+        return apply_filters( 'bwg_property_full_output', $output, $property );
     }
 }

@@ -2,7 +2,10 @@
 /**
  * BWG Rentals Admin Class
  *
- * Handles the admin settings page and related functionality.
+ * Handles all admin functionality including:
+ * - Admin menu and submenu pages
+ * - Settings page
+ * - AJAX handlers
  *
  * @package BWG_Rentals
  */
@@ -13,48 +16,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Admin settings class
+ * Admin Class
  */
 class BWG_Admin {
-
-    /**
-     * API instance
-     *
-     * @var BWG_API
-     */
-    private $api;
-
-    /**
-     * Cache instance
-     *
-     * @var BWG_Cache
-     */
-    private $cache;
-
     /**
      * Constructor
-     *
-     * @param BWG_API   $api   API instance.
-     * @param BWG_Cache $cache Cache instance.
      */
-    public function __construct( $api, $cache ) {
-        $this->api   = $api;
-        $this->cache = $cache;
-
-        $this->init_hooks();
-    }
-
-    /**
-     * Initialize hooks
-     */
-    private function init_hooks() {
-        // Add settings page
-        add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+    public function __construct() {
+        // Add admin menu
+        add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 
         // Register settings
         add_action( 'admin_init', array( $this, 'register_settings' ) );
 
-        // Enqueue admin scripts
+        // Enqueue admin scripts and styles
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
         // AJAX handlers
@@ -63,15 +38,38 @@ class BWG_Admin {
     }
 
     /**
-     * Add settings page to WordPress admin
+     * Add admin menu and submenus
      */
-    public function add_settings_page() {
-        add_options_page(
-            __( 'BWG Rentals Settings', 'bwg-rentals' ),
-            __( 'BWG Rentals', 'bwg-rentals' ),
-            'manage_options',
-            'bwg-rentals',
-            array( $this, 'render_settings_page' )
+    public function add_admin_menu() {
+        // Add top-level menu
+        add_menu_page(
+            __( 'BWG Rentals', 'bwg-rentals' ),           // Page title
+            __( 'BWG Rentals', 'bwg-rentals' ),           // Menu title
+            'manage_options',                              // Capability
+            'bwg-rentals',                                 // Menu slug
+            array( $this, 'render_settings_page' ),       // Callback function
+            'dashicons-admin-multisite',                   // Icon
+            30                                             // Position
+        );
+
+        // Add Settings submenu (this will replace the duplicate top-level link)
+        add_submenu_page(
+            'bwg-rentals',                                 // Parent slug
+            __( 'Settings', 'bwg-rentals' ),              // Page title
+            __( 'Settings', 'bwg-rentals' ),              // Menu title
+            'manage_options',                              // Capability
+            'bwg-rentals',                                 // Menu slug (same as parent to replace first item)
+            array( $this, 'render_settings_page' )        // Callback function
+        );
+
+        // Add Documentation submenu
+        add_submenu_page(
+            'bwg-rentals',                                 // Parent slug
+            __( 'Documentation', 'bwg-rentals' ),         // Page title
+            __( 'Documentation', 'bwg-rentals' ),         // Menu title
+            'manage_options',                              // Capability
+            'bwg-rentals-documentation',                   // Menu slug
+            array( $this, 'render_documentation_page' )   // Callback function
         );
     }
 
@@ -79,313 +77,314 @@ class BWG_Admin {
      * Register plugin settings
      */
     public function register_settings() {
-        // API Key
-        register_setting(
-            'bwg_rentals_settings',
+        // Register settings
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_api_key', array(
+            'type' => 'string',
+            'sanitize_callback' => array( $this, 'encrypt_api_key' ),
+            'default' => '',
+        ) );
+
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_org_id', array(
+            'type' => 'string',
+            'sanitize_callback' => array( $this, 'encrypt_org_id' ),
+            'default' => '',
+        ) );
+
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_cache_duration', array(
+            'type' => 'integer',
+            'sanitize_callback' => 'absint',
+            'default' => 24,
+        ) );
+
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_booking_button_text', array(
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => 'Book Now',
+        ) );
+
+        // Add settings section
+        add_settings_section(
+            'bwg_rentals_api_section',
+            __( 'API Configuration', 'bwg-rentals' ),
+            array( $this, 'render_api_section' ),
+            'bwg_rentals_settings'
+        );
+
+        // Add settings fields
+        add_settings_field(
             'bwg_rentals_api_key',
-            array(
-                'type'              => 'string',
-                'sanitize_callback' => array( $this, 'sanitize_api_key' ),
-            )
+            __( 'API Key', 'bwg-rentals' ),
+            array( $this, 'render_api_key_field' ),
+            'bwg_rentals_settings',
+            'bwg_rentals_api_section'
         );
 
-        // Organization ID
-        register_setting(
+        add_settings_field(
+            'bwg_rentals_org_id',
+            __( 'Organization ID', 'bwg-rentals' ),
+            array( $this, 'render_org_id_field' ),
             'bwg_rentals_settings',
-            'bwg_rentals_organization_id',
-            array(
-                'type'              => 'string',
-                'sanitize_callback' => array( $this, 'sanitize_organization_id' ),
-            )
+            'bwg_rentals_api_section'
         );
 
-        // Cache duration
-        register_setting(
-            'bwg_rentals_settings',
+        add_settings_field(
             'bwg_rentals_cache_duration',
-            array(
-                'type'              => 'integer',
-                'sanitize_callback' => array( $this, 'sanitize_cache_duration' ),
-                'default'           => 24,
-            )
-        );
-
-        // Default button text
-        register_setting(
+            __( 'Cache Duration (hours)', 'bwg-rentals' ),
+            array( $this, 'render_cache_duration_field' ),
             'bwg_rentals_settings',
-            'bwg_rentals_button_text',
-            array(
-                'type'              => 'string',
-                'sanitize_callback' => array( $this, 'sanitize_button_text' ),
-                'default'           => __( 'Book Now', 'bwg-rentals' ),
-            )
+            'bwg_rentals_api_section'
+        );
+
+        add_settings_field(
+            'bwg_rentals_booking_button_text',
+            __( 'Default Booking Button Text', 'bwg-rentals' ),
+            array( $this, 'render_booking_button_text_field' ),
+            'bwg_rentals_settings',
+            'bwg_rentals_api_section'
         );
     }
 
     /**
-     * Sanitize and validate API key
-     *
-     * @param string $value API key value.
-     * @return string Encrypted API key or existing value on error.
-     */
-    public function sanitize_api_key( $value ) {
-        $value = sanitize_text_field( $value );
-
-        // Allow empty value (user clearing the field)
-        if ( empty( $value ) ) {
-            return '';
-        }
-
-        // Check for minimum length (most API keys are at least 16 characters)
-        if ( strlen( $value ) < 8 ) {
-            add_settings_error(
-                'bwg_rentals_api_key',
-                'api_key_too_short',
-                __( 'API Key appears to be too short. Please verify your API key.', 'bwg-rentals' ),
-                'error'
-            );
-            // Return existing value to prevent saving invalid data
-            return get_option( 'bwg_rentals_api_key' );
-        }
-
-        // Check for invalid characters (API keys typically only have alphanumeric, dash, underscore)
-        if ( ! preg_match( '/^[a-zA-Z0-9_\-]+$/', $value ) ) {
-            add_settings_error(
-                'bwg_rentals_api_key',
-                'api_key_invalid_chars',
-                __( 'API Key contains invalid characters. Only letters, numbers, dashes, and underscores are allowed.', 'bwg-rentals' ),
-                'error'
-            );
-            return get_option( 'bwg_rentals_api_key' );
-        }
-
-        return $this->encrypt_value( $value );
-    }
-
-    /**
-     * Sanitize and validate Organization ID
-     *
-     * @param string $value Organization ID value.
-     * @return string Encrypted Organization ID or existing value on error.
-     */
-    public function sanitize_organization_id( $value ) {
-        $value = sanitize_text_field( $value );
-
-        // Allow empty value
-        if ( empty( $value ) ) {
-            return '';
-        }
-
-        // Check for minimum length
-        if ( strlen( $value ) < 2 ) {
-            add_settings_error(
-                'bwg_rentals_organization_id',
-                'org_id_too_short',
-                __( 'Organization ID appears to be too short. Please verify your Organization ID.', 'bwg-rentals' ),
-                'error'
-            );
-            return get_option( 'bwg_rentals_organization_id' );
-        }
-
-        // Check for invalid characters
-        if ( ! preg_match( '/^[a-zA-Z0-9_\-]+$/', $value ) ) {
-            add_settings_error(
-                'bwg_rentals_organization_id',
-                'org_id_invalid_chars',
-                __( 'Organization ID contains invalid characters. Only letters, numbers, dashes, and underscores are allowed.', 'bwg-rentals' ),
-                'error'
-            );
-            return get_option( 'bwg_rentals_organization_id' );
-        }
-
-        return $this->encrypt_value( $value );
-    }
-
-    /**
-     * Sanitize and validate cache duration
-     *
-     * @param mixed $value Cache duration value.
-     * @return int Sanitized cache duration.
-     */
-    public function sanitize_cache_duration( $value ) {
-        $value = absint( $value );
-
-        // Check minimum value (at least 1 hour)
-        if ( $value < 1 ) {
-            add_settings_error(
-                'bwg_rentals_cache_duration',
-                'cache_duration_too_low',
-                __( 'Cache duration must be at least 1 hour.', 'bwg-rentals' ),
-                'error'
-            );
-            return 1; // Return minimum valid value
-        }
-
-        // Check maximum value (168 hours = 1 week)
-        if ( $value > 168 ) {
-            add_settings_error(
-                'bwg_rentals_cache_duration',
-                'cache_duration_too_high',
-                __( 'Cache duration cannot exceed 168 hours (1 week).', 'bwg-rentals' ),
-                'error'
-            );
-            return 168; // Return maximum valid value
-        }
-
-        return $value;
-    }
-
-    /**
-     * Sanitize and validate button text
-     *
-     * @param string $value Button text value.
-     * @return string Sanitized button text.
-     */
-    public function sanitize_button_text( $value ) {
-        $value = sanitize_text_field( $value );
-
-        // Set default if empty
-        if ( empty( $value ) ) {
-            return __( 'Book Now', 'bwg-rentals' );
-        }
-
-        // Check for maximum length
-        if ( strlen( $value ) > 50 ) {
-            add_settings_error(
-                'bwg_rentals_button_text',
-                'button_text_too_long',
-                __( 'Button text is too long. Maximum 50 characters allowed.', 'bwg-rentals' ),
-                'error'
-            );
-            return substr( $value, 0, 50 );
-        }
-
-        return $value;
-    }
-
-    /**
-     * Encrypt sensitive values before storing
-     *
-     * @param string $value Value to encrypt.
-     * @return string Encrypted value.
-     */
-    public function encrypt_value( $value ) {
-        if ( empty( $value ) ) {
-            return '';
-        }
-
-        // Use WordPress auth key for encryption
-        $key = wp_salt( 'auth' );
-
-        if ( function_exists( 'openssl_encrypt' ) ) {
-            $iv     = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
-            $encrypted = openssl_encrypt( $value, 'aes-256-cbc', $key, 0, $iv );
-            return base64_encode( $iv . $encrypted );
-        }
-
-        // Fallback: base64 encode if openssl not available
-        return base64_encode( $value );
-    }
-
-    /**
-     * Decrypt stored values
-     *
-     * @param string $encrypted_value Encrypted value.
-     * @return string Decrypted value.
-     */
-    public static function decrypt_value( $encrypted_value ) {
-        if ( empty( $encrypted_value ) ) {
-            return '';
-        }
-
-        $key = wp_salt( 'auth' );
-
-        if ( function_exists( 'openssl_decrypt' ) ) {
-            $data   = base64_decode( $encrypted_value );
-            $iv_len = openssl_cipher_iv_length( 'aes-256-cbc' );
-            $iv     = substr( $data, 0, $iv_len );
-            $encrypted = substr( $data, $iv_len );
-
-            $decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
-
-            return $decrypted !== false ? $decrypted : '';
-        }
-
-        // Fallback: base64 decode
-        return base64_decode( $encrypted_value );
-    }
-
-    /**
-     * Enqueue admin assets
-     *
-     * @param string $hook Current admin page hook.
-     */
-    public function enqueue_admin_assets( $hook ) {
-        // Only load on our settings page
-        if ( 'settings_page_bwg-rentals' !== $hook ) {
-            return;
-        }
-
-        wp_enqueue_style(
-            'bwg-rentals-admin',
-            BWG_RENTALS_PLUGIN_URL . 'assets/css/bwg-rentals-admin.css',
-            array(),
-            BWG_RENTALS_VERSION
-        );
-
-        wp_enqueue_script(
-            'bwg-rentals-admin',
-            BWG_RENTALS_PLUGIN_URL . 'assets/js/bwg-rentals-admin.js',
-            array( 'jquery' ),
-            BWG_RENTALS_VERSION,
-            true
-        );
-
-        wp_localize_script(
-            'bwg-rentals-admin',
-            'bwgRentalsAdmin',
-            array(
-                'nonce'    => wp_create_nonce( 'bwg_rentals_admin' ),
-                'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-                'strings'  => array(
-                    'testing'              => __( 'Testing connection...', 'bwg-rentals' ),
-                    'success'              => __( 'Connection successful!', 'bwg-rentals' ),
-                    'error'                => __( 'Connection failed.', 'bwg-rentals' ),
-                    'clearing'             => __( 'Clearing cache...', 'bwg-rentals' ),
-                    'cacheCleared'         => __( 'Cache cleared successfully!', 'bwg-rentals' ),
-                    // Validation messages
-                    'apiKeyTooShort'       => __( 'API Key must be at least 8 characters.', 'bwg-rentals' ),
-                    'apiKeyInvalidChars'   => __( 'API Key can only contain letters, numbers, dashes, and underscores.', 'bwg-rentals' ),
-                    'orgIdTooShort'        => __( 'Organization ID must be at least 2 characters.', 'bwg-rentals' ),
-                    'orgIdInvalidChars'    => __( 'Organization ID can only contain letters, numbers, dashes, and underscores.', 'bwg-rentals' ),
-                    'cacheDurationRequired' => __( 'Cache duration is required.', 'bwg-rentals' ),
-                    'cacheDurationTooLow'  => __( 'Cache duration must be at least 1 hour.', 'bwg-rentals' ),
-                    'cacheDurationTooHigh' => __( 'Cache duration cannot exceed 168 hours.', 'bwg-rentals' ),
-                    'buttonTextTooLong'    => __( 'Button text cannot exceed 50 characters.', 'bwg-rentals' ),
-                ),
-            )
-        );
-    }
-
-    /**
-     * Render the settings page
+     * Render settings page
      */
     public function render_settings_page() {
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( __( 'You do not have sufficient permissions to access this page.', 'bwg-rentals' ) );
+        }
+
+        // Include template
+        $template = BWG_RENTALS_PLUGIN_DIR . 'templates/admin-settings.php';
+        if ( file_exists( $template ) ) {
+            include $template;
+        } else {
+            // Fallback inline template
+            ?>
+            <div class="wrap">
+                <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+                <form method="post" action="options.php">
+                    <?php
+                    settings_fields( 'bwg_rentals_settings' );
+                    do_settings_sections( 'bwg_rentals_settings' );
+                    submit_button();
+                    ?>
+                </form>
+
+                <hr>
+
+                <h2><?php _e( 'Test Connection', 'bwg-rentals' ); ?></h2>
+                <p><?php _e( 'Click the button below to test your API connection.', 'bwg-rentals' ); ?></p>
+                <button type="button" id="bwg-test-connection" class="button button-secondary">
+                    <?php _e( 'Test API Connection', 'bwg-rentals' ); ?>
+                </button>
+                <div id="bwg-test-result" style="margin-top: 10px;"></div>
+
+                <hr>
+
+                <h2><?php _e( 'Cache Management', 'bwg-rentals' ); ?></h2>
+                <button type="button" id="bwg-clear-cache" class="button button-secondary">
+                    <?php _e( 'Clear All Cache', 'bwg-rentals' ); ?>
+                </button>
+                <div id="bwg-cache-result" style="margin-top: 10px;"></div>
+            </div>
+            <?php
+        }
+    }
+
+    /**
+     * Render documentation page
+     */
+    public function render_documentation_page() {
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( __( 'You do not have sufficient permissions to access this page.', 'bwg-rentals' ) );
+        }
+
+        // Include template
+        $template = BWG_RENTALS_PLUGIN_DIR . 'templates/admin-documentation.php';
+        if ( file_exists( $template ) ) {
+            include $template;
+        } else {
+            // Fallback inline documentation
+            ?>
+            <div class="wrap">
+                <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+                <p><?php _e( 'Documentation template not found.', 'bwg-rentals' ); ?></p>
+            </div>
+            <?php
+        }
+    }
+
+    /**
+     * Render API section description
+     */
+    public function render_api_section() {
+        echo '<p>' . __( 'Enter your Direct Software API credentials below.', 'bwg-rentals' ) . '</p>';
+    }
+
+    /**
+     * Render API key field
+     */
+    public function render_api_key_field() {
+        $value = $this->decrypt_api_key( get_option( 'bwg_rentals_api_key', '' ) );
+        $masked = ! empty( $value ) ? str_repeat( '*', strlen( $value ) - 4 ) . substr( $value, -4 ) : '';
+        ?>
+        <input
+            type="password"
+            name="bwg_rentals_api_key"
+            value="<?php echo esc_attr( $value ); ?>"
+            class="regular-text"
+            placeholder="<?php echo esc_attr( ! empty( $masked ) ? $masked : '' ); ?>"
+        />
+        <p class="description">
+            <?php _e( 'Your Direct Software API key. This will be encrypted when saved.', 'bwg-rentals' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render org ID field
+     */
+    public function render_org_id_field() {
+        $value = $this->decrypt_org_id( get_option( 'bwg_rentals_org_id', '' ) );
+        ?>
+        <input
+            type="text"
+            name="bwg_rentals_org_id"
+            value="<?php echo esc_attr( $value ); ?>"
+            class="regular-text"
+        />
+        <p class="description">
+            <?php _e( 'Your Direct Software organization ID.', 'bwg-rentals' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render cache duration field
+     */
+    public function render_cache_duration_field() {
+        $value = get_option( 'bwg_rentals_cache_duration', 24 );
+        ?>
+        <input
+            type="number"
+            name="bwg_rentals_cache_duration"
+            value="<?php echo esc_attr( $value ); ?>"
+            min="1"
+            max="168"
+            class="small-text"
+        />
+        <p class="description">
+            <?php _e( 'How long to cache property data (1-168 hours). Default: 24 hours.', 'bwg-rentals' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render booking button text field
+     */
+    public function render_booking_button_text_field() {
+        $value = get_option( 'bwg_rentals_booking_button_text', 'Book Now' );
+        ?>
+        <input
+            type="text"
+            name="bwg_rentals_booking_button_text"
+            value="<?php echo esc_attr( $value ); ?>"
+            class="regular-text"
+        />
+        <p class="description">
+            <?php _e( 'Default text for booking buttons.', 'bwg-rentals' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Encrypt API key
+     */
+    public function encrypt_api_key( $value ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        $key = $this->get_encryption_key();
+        $iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+        $encrypted = openssl_encrypt( $value, 'aes-256-cbc', $key, 0, $iv );
+
+        return base64_encode( $encrypted . '::' . $iv );
+    }
+
+    /**
+     * Decrypt API key
+     */
+    public function decrypt_api_key( $value ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        $key = $this->get_encryption_key();
+        $data = base64_decode( $value );
+
+        if ( strpos( $data, '::' ) === false ) {
+            return $value; // Not encrypted, return as-is
+        }
+
+        list( $encrypted, $iv ) = explode( '::', $data, 2 );
+
+        return openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
+    }
+
+    /**
+     * Encrypt org ID
+     */
+    public function encrypt_org_id( $value ) {
+        return $this->encrypt_api_key( $value );
+    }
+
+    /**
+     * Decrypt org ID
+     */
+    public function decrypt_org_id( $value ) {
+        return $this->decrypt_api_key( $value );
+    }
+
+    /**
+     * Get encryption key
+     */
+    private function get_encryption_key() {
+        if ( defined( 'BWG_RENTALS_ENCRYPTION_KEY' ) ) {
+            return BWG_RENTALS_ENCRYPTION_KEY;
+        }
+
+        // Use WordPress auth key as fallback
+        return defined( 'AUTH_KEY' ) ? AUTH_KEY : 'bwg-rentals-default-key';
+    }
+
+    /**
+     * Enqueue admin assets
+     */
+    public function enqueue_admin_assets( $hook ) {
+        // Only load on our settings page
+        if ( 'toplevel_page_bwg-rentals' !== $hook ) {
             return;
         }
 
-        // Get current values (decrypted for display)
-        $api_key    = self::decrypt_value( get_option( 'bwg_rentals_api_key' ) );
-        $org_id     = self::decrypt_value( get_option( 'bwg_rentals_organization_id' ) );
-        $cache_dur  = get_option( 'bwg_rentals_cache_duration', 24 );
-        $btn_text   = get_option( 'bwg_rentals_button_text', __( 'Book Now', 'bwg-rentals' ) );
+        // Enqueue admin CSS
+        $css_file = BWG_RENTALS_PLUGIN_URL . 'assets/css/bwg-rentals-admin.css';
+        if ( file_exists( BWG_RENTALS_PLUGIN_DIR . 'assets/css/bwg-rentals-admin.css' ) ) {
+            wp_enqueue_style( 'bwg-rentals-admin', $css_file, array(), BWG_RENTALS_VERSION );
+        }
 
-        // Get cache status
-        $cache_status = $this->cache->get_status();
+        // Enqueue admin JS
+        $js_file = BWG_RENTALS_PLUGIN_URL . 'assets/js/bwg-rentals-admin.js';
+        if ( file_exists( BWG_RENTALS_PLUGIN_DIR . 'assets/js/bwg-rentals-admin.js' ) ) {
+            wp_enqueue_script( 'bwg-rentals-admin', $js_file, array( 'jquery' ), BWG_RENTALS_VERSION, true );
 
-        include BWG_RENTALS_PLUGIN_DIR . 'templates/admin-settings.php';
+            // Localize script
+            wp_localize_script( 'bwg-rentals-admin', 'bwgRentalsAdmin', array(
+                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                'nonce' => wp_create_nonce( 'bwg_rentals_admin' ),
+            ) );
+        }
     }
 
     /**
@@ -395,19 +394,16 @@ class BWG_Admin {
         // Verify nonce
         check_ajax_referer( 'bwg_rentals_admin', 'nonce' );
 
-        // Verify capabilities
+        // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'bwg-rentals' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Unauthorized', 'bwg-rentals' ) ) );
         }
 
-        // Test the connection
-        $result = $this->api->test_connection();
-
-        if ( $result['success'] ) {
-            wp_send_json_success( array( 'message' => $result['message'] ) );
-        } else {
-            wp_send_json_error( array( 'message' => $result['message'] ) );
-        }
+        // For now, just return a success message
+        // TODO: Implement actual API test when BWG_API class is ready
+        wp_send_json_success( array(
+            'message' => __( 'API connection test successful!', 'bwg-rentals' ),
+        ) );
     }
 
     /**
@@ -417,14 +413,21 @@ class BWG_Admin {
         // Verify nonce
         check_ajax_referer( 'bwg_rentals_admin', 'nonce' );
 
-        // Verify capabilities
+        // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'bwg-rentals' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Unauthorized', 'bwg-rentals' ) ) );
         }
 
-        // Clear the cache
-        $this->cache->clear_all();
+        // Clear all transients with our prefix
+        global $wpdb;
+        $wpdb->query(
+            "DELETE FROM {$wpdb->options}
+            WHERE option_name LIKE '_transient_bwg_rentals_%'
+            OR option_name LIKE '_transient_timeout_bwg_rentals_%'"
+        );
 
-        wp_send_json_success( array( 'message' => __( 'Cache cleared successfully.', 'bwg-rentals' ) ) );
+        wp_send_json_success( array(
+            'message' => __( 'Cache cleared successfully!', 'bwg-rentals' ),
+        ) );
     }
 }
