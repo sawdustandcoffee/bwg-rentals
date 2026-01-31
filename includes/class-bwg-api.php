@@ -840,16 +840,67 @@ class BWG_API {
     }
 
     /**
+     * Generate a URL-safe slug from a property name
+     *
+     * @param string $name Property name.
+     * @return string URL-safe slug.
+     */
+    private function generate_slug( $name ) {
+        // Convert to lowercase
+        $slug = strtolower( $name );
+
+        // Replace special characters with spaces first
+        $slug = preg_replace( '/[^\w\s-]/', ' ', $slug );
+
+        // Replace whitespace with dashes
+        $slug = preg_replace( '/[\s_]+/', '-', $slug );
+
+        // Remove consecutive dashes
+        $slug = preg_replace( '/-+/', '-', $slug );
+
+        // Trim dashes from ends
+        $slug = trim( $slug, '-' );
+
+        return $slug;
+    }
+
+    /**
      * Get the booking URL for a property
      *
-     * @param int $property_id Property ID.
+     * Generates a booking URL using the configured base URL (if set) or falls back
+     * to the default Direct Software URL format.
+     *
+     * @param int|array $property Property ID or property data array.
      * @return string Booking URL.
      */
-    public function get_booking_url( $property_id ) {
+    public function get_booking_url( $property ) {
         $credentials = $this->get_credentials();
-        $property_id = absint( $property_id );
 
-        // Format: https://app.getdirect.io/listings/{org_id}/{property_id}
+        // Handle both property ID (int) and property data (array)
+        if ( is_array( $property ) ) {
+            $property_id = isset( $property['id'] ) ? absint( $property['id'] ) : 0;
+            $property_name = isset( $property['name'] ) ? $property['name'] : '';
+        } else {
+            $property_id = absint( $property );
+            $property_name = '';
+
+            // Fetch property data to get name for slug generation
+            $property_data = $this->get_property( $property_id );
+            if ( ! is_wp_error( $property_data ) && isset( $property_data['name'] ) ) {
+                $property_name = $property_data['name'];
+            }
+        }
+
+        // Check for custom booking base URL
+        $booking_base_url = get_option( 'bwg_rentals_booking_base_url', '' );
+
+        if ( ! empty( $booking_base_url ) && ! empty( $property_name ) ) {
+            // Use custom URL format with property slug
+            $slug = $this->generate_slug( $property_name );
+            return $booking_base_url . '/listings/' . $slug;
+        }
+
+        // Fallback to default Direct Software URL format
         return 'https://app.getdirect.io/listings/' . $credentials['org_id'] . '/' . $property_id;
     }
 }

@@ -113,3 +113,17 @@ function bwg_rentals_deactivate() {
     flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'bwg_rentals_deactivate' );
+
+/**
+ * Get booking URL for a property
+ *
+ * Global helper function that templates can use to generate booking URLs.
+ *
+ * @param array|int $property Property data array or property ID.
+ * @return string Booking URL.
+ */
+function bwg_get_booking_url( $property ) {
+    $cache = new BWG_Cache();
+    $api = new BWG_API( $cache );
+    return $api->get_booking_url( $property );
+}

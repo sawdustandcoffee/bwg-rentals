@@ -17,16 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $layout = isset( $atts['layout'] ) ? $atts['layout'] : 'standard';
-$org_id = get_option( 'bwg_rentals_org_id', 'test-org-123' );
 
-// Decrypt org_id if encrypted
-if ( strpos( $org_id, '::' ) !== false ) {
-	list( $encrypted_data, $iv ) = explode( '::', base64_decode( $org_id ), 2 );
-	$key    = wp_salt( 'auth' );
-	$org_id = openssl_decrypt( $encrypted_data, 'AES-256-CBC', $key, 0, $iv );
-}
-
-$booking_url = 'https://app.getdirect.io/listings/' . $org_id . '/' . $property['id'];
+// Get booking URL using the helper function
+$booking_url = bwg_get_booking_url( $property );
 
 // Build list of visible sections for anchor navigation
 $sections = array();
@@ -505,12 +498,8 @@ if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) {
 									<?php endif; ?>
 								</div>
 							<?php endif; ?>
-							<?php
-							// Build related property booking URL
-							$related_booking_url = 'https://app.getdirect.io/listings/' . $org_id . '/' . $related_prop['id'];
-							?>
 							<a
-								href="<?php echo esc_url( $related_booking_url ); ?>"
+								href="<?php echo esc_url( bwg_get_booking_url( $related_prop ) ); ?>"
 								class="bwg-related-property-card__link"
 								target="_blank"
 								rel="noopener noreferrer"

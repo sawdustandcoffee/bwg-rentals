@@ -112,6 +112,12 @@ class BWG_Admin {
             'default' => 0,
         ) );
 
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_booking_base_url', array(
+            'type' => 'string',
+            'sanitize_callback' => array( $this, 'sanitize_booking_base_url' ),
+            'default' => '',
+        ) );
+
         // Add settings section
         add_settings_section(
             'bwg_rentals_api_section',
@@ -149,6 +155,14 @@ class BWG_Admin {
             'bwg_rentals_booking_button_text',
             __( 'Default Booking Button Text', 'bwg-rentals' ),
             array( $this, 'render_booking_button_text_field' ),
+            'bwg_rentals_settings',
+            'bwg_rentals_api_section'
+        );
+
+        add_settings_field(
+            'bwg_rentals_booking_base_url',
+            __( 'Booking Base URL', 'bwg-rentals' ),
+            array( $this, 'render_booking_base_url_field' ),
             'bwg_rentals_settings',
             'bwg_rentals_api_section'
         );
@@ -314,6 +328,45 @@ class BWG_Admin {
             <?php _e( 'Default text for booking buttons.', 'bwg-rentals' ); ?>
         </p>
         <?php
+    }
+
+    /**
+     * Render booking base URL field
+     */
+    public function render_booking_base_url_field() {
+        $value = get_option( 'bwg_rentals_booking_base_url', '' );
+        ?>
+        <input
+            type="url"
+            name="bwg_rentals_booking_base_url"
+            value="<?php echo esc_attr( $value ); ?>"
+            class="regular-text"
+            placeholder="https://bookings.example.com"
+        />
+        <p class="description">
+            <?php _e( 'Base URL for booking links. Property slug will be appended (e.g., /listings/beach-please). Leave empty to use default Direct Software URL.', 'bwg-rentals' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Sanitize booking base URL
+     *
+     * @param string $value URL to sanitize.
+     * @return string Sanitized URL without trailing slash.
+     */
+    public function sanitize_booking_base_url( $value ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        // Sanitize and validate URL
+        $url = esc_url_raw( $value );
+
+        // Remove trailing slash
+        $url = rtrim( $url, '/' );
+
+        return $url;
     }
 
     /**

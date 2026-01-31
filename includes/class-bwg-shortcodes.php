@@ -856,7 +856,7 @@ class BWG_Shortcodes {
             return $this->render_error( $property->get_error_message() );
         }
 
-        $booking_url = $this->api->get_booking_url( $atts['id'] );
+        $booking_url = $this->api->get_booking_url( $property );
         $text        = apply_filters( 'bwg_booking_button_text', esc_html( $atts['text'] ), $property );
         $class       = esc_attr( $atts['class'] );
         $target      = esc_attr( $atts['target'] );
