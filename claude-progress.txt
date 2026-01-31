@@ -1,3 +1,79 @@
+## Session: 2026-01-30 (Feature #82 - Parallel Agent)
+
+### Feature #82: Policies sections attribute filters content - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 82
+- Name: Policies sections attribute filters content
+- Description: Can display specific policy sections only
+- Category: functional
+- Dependencies: Feature #41 ([bwg_property_policies] displays house rules) PASSED
+- Steps:
+  1. Add [bwg_property_policies sections='house_rules,cancellation']
+  2. Verify only specified sections display
+  3. Verify other policy sections are hidden
+
+#### Implementation Already Present:
+- Shortcode in includes/class-bwg-shortcodes.php (Lines 606-633)
+- Template in templates/property-policies.php (Lines 28-32)
+- Uses array_map('trim', explode(',', $sections_filter)) to parse section names
+- Uses array_intersect_key to filter available_sections
+
+#### Browser Verification:
+
+**Test Page 1: /feature-82-policies-sections-filter-test/**
+
+**Test 1: All Sections (default)** - PASSED
+- Shortcode: [bwg_property_policies id="1"]
+- Result: Shows House Rules, Cancellation Policy, Check-In/Check-Out
+
+**Test 2: Only house_rules and cancellation** - PASSED
+- Shortcode: [bwg_property_policies id="1" sections="house_rules,cancellation"]
+- Result: Shows only House Rules and Cancellation Policy
+- Check-In/Check-Out is correctly filtered OUT
+
+**Test 3: Only check_in section** - PASSED
+- Shortcode: [bwg_property_policies id="1" sections="check_in"]
+- Result: Shows only Check-In/Check-Out (4:00 PM)
+
+**Test 4: Multiple sections - house_rules, check_in** - PASSED
+- Shortcode: [bwg_property_policies id="1" sections="house_rules,check_in"]
+- Result: Shows House Rules and Check-In/Check-Out
+
+**Test Page 2: /feature-82-edge-cases-test/**
+
+**Test 1: Sections with extra spaces** - PASSED
+- Shortcode with spaces trimmed correctly
+
+**Test 2: Invalid section names** - PASSED
+- Invalid sections silently ignored
+
+**Test 3: Mix of valid and invalid** - PASSED
+- Shows only valid sections
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-82-policies-sections-filter-test.png
+- feature-82-edge-cases-test.png
+
+#### Git Commit: d4b4145
+
+#### Result:
+Feature #82 PASSING - Policies sections attribute correctly filters content
+
+---
+
+### Updated Statistics
+- Total Passing: 85/90 features (94.4%)
+- This Session: Feature #82 completed
+
+[Testing] Feature #82 verified - policies sections attribute filters content (2026-01-30)
+
+---
+
 ## Session: 2026-01-30 (Feature #74 - Parallel Agent)
 
 ### Feature #74: Multiple shortcodes on same page work - PASSED
