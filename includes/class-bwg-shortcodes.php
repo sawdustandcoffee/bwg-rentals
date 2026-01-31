@@ -1308,6 +1308,69 @@ class BWG_Shortcodes {
     }
 
     /**
+     * Check if a property is available for a given date range
+     *
+     * @param int    $property_id Property ID to check.
+     * @param string $check_in    Check-in date (Y-m-d format).
+     * @param string $check_out   Check-out date (Y-m-d format).
+     * @return bool True if property is available for all dates in range, false otherwise.
+     */
+    private function is_property_available( $property_id, $check_in, $check_out ) {
+        // Validate dates
+        $check_in_date  = DateTime::createFromFormat( 'Y-m-d', $check_in );
+        $check_out_date = DateTime::createFromFormat( 'Y-m-d', $check_out );
+
+        if ( ! $check_in_date || ! $check_out_date ) {
+            return false; // Invalid date format
+        }
+
+        if ( $check_out_date <= $check_in_date ) {
+            return false; // Check-out must be after check-in
+        }
+
+        // Get availability data for this property
+        $availability = $this->api->get_availability( $property_id );
+
+        if ( is_wp_error( $availability ) || empty( $availability ) ) {
+            // If we can't get availability data, assume property is available
+            // (fail open to avoid hiding all properties on API errors)
+            return true;
+        }
+
+        // Create array of dates we need to check
+        $dates_to_check = array();
+        $current_date   = clone $check_in_date;
+        while ( $current_date < $check_out_date ) {
+            $dates_to_check[] = $current_date->format( 'Y-m-d' );
+            $current_date->modify( '+1 day' );
+        }
+
+        // Create a map of availability by date for faster lookup
+        $availability_map = array();
+        foreach ( $availability as $avail ) {
+            if ( isset( $avail['date'] ) ) {
+                $availability_map[ $avail['date'] ] = $avail;
+            }
+        }
+
+        // Check if all dates in the range are available
+        foreach ( $dates_to_check as $date ) {
+            if ( ! isset( $availability_map[ $date ] ) ) {
+                // Date not in availability data - assume unavailable
+                return false;
+            }
+
+            if ( empty( $availability_map[ $date ]['available'] ) ) {
+                // Date is explicitly marked as unavailable
+                return false;
+            }
+        }
+
+        // All dates are available
+        return true;
+    }
+
+    /**
      * AJAX handler for searching properties
      *
      * @return void
@@ -1339,8 +1402,13 @@ class BWG_Shortcodes {
         }
 
         // Apply search filters
-        $filtered_properties = array_filter( $properties, function( $property ) use ( $guests, $bedrooms ) {
+        $filtered_properties = array_filter( $properties, function( $property ) use ( $check_in, $check_out, $guests, $bedrooms ) {
             $matches = true;
+
+            // Filter by date range availability
+            if ( ! empty( $check_in ) && ! empty( $check_out ) ) {
+                $matches = $matches && $this->is_property_available( $property['id'], $check_in, $check_out );
+            }
 
             // Filter by guests (must accommodate at least the requested number)
             if ( $guests > 0 && isset( $property['guests'] ) ) {
