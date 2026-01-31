@@ -433,11 +433,36 @@ class BWG_Admin {
             wp_send_json_error( array( 'message' => __( 'Unauthorized', 'bwg-rentals' ) ) );
         }
 
-        // For now, just return a success message
-        // TODO: Implement actual API test when BWG_API class is ready
-        wp_send_json_success( array(
-            'message' => __( 'API connection test successful!', 'bwg-rentals' ),
-        ) );
+        // Get credentials for debugging
+        $api_key = self::decrypt_value( get_option( 'bwg_rentals_api_key', '' ) );
+        $org_id = self::decrypt_value( get_option( 'bwg_rentals_org_id', '' ) );
+
+        // Check if credentials are configured
+        if ( empty( $api_key ) || empty( $org_id ) ) {
+            $debug_info = sprintf(
+                'API Key: %s, Org ID: %s',
+                empty( $api_key ) ? 'empty' : strlen( $api_key ) . ' chars',
+                empty( $org_id ) ? 'empty' : $org_id
+            );
+            wp_send_json_error( array(
+                'message' => __( 'API credentials not configured.', 'bwg-rentals' ) . ' (' . $debug_info . ')'
+            ) );
+            return;
+        }
+
+        // Actually test the API
+        $api = new BWG_API();
+        $result = $api->test_connection();
+
+        if ( $result['success'] ) {
+            wp_send_json_success( array(
+                'message' => $result['message'] . ' (Org ID: ' . $org_id . ')',
+            ) );
+        } else {
+            wp_send_json_error( array(
+                'message' => $result['message'],
+            ) );
+        }
     }
 
     /**
