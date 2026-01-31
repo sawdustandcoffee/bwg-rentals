@@ -1014,8 +1014,10 @@ class BWG_Shortcodes {
 
         $atts = shortcode_atts(
             array(
-                'limit'   => -1,
-                'orderby' => 'name',
+                'limit'    => -1,
+                'orderby'  => 'name',
+                'autoplay' => 'false',
+                'speed'    => '5000',
             ),
             $atts,
             'bwg_property_slider'
@@ -1150,6 +1152,7 @@ class BWG_Shortcodes {
                 'results_page'   => '',
                 'button_text'    => 'Search Properties',
                 'layout'         => 'horizontal',
+                'compact'        => 'false',
             ),
             $atts,
             'bwg_property_search'
@@ -1164,6 +1167,7 @@ class BWG_Shortcodes {
         $results_page   = sanitize_text_field( $atts['results_page'] );
         $button_text    = sanitize_text_field( $atts['button_text'] );
         $layout         = sanitize_text_field( $atts['layout'] );
+        $compact        = filter_var( $atts['compact'], FILTER_VALIDATE_BOOLEAN );
 
         // Validate layout - must be one of: horizontal, vertical, inline
         $valid_layouts = array( 'horizontal', 'vertical', 'inline' );
@@ -1180,13 +1184,13 @@ class BWG_Shortcodes {
         if ( ! is_wp_error( $properties ) && ! empty( $properties ) ) {
             foreach ( $properties as $property ) {
                 // Extract bedroom counts
-                if ( isset( $property->bedrooms ) ) {
-                    $bedroom_options[] = absint( $property->bedrooms );
+                if ( isset( $property['bedrooms'] ) ) {
+                    $bedroom_options[] = absint( $property['bedrooms'] );
                 }
 
                 // Extract amenities
-                if ( isset( $property->amenities ) && is_array( $property->amenities ) ) {
-                    foreach ( $property->amenities as $amenity ) {
+                if ( isset( $property['amenities'] ) && is_array( $property['amenities'] ) ) {
+                    foreach ( $property['amenities'] as $amenity ) {
                         // Skip XSS test amenities
                         if ( strpos( $amenity, '<' ) === false && strpos( $amenity, 'script' ) === false ) {
                             $amenity_options[] = sanitize_text_field( $amenity );
@@ -1195,8 +1199,8 @@ class BWG_Shortcodes {
                 }
 
                 // Extract unique cities from address data
-                if ( isset( $property->address['city'] ) && ! empty( $property->address['city'] ) ) {
-                    $location_options[] = sanitize_text_field( $property->address['city'] );
+                if ( isset( $property['address']['city'] ) && ! empty( $property['address']['city'] ) ) {
+                    $location_options[] = sanitize_text_field( $property['address']['city'] );
                 }
             }
             $bedroom_options = array_unique( $bedroom_options );
@@ -1422,9 +1426,11 @@ class BWG_Shortcodes {
         $bedrooms  = isset( $_POST['bedrooms'] ) ? absint( $_POST['bedrooms'] ) : 0;
         $location  = isset( $_POST['location'] ) ? sanitize_text_field( $_POST['location'] ) : '';
         $amenities = isset( $_POST['amenities'] ) && is_array( $_POST['amenities'] ) ? array_map( 'sanitize_text_field', $_POST['amenities'] ) : array();
+        $min_price = isset( $_POST['min_price'] ) ? absint( $_POST['min_price'] ) : 0;
+        $max_price = isset( $_POST['max_price'] ) ? absint( $_POST['max_price'] ) : 0;
 
-        // Get all properties
-        $properties = $this->api->get_properties();
+        // Get all properties (bypass cache to get latest data with base_rate)
+        $properties = $this->api->get_properties( false );
 
         if ( is_wp_error( $properties ) ) {
             wp_send_json_error( array( 'message' => $properties->get_error_message() ) );
@@ -1438,7 +1444,7 @@ class BWG_Shortcodes {
         }
 
         // Apply search filters
-        $filtered_properties = array_filter( $properties, function( $property ) use ( $check_in, $check_out, $guests, $bedrooms, $location, $amenities ) {
+        $filtered_properties = array_filter( $properties, function( $property ) use ( $check_in, $check_out, $guests, $bedrooms, $location, $amenities, $min_price, $max_price ) {
             $matches = true;
 
             // Filter by date range availability
@@ -1475,6 +1481,21 @@ class BWG_Shortcodes {
                         $matches = false;
                         break;
                     }
+                }
+            }
+
+            // Filter by price range (nightly rate)
+            if ( ( $min_price > 0 || $max_price > 0 ) && isset( $property['base_rate'] ) ) {
+                $rate = absint( $property['base_rate'] );
+
+                // Check minimum price
+                if ( $min_price > 0 && $rate < $min_price ) {
+                    $matches = false;
+                }
+
+                // Check maximum price
+                if ( $max_price > 0 && $rate > $max_price ) {
+                    $matches = false;
                 }
             }
 

@@ -262,11 +262,52 @@
                     return;
                 }
 
+                // Autoplay configuration
+                var autoplay = $slider.data('autoplay') === 'true' || $slider.data('autoplay') === true;
+                var speed = parseInt($slider.data('speed'), 10) || 5000;
+                var autoplayTimer = null;
+
+                // Start autoplay
+                function startAutoplay() {
+                    if (!autoplay) return;
+
+                    stopAutoplay(); // Clear any existing timer
+                    autoplayTimer = setInterval(function() {
+                        currentIndex++;
+                        if (currentIndex >= totalSlides) {
+                            currentIndex = 0; // Loop back to first slide
+                        }
+                        updateSlider();
+                    }, speed);
+                }
+
+                // Stop autoplay
+                function stopAutoplay() {
+                    if (autoplayTimer) {
+                        clearInterval(autoplayTimer);
+                        autoplayTimer = null;
+                    }
+                }
+
+                // Pause on hover
+                if (autoplay) {
+                    $slider.on('mouseenter', function() {
+                        stopAutoplay();
+                    });
+
+                    $slider.on('mouseleave', function() {
+                        startAutoplay();
+                    });
+                }
+
                 // Previous button handler
                 $prevBtn.on('click', function() {
                     if (currentIndex > 0) {
                         currentIndex--;
                         updateSlider();
+                        if (autoplay) {
+                            startAutoplay(); // Restart autoplay after manual navigation
+                        }
                     }
                 });
 
@@ -275,6 +316,9 @@
                     if (currentIndex < totalSlides - 1) {
                         currentIndex++;
                         updateSlider();
+                        if (autoplay) {
+                            startAutoplay(); // Restart autoplay after manual navigation
+                        }
                     }
                 });
 
@@ -282,6 +326,9 @@
                 $indicators.on('click', function() {
                     currentIndex = parseInt($(this).data('slide-to'), 10);
                     updateSlider();
+                    if (autoplay) {
+                        startAutoplay(); // Restart autoplay after manual navigation
+                    }
                 });
 
                 // Keyboard navigation
@@ -291,9 +338,15 @@
                         if (e.key === 'ArrowLeft' && currentIndex > 0) {
                             currentIndex--;
                             updateSlider();
+                            if (autoplay) {
+                                startAutoplay(); // Restart autoplay after manual navigation
+                            }
                         } else if (e.key === 'ArrowRight' && currentIndex < totalSlides - 1) {
                             currentIndex++;
                             updateSlider();
+                            if (autoplay) {
+                                startAutoplay(); // Restart autoplay after manual navigation
+                            }
                         }
                     }
                 });
@@ -319,10 +372,16 @@
                             // Swipe left - next slide
                             currentIndex++;
                             updateSlider();
+                            if (autoplay) {
+                                startAutoplay(); // Restart autoplay after manual navigation
+                            }
                         } else if (diff < 0 && currentIndex > 0) {
                             // Swipe right - previous slide
                             currentIndex--;
                             updateSlider();
+                            if (autoplay) {
+                                startAutoplay(); // Restart autoplay after manual navigation
+                            }
                         }
                     }
                 });

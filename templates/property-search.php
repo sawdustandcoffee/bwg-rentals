@@ -11,6 +11,7 @@
  * @var string $results_page     URL or page slug for search results
  * @var string $button_text      Search button text
  * @var string $layout           Layout mode: horizontal, vertical
+ * @var bool   $compact          Compact mode (shows only dates/guests initially)
  * @var array  $bedroom_options  Available bedroom counts from properties
  * @var array  $amenity_options  Available amenities from properties
  * @var array  $location_options Available locations/cities from properties
@@ -38,7 +39,7 @@ $amenities = isset( $_GET['amenities'] ) && is_array( $_GET['amenities'] ) ? arr
 $location  = isset( $_GET['location'] ) ? sanitize_text_field( $_GET['location'] ) : '';
 ?>
 
-<form class="bwg-property-search bwg-property-search--<?php echo esc_attr( $layout ); ?>" method="get" action="<?php echo esc_url( $action_url ); ?>">
+<form class="bwg-property-search bwg-property-search--<?php echo esc_attr( $layout ); ?><?php echo $compact ? ' bwg-property-search--compact' : ''; ?>" method="get" action="<?php echo esc_url( $action_url ); ?>"<?php echo $compact ? ' data-compact="true"' : ''; ?>>
 
     <?php if ( $show_dates ) : ?>
     <div class="bwg-property-search__field">
@@ -84,6 +85,17 @@ $location  = isset( $_GET['location'] ) ? sanitize_text_field( $_GET['location']
             <?php endfor; ?>
         </select>
     </div>
+    <?php endif; ?>
+
+    <?php if ( $compact ) : ?>
+    <div class="bwg-property-search__more-filters-container">
+        <button type="button" class="bwg-property-search__more-filters-toggle">
+            <span class="bwg-property-search__more-filters-text">
+                <?php esc_html_e( 'More Filters', 'bwg-rentals' ); ?>
+            </span>
+            <span class="bwg-property-search__more-filters-icon" aria-hidden="true">▼</span>
+        </button>
+        <div class="bwg-property-search__more-filters" aria-hidden="true">
     <?php endif; ?>
 
     <?php if ( $show_bedrooms && ! empty( $bedroom_options ) ) : ?>
@@ -132,6 +144,11 @@ $location  = isset( $_GET['location'] ) ? sanitize_text_field( $_GET['location']
             <?php endforeach; ?>
         </select>
     </div>
+    <?php endif; ?>
+
+    <?php if ( $compact ) : ?>
+        </div><!-- .bwg-property-search__more-filters -->
+    </div><!-- .bwg-property-search__more-filters-container -->
     <?php endif; ?>
 
     <div class="bwg-property-search__actions">

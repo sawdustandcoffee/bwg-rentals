@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Generate unique ID for this slider instance
 $slider_id = 'bwg-slider-' . wp_rand( 1000, 9999 );
 ?>
-<div class="bwg-property-slider" id="<?php echo esc_attr( $slider_id ); ?>" data-slider-id="<?php echo esc_attr( $slider_id ); ?>">
+<div class="bwg-property-slider" id="<?php echo esc_attr( $slider_id ); ?>" data-slider-id="<?php echo esc_attr( $slider_id ); ?>" data-autoplay="<?php echo esc_attr( $atts['autoplay'] ); ?>" data-speed="<?php echo esc_attr( $atts['speed'] ); ?>">
     <div class="bwg-property-slider__container">
         <div class="bwg-property-slider__track">
             <?php foreach ( $properties as $index => $property ) : ?>
