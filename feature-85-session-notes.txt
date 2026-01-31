@@ -1,0 +1,52 @@
+---
+
+## Session: 2026-01-31 (Feature #85 - SINGLE FEATURE MODE - COMPLETE)
+
+### Feature #85: [bwg_property_slider] slides_to_show attribute - IMPLEMENTED
+
+**Status:** IMPLEMENTATION COMPLETE
+
+#### Feature Definition:
+- **ID:** 85
+- **Category:** Archive Display
+- **Name:** [bwg_property_slider] slides_to_show attribute
+- **Description:** Slider can show multiple properties at once
+- **Dependencies:** Feature #83 (Property slider shortcode)
+- **Steps:**
+  1. Add slides_to_show attribute (1-4)
+  2. Responsive: fewer slides on mobile
+  3. Add slides_to_scroll attribute
+
+#### Implementation Summary:
+
+Successfully added multi-slide support to the [bwg_property_slider] shortcode.
+
+**Files Modified:**
+1. includes/class-bwg-shortcodes.php - Added attributes and validation
+2. templates/property-slider.php - Added data attributes
+3. assets/js/bwg-rentals-public.js - Rewrote slider logic
+
+#### Key Features:
+
+1. slides_to_show attribute (1-4 slides)
+2. slides_to_scroll attribute (1-4 slides)
+3. Responsive behavior:
+   - Mobile (< 768px): max 1 slide
+   - Tablet (768-1023px): max 2 slides
+   - Desktop (>= 1024px): full configured value
+4. Intersection Observer for smart autoplay
+5. Full backward compatibility
+
+#### Result: READY FOR TESTING
+
+All 3 requirements implemented and committed.
+
+Session Duration: ~2 hours
+Lines Modified: ~150 lines across 3 files
+Commit: e86307c
+Documentation: FEATURE-85-IMPLEMENTATION.md created
+
+Project Progress: 40/103 passing (38.8%)
+Feature #85: Implementation complete, ready for browser testing
+
+[Feature #85] Property slider multi-slide support implemented (2026-01-31)
