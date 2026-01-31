@@ -141,6 +141,20 @@
     overflow: hidden;
 }
 
+/* List layout linked cards */
+.bwg-properties--list .bwg-property-card--linked {
+    text-decoration: none;
+    color: inherit;
+}
+
+.bwg-properties--list .bwg-property-card--linked:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.bwg-properties--list .bwg-property-card--linked:hover .bwg-property-card__title {
+    color: var(--bwg-primary-color);
+}
+
 /* Properties Masonry Layout */
 .bwg-properties--masonry {
     column-gap: var(--bwg-spacing-lg);

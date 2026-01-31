@@ -116,9 +116,22 @@ $show_filters = filter_var( $atts['show_filters'], FILTER_VALIDATE_BOOLEAN );
     <?php endif; ?>
 
     <!-- Properties List -->
+    <?php
+    // Get property detail page for links
+    $property_page_id = get_option( 'bwg_rentals_property_page', 0 );
+    ?>
     <div class="bwg-properties bwg-properties--list" data-instance="<?php echo esc_attr( $instance_id ); ?>">
-    <?php foreach ( $properties as $property ) : ?>
-        <div class="bwg-property-card">
+    <?php foreach ( $properties as $property ) :
+        // Generate property detail page URL
+        $property_url = '#';
+        if ( $property_page_id > 0 ) {
+            $property_url = add_query_arg( 'property_id', $property['id'], get_permalink( $property_page_id ) );
+        } else {
+            $property_url = add_query_arg( 'property_id', $property['id'] );
+        }
+        $property_url = apply_filters( 'bwg_property_card_url', $property_url, $property );
+    ?>
+        <a href="<?php echo esc_url( $property_url ); ?>" class="bwg-property-card bwg-property-card--linked">
             <?php if ( ! empty( $property['images'] ) ) : ?>
                 <div class="bwg-property-card__image">
                     <img
@@ -154,7 +167,7 @@ $show_filters = filter_var( $atts['show_filters'], FILTER_VALIDATE_BOOLEAN );
                     </div>
                 <?php endif; ?>
             </div>
-        </div>
+        </a>
     <?php endforeach; ?>
     </div>
 </div>

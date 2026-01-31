@@ -63,9 +63,13 @@ $tag_close = $enable_link ? '</a>' : '</div>';
                         <?php echo esc_html( $property['bathrooms'] ); ?> <?php esc_html_e( 'Baths', 'bwg-rentals' ); ?>
                     </span>
                 <?php endif; ?>
-                <?php if ( isset( $property['guests'] ) ) : ?>
+                <?php
+                // Normalize guests field - API may return 'guests' or 'sleeps'
+                $guests = isset( $property['guests'] ) ? $property['guests'] : ( isset( $property['sleeps'] ) ? $property['sleeps'] : null );
+                if ( $guests ) :
+                ?>
                     <span class="bwg-property-specs__item">
-                        <?php echo esc_html( $property['guests'] ); ?> <?php esc_html_e( 'Guests', 'bwg-rentals' ); ?>
+                        <?php echo esc_html( $guests ); ?> <?php esc_html_e( 'Guests', 'bwg-rentals' ); ?>
                     </span>
                 <?php endif; ?>
             </div>
