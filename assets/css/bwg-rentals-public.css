@@ -131,6 +131,16 @@
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--bwg-text-color);
+    /* Long name handling - truncate with ellipsis */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+    max-height: 2.6em; /* 2 lines * 1.3 line-height */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .bwg-property-card__title a {
@@ -147,6 +157,10 @@
     margin: 0 0 var(--bwg-spacing-md);
     font-family: var(--bwg-font-family);
     color: var(--bwg-text-color);
+    /* Long name handling - wrap gracefully */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 /* Property Specs */
