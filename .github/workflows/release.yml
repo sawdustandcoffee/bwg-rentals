@@ -2,12 +2,12 @@ name: Release Plugin
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 jobs:
   release:
-    name: Create Release
+    name: Build and Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,69 +15,105 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Get version from tag
+      - name: Get version from plugin file
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(grep -oP '^\s*\*\s*Version:\s*\K[0-9.]+' bwg-rentals.php)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Check if release exists
+        id: check_release
+        run: |
+          if gh release view "v${{ steps.get_version.outputs.VERSION }}" &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump patch version if release exists
+        id: final_version
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          if [ "${{ steps.check_release.outputs.exists }}" = "true" ]; then
+            # Bump patch version
+            IFS='.' read -r major minor patch <<< "$VERSION"
+            patch=$((patch + 1))
+            VERSION="$major.$minor.$patch"
+            echo "Bumped version to: $VERSION"
+
+            # Update the plugin file
+            sed -i "s/^\(\s*\*\s*Version:\s*\).*/\1$VERSION/" bwg-rentals.php
+
+            # Update readme.txt if it has a version
+            sed -i "s/^Stable tag:.*/Stable tag: $VERSION/" readme.txt 2>/dev/null || true
+
+            # Update update-info.json if it exists
+            if [ -f update-info.json ]; then
+              sed -i "s/\"version\":\s*\"[^\"]*\"/\"version\": \"$VERSION\"/" update-info.json
+            fi
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit version bump if changed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Bump version to ${{ steps.final_version.outputs.VERSION }}"
+            git push
+          fi
 
       - name: Create plugin zip
         run: |
-          # Create a temporary directory for the plugin
+          VERSION="${{ steps.final_version.outputs.VERSION }}"
+
           mkdir -p build/bwg-rentals
 
-          # Copy only the files needed for the plugin distribution
-          # Main plugin file
+          # Copy plugin files
           cp bwg-rentals.php build/bwg-rentals/
-
-          # WordPress readme
           cp readme.txt build/bwg-rentals/
-
-          # Uninstall script (if exists)
           [ -f uninstall.php ] && cp uninstall.php build/bwg-rentals/
-
-          # PHP includes
           cp -r includes build/bwg-rentals/
-
-          # Shortcodes directory (if exists and has files)
-          [ -d shortcodes ] && [ "$(ls -A shortcodes 2>/dev/null)" ] && cp -r shortcodes build/bwg-rentals/
-
-          # Assets (CSS/JS)
           cp -r assets build/bwg-rentals/
-
-          # Templates
           cp -r templates build/bwg-rentals/
-
-          # Languages
           cp -r languages build/bwg-rentals/
 
-          # Vendor (plugin-update-checker only)
+          # Vendor (plugin-update-checker)
           mkdir -p build/bwg-rentals/vendor
           cp -r vendor/plugin-update-checker build/bwg-rentals/vendor/
 
-          # Create the zip file
+          # Create zip
           cd build
-          zip -r ../bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip bwg-rentals
+          zip -r ../bwg-rentals-${VERSION}.zip bwg-rentals
           cd ..
-
-          # Also create a generic "latest" zip for easier downloading
-          cp bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip bwg-rentals.zip
+          cp bwg-rentals-${VERSION}.zip bwg-rentals.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ steps.final_version.outputs.VERSION }}
+          name: v${{ steps.final_version.outputs.VERSION }}
           files: |
-            bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip
+            bwg-rentals-${{ steps.final_version.outputs.VERSION }}.zip
             bwg-rentals.zip
           generate_release_notes: true
           body: |
-            ## BWG Rentals v${{ steps.get_version.outputs.VERSION }}
+            ## BWG Rentals v${{ steps.final_version.outputs.VERSION }}
 
             ### Installation
-            1. Download `bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip`
+            1. Download `bwg-rentals.zip`
             2. Go to WordPress Admin > Plugins > Add New > Upload Plugin
             3. Upload the zip file and click "Install Now"
             4. Activate the plugin
-            5. Go to Settings > BWG Rentals to configure
 
             ### Automatic Updates
-            If you already have the plugin installed, WordPress will notify you of this update automatically.
+            If already installed, WordPress will notify you of this update automatically.
