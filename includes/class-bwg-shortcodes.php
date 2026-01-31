@@ -820,6 +820,7 @@ class BWG_Shortcodes {
             array(
                 'id'                   => '',
                 'layout'               => 'standard', // standard, compact, minimal
+                'show_breadcrumbs'     => 'true',
                 'show_gallery'         => 'true',
                 'show_title'           => 'true',
                 'show_specs'           => 'true',
@@ -830,6 +831,7 @@ class BWG_Shortcodes {
                 'show_location'        => 'true',
                 'show_policies'        => 'true',
                 'show_booking_button'  => 'true',
+                'show_anchors'         => 'true', // Show section anchor navigation
             ),
             $atts,
             'bwg_property'

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature #98: Sticky Booking Sidebar Test</title>
+    <link rel="stylesheet" href="assets/css/bwg-rentals-public.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+        :root {
+            --bwg-spacing-xs: 4px;
+            --bwg-spacing-sm: 8px;
+            --bwg-spacing-md: 16px;
+            --bwg-spacing-lg: 24px;
+            --bwg-spacing-xl: 32px;
+            --bwg-primary-color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="bwg-property-full bwg-property-full--standard">
+
+        <!-- Gallery (mock) -->
+        <div class="bwg-property-full__gallery" style="height: 400px; background: #ddd; margin-bottom: 32px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: #666; font-size: 1.5rem;">Property Image Gallery</span>
+        </div>
+
+        <!-- Two-column layout: Main content + Sticky sidebar -->
+        <div class="bwg-property-full__layout">
+
+            <!-- Main Content Column -->
+            <div class="bwg-property-full__content">
+
+                <div class="bwg-property-full__section bwg-property-full__section--title">
+                    <h1 class="bwg-property-title">Luxury Beachfront Villa</h1>
+                    <p class="bwg-property-headline">Experience paradise with stunning ocean views</p>
+                </div>
+
+                <div class="bwg-property-full__section bwg-property-full__section--description">
+                    <h2>Description</h2>
+                    <div class="bwg-property-description">
+                        <p>Welcome to your dream vacation home! This stunning beachfront villa offers the perfect blend of luxury and comfort, with breathtaking views of the crystal-clear ocean.</p>
+                        <p>The spacious interior features high-end finishes, modern amenities, and an open-concept design that seamlessly blends indoor and outdoor living. Large windows flood the space with natural light and offer panoramic views of the beach.</p>
+                        <p>Step outside to your private patio, complete with a infinity pool, outdoor kitchen, and multiple seating areas perfect for entertaining or simply relaxing while watching the sunset.</p>
+                        <p>Located just steps from the beach, you'll have easy access to swimming, surfing, and beach activities. The villa is also conveniently close to local restaurants, shops, and attractions.</p>
+                    </div>
+                </div>
+
+                <div class="bwg-property-full__section bwg-property-full__section--amenities">
+                    <h2>Amenities</h2>
+                    <p>Air Conditioning, WiFi, Ocean View, Private Pool, Beach Access, Outdoor Kitchen, Smart TV, Washer/Dryer, Parking, Patio, BBQ Grill, Coffee Maker</p>
+                </div>
+
+                <div class="bwg-property-full__section bwg-property-full__section--rates">
+                    <h2>Rates</h2>
+                    <p><strong>Base Rate:</strong> $450 / night</p>
+                    <p><strong>Peak Season:</strong> $650 / night</p>
+                    <p><strong>Weekly Discount:</strong> 10% off</p>
+                </div>
+
+                <div class="bwg-property-full__section bwg-property-full__section--location">
+                    <h2>Location</h2>
+                    <p>123 Beach Road, Malibu, CA 90265, United States</p>
+                </div>
+
+                <div class="bwg-property-full__section bwg-property-full__section--policies">
+                    <h2>Policies</h2>
+                    <p><strong>Check-in:</strong> 4:00 PM</p>
+                    <p><strong>Check-out:</strong> 11:00 AM</p>
+                    <p><strong>Cancellation:</strong> Flexible - full refund up to 14 days before arrival</p>
+                    <p><strong>House Rules:</strong> No smoking, No parties, Pets allowed with deposit</p>
+                    <p><strong>Cleaning Fee:</strong> $150</p>
+                    <p><strong>Security Deposit:</strong> $500</p>
+                </div>
+
+                <!-- This content is added to make the page scroll -->
+                <div class="bwg-property-full__section" style="padding: 40px 0;">
+                    <h2>Additional Information</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+                    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+                </div>
+
+            </div><!-- .bwg-property-full__content -->
+
+            <!-- Sticky Booking Sidebar -->
+            <aside class="bwg-property-full__sidebar">
+                <div class="bwg-property-sidebar">
+                    <div class="bwg-property-sidebar__inner">
+
+                        <!-- Property Name -->
+                        <h3 class="bwg-property-sidebar__title">Luxury Beachfront Villa</h3>
+
+                        <!-- Key Specs -->
+                        <div class="bwg-property-sidebar__specs">
+                            <span class="bwg-property-sidebar__spec">
+                                <span class="bwg-property-sidebar__spec-icon">🛏️</span>
+                                <span class="bwg-property-sidebar__spec-value">4 Beds</span>
+                            </span>
+                            <span class="bwg-property-sidebar__spec">
+                                <span class="bwg-property-sidebar__spec-icon">🚿</span>
+                                <span class="bwg-property-sidebar__spec-value">3 Baths</span>
+                            </span>
+                            <span class="bwg-property-sidebar__spec">
+                                <span class="bwg-property-sidebar__spec-icon">👥</span>
+                                <span class="bwg-property-sidebar__spec-value">8 Guests</span>
+                            </span>
+                        </div>
+
+                        <!-- Starting Rate -->
+                        <div class="bwg-property-sidebar__rate">
+                            <span class="bwg-property-sidebar__rate-label">Starting at:</span>
+                            <span class="bwg-property-sidebar__rate-amount">
+                                $450
+                                <span class="bwg-property-sidebar__rate-period">/ night</span>
+                            </span>
+                        </div>
+
+                        <!-- Booking Button -->
+                        <a
+                            href="https://app.getdirect.io/listings/test-org/property-123"
+                            class="bwg-property-sidebar__button"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Book Now
+                        </a>
+
+                        <!-- Contact/Inquiry Link -->
+                        <div class="bwg-property-sidebar__contact">
+                            <a href="https://app.getdirect.io/listings/test-org/property-123" class="bwg-property-sidebar__link" target="_blank" rel="noopener noreferrer">
+                                Questions? Contact us
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </aside>
+
+        </div><!-- .bwg-property-full__layout -->
+
+    </div>
+
+    <div style="padding: 40px; text-align: center; background: #fff; margin-top: 40px;">
+        <h3>Test Instructions</h3>
+        <p>Scroll down the page to verify the sidebar stays visible (sticky behavior).</p>
+        <p>Resize the browser window to test responsive behavior on tablet and mobile.</p>
+    </div>
+
+</body>
+</html>
