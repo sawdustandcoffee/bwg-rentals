@@ -500,21 +500,32 @@ class BWG_Admin {
             return '';
         }
 
-        $key = wp_salt( 'auth' );
-
-        if ( function_exists( 'openssl_decrypt' ) ) {
-            $data   = base64_decode( $encrypted_value );
-            $iv_len = openssl_cipher_iv_length( 'aes-256-cbc' );
-            $iv     = substr( $data, 0, $iv_len );
-            $encrypted = substr( $data, $iv_len );
-
-            $decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
-
-            return $decrypted !== false ? $decrypted : '';
+        // Check if it's in the expected format (two base64 strings separated by ::)
+        if ( strpos( $encrypted_value, '::' ) === false ) {
+            return $encrypted_value; // Not encrypted, return as-is
         }
 
-        // Fallback: base64 decode
-        return base64_decode( $encrypted_value );
+        // Get encryption key (same logic as instance method)
+        if ( defined( 'BWG_RENTALS_ENCRYPTION_KEY' ) ) {
+            $key = BWG_RENTALS_ENCRYPTION_KEY;
+        } elseif ( defined( 'AUTH_KEY' ) ) {
+            $key = AUTH_KEY;
+        } else {
+            $key = 'bwg-rentals-default-key';
+        }
+
+        list( $encrypted_b64, $iv_b64 ) = explode( '::', $encrypted_value, 2 );
+
+        $encrypted = base64_decode( $encrypted_b64 );
+        $iv = base64_decode( $iv_b64 );
+
+        if ( $encrypted === false || $iv === false ) {
+            return ''; // Invalid data
+        }
+
+        $decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
+
+        return $decrypted !== false ? $decrypted : '';
     }
 
     /**

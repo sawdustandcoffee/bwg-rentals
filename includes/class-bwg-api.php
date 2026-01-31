@@ -463,7 +463,7 @@ class BWG_API {
     private function get_credentials() {
         return array(
             'api_key' => BWG_Admin::decrypt_value( get_option( 'bwg_rentals_api_key' ) ),
-            'org_id'  => BWG_Admin::decrypt_value( get_option( 'bwg_rentals_organization_id' ) ),
+            'org_id'  => BWG_Admin::decrypt_value( get_option( 'bwg_rentals_org_id' ) ),
         );
     }
 
