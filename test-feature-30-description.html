@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature #30 Test: [bwg_property_description] Shortcode</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #0073aa;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #0073aa;
+            margin-top: 0;
+        }
+        .shortcode {
+            background: #f0f0f0;
+            padding: 10px;
+            border-left: 4px solid #0073aa;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .expected {
+            background: #e7f5ff;
+            padding: 10px;
+            border-left: 4px solid #0073aa;
+            margin: 10px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        .status.pending { background: #fff3cd; color: #856404; }
+        .status.pass { background: #d4edda; color: #155724; }
+        .status.fail { background: #f8d7da; color: #721c24; }
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feature #30 Test Plan: [bwg_property_description] Basic Rendering</h1>
+
+    <div class="test-section">
+        <h2>Feature Definition</h2>
+        <p><strong>Category:</strong> Single Property Shortcodes</p>
+        <p><strong>Name:</strong> [bwg_property_description] basic rendering</p>
+        <p><strong>Description:</strong> The description shortcode displays property description</p>
+        <p><strong>Dependencies:</strong> Feature #4 (API class instantiated) - ✅ PASSING</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Steps</h2>
+        <ol class="checklist">
+            <li>
+                <strong>Step 1:</strong> Add [bwg_property_description id="X"] shortcode
+                <span class="status pending">PENDING</span>
+            </li>
+            <li>
+                <strong>Step 2:</strong> Verify description displays
+                <span class="status pending">PENDING</span>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Implementation Review</h2>
+        <h3>✅ Shortcode Registration</h3>
+        <p><strong>File:</strong> includes/class-bwg-shortcodes.php (line 71)</p>
+        <div class="shortcode">add_shortcode( 'bwg_property_description', array( $this, 'property_description' ) );</div>
+
+        <h3>✅ Handler Method</h3>
+        <p><strong>File:</strong> includes/class-bwg-shortcodes.php (lines 674-710)</p>
+        <p><strong>Features:</strong></p>
+        <ul>
+            <li>Accepts <code>id</code> attribute (required)</li>
+            <li>Accepts <code>excerpt_length</code> attribute (optional, 0 = full description)</li>
+            <li>Accepts <code>show_full</code> attribute (optional, default 'true')</li>
+            <li>Gets property ID from shortcode or URL parameter</li>
+            <li>Validates property ID is provided</li>
+            <li>Fetches property data from API</li>
+            <li>Handles API errors gracefully</li>
+            <li>Truncates description if excerpt_length > 0</li>
+            <li>Sanitizes output with wp_kses_post()</li>
+            <li>Applies filter hook for extensibility</li>
+            <li>Enqueues assets automatically</li>
+        </ul>
+
+        <h3>✅ CSS Styling</h3>
+        <p><strong>File:</strong> assets/css/bwg-rentals-public.css</p>
+        <p><strong>Styles defined:</strong></p>
+        <ul>
+            <li>Lines 269-273: Basic description styling</li>
+            <li>Lines 1494-1506: Enhanced description styling with paragraph spacing</li>
+            <li>Lines 1794-1797: Compact layout styling</li>
+        </ul>
+
+        <h3>CSS Features:</h3>
+        <ul>
+            <li>Uses CSS custom properties (variables)</li>
+            <li>Proper line-height for readability (1.6)</li>
+            <li>Paragraph spacing with bottom margin</li>
+            <li>Last paragraph has no margin (clean layout)</li>
+            <li>Compact mode support with smaller font</li>
+            <li>Responsive typography</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Testing Scenarios</h2>
+
+        <h3>Scenario 1: Basic Description Display</h3>
+        <div class="shortcode">[bwg_property_description id="123"]</div>
+        <div class="expected">
+            <strong>Expected:</strong> Full property description displays with proper formatting
+        </div>
+
+        <h3>Scenario 2: Excerpt Mode</h3>
+        <div class="shortcode">[bwg_property_description id="123" excerpt_length="20"]</div>
+        <div class="expected">
+            <strong>Expected:</strong> First 20 words of description with ellipsis (...)
+        </div>
+
+        <h3>Scenario 3: Missing ID</h3>
+        <div class="shortcode">[bwg_property_description]</div>
+        <div class="expected">
+            <strong>Expected:</strong> Error message: "Property ID is required."
+        </div>
+
+        <h3>Scenario 4: Invalid ID</h3>
+        <div class="shortcode">[bwg_property_description id="99999"]</div>
+        <div class="expected">
+            <strong>Expected:</strong> Error message from API (property not found)
+        </div>
+
+        <h3>Scenario 5: ID from URL Parameter</h3>
+        <div class="shortcode">[bwg_property_description]</div>
+        <p><strong>URL:</strong> /property/?property_id=123</p>
+        <div class="expected">
+            <strong>Expected:</strong> Description for property 123 displays (gets ID from URL)
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Verification Checklist</h2>
+        <ul class="checklist">
+            <li>✅ Shortcode is registered in WordPress</li>
+            <li>✅ Handler method exists (property_description)</li>
+            <li>✅ Accepts required 'id' attribute</li>
+            <li>✅ Accepts optional 'excerpt_length' attribute</li>
+            <li>✅ Accepts optional 'show_full' attribute</li>
+            <li>✅ Gets property ID from URL parameter as fallback</li>
+            <li>✅ Validates property ID is present</li>
+            <li>✅ Returns error if ID missing</li>
+            <li>✅ Calls API to get property data</li>
+            <li>✅ Handles API errors (is_wp_error check)</li>
+            <li>✅ Extracts description from property data</li>
+            <li>✅ Truncates to excerpt_length if specified</li>
+            <li>✅ Sanitizes output (wp_kses_post)</li>
+            <li>✅ Wraps in semantic HTML (.bwg-property-description)</li>
+            <li>✅ Applies filter hook for extensibility</li>
+            <li>✅ CSS styling exists</li>
+            <li>✅ Proper line-height for readability</li>
+            <li>✅ Paragraph spacing implemented</li>
+            <li>⏳ Live test: Full description displays</li>
+            <li>⏳ Live test: Excerpt mode works</li>
+            <li>⏳ Live test: Error handling works</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>WordPress Standards Compliance</h2>
+        <ul class="checklist">
+            <li>✅ Uses shortcode_atts() for attribute parsing</li>
+            <li>✅ Uses wp_kses_post() for output sanitization</li>
+            <li>✅ Uses wp_trim_words() for excerpt generation</li>
+            <li>✅ Uses is_wp_error() for error checking</li>
+            <li>✅ Uses apply_filters() for extensibility</li>
+            <li>✅ Follows WordPress coding standards</li>
+            <li>✅ Internationalization ready (__() function)</li>
+            <li>✅ Proper documentation (DocBlock)</li>
+            <li>✅ BEM CSS naming convention</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Next Steps for Live Testing</h2>
+        <ol>
+            <li>Navigate to WordPress admin</li>
+            <li>Create/edit a test page</li>
+            <li>Add shortcode: <code>[bwg_property_description id="123"]</code></li>
+            <li>View the page on frontend</li>
+            <li>Verify description displays correctly</li>
+            <li>Test with different property IDs</li>
+            <li>Test excerpt mode with various word counts</li>
+            <li>Test error scenarios (missing/invalid ID)</li>
+            <li>Take screenshots of results</li>
+            <li>Mark feature as passing if all tests succeed</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Documentation</h2>
+        <p>This test plan will be saved as part of the feature verification process.</p>
+        <p><strong>File:</strong> test-feature-30-description.html</p>
+    </div>
+</body>
+</html>
