@@ -796,84 +796,97 @@ class BWG_API {
     }
 
     /**
-     * Normalize property images from API response
+     * Normalize property data from API response
      *
-     * Transforms images from the Direct API format into a unified 'images' array
+     * Transforms property data from the Direct API format into a unified structure
      * for consistent template usage.
      *
-     * Handles multiple API formats:
-     * - featured_image: { image: { large: { url }, medium: { url }, small: { url } } }
-     * - images (Direct API): [ { uri, label }, ... ]
-     * - property_images (legacy): [ { image: { large: { url }, ... }, caption }, ... ]
-     *
-     * Also detects and preserves already-normalized data (mock data with 'url' keys).
+     * Handles:
+     * - Images: featured_image, images[], property_images[]
+     * - Specs: Extracts bedrooms, bathrooms, guests from units[] array
+     * - Description: Maps summary_description to description
      *
      * @param array $property Property data from API.
-     * @return array Property data with normalized images array.
+     * @return array Property data with normalized structure.
      */
     private function normalize_property_images( $property ) {
-        // Check if images array exists and is already normalized (has 'url' key in first item)
-        // Mock data and already-normalized data will have 'url' keys
-        // Raw Direct API data will have 'uri' keys instead
+        // Check if already normalized (has 'url' key in first image)
+        $already_normalized = false;
         if ( isset( $property['images'] ) && ! empty( $property['images'] ) ) {
             $first_image = reset( $property['images'] );
             if ( isset( $first_image['url'] ) ) {
-                // Already normalized (mock data or previously processed)
-                return $property;
+                $already_normalized = true;
             }
         }
 
-        $images = array();
+        // Normalize images if not already done
+        if ( ! $already_normalized ) {
+            $images = array();
 
-        // Extract featured_image as the first/primary image
-        if ( isset( $property['featured_image']['image']['large']['url'] ) ) {
-            $images[] = array(
-                'url'    => $property['featured_image']['image']['large']['url'],
-                'medium' => $property['featured_image']['image']['medium']['url'] ?? '',
-                'small'  => $property['featured_image']['image']['small']['url'] ?? '',
-                'alt'    => $property['name'] ?? '',
-            );
-        }
-
-        // Extract additional images from Direct API 'images' array (uri format)
-        // Direct API returns: images[].uri and images[].label
-        if ( isset( $property['images'] ) && is_array( $property['images'] ) ) {
-            foreach ( $property['images'] as $api_image ) {
-                // Skip if no uri available
-                if ( ! isset( $api_image['uri'] ) ) {
-                    continue;
-                }
-
+            // Extract featured_image as the first/primary image
+            if ( isset( $property['featured_image']['image']['large']['url'] ) ) {
                 $images[] = array(
-                    'url'     => $api_image['uri'],
-                    'medium'  => $api_image['uri'], // Direct API only provides one size
-                    'small'   => $api_image['uri'],
-                    'alt'     => $api_image['label'] ?? ( $property['name'] ?? '' ),
-                    'caption' => $api_image['label'] ?? '',
+                    'url'    => $property['featured_image']['image']['large']['url'],
+                    'medium' => $property['featured_image']['image']['medium']['url'] ?? '',
+                    'small'  => $property['featured_image']['image']['small']['url'] ?? '',
+                    'alt'    => $property['name'] ?? '',
                 );
             }
+
+            // Extract additional images from Direct API 'images' array (uri format)
+            if ( isset( $property['images'] ) && is_array( $property['images'] ) ) {
+                foreach ( $property['images'] as $api_image ) {
+                    if ( ! isset( $api_image['uri'] ) ) {
+                        continue;
+                    }
+                    $images[] = array(
+                        'url'     => $api_image['uri'],
+                        'medium'  => $api_image['uri'],
+                        'small'   => $api_image['uri'],
+                        'alt'     => $api_image['label'] ?? ( $property['name'] ?? '' ),
+                        'caption' => $api_image['label'] ?? '',
+                    );
+                }
+            }
+
+            // Fallback: Extract from property_images array (legacy format)
+            if ( isset( $property['property_images'] ) && is_array( $property['property_images'] ) ) {
+                foreach ( $property['property_images'] as $prop_image ) {
+                    if ( ! isset( $prop_image['image']['large']['url'] ) ) {
+                        continue;
+                    }
+                    $images[] = array(
+                        'url'     => $prop_image['image']['large']['url'],
+                        'medium'  => $prop_image['image']['medium']['url'] ?? '',
+                        'small'   => $prop_image['image']['small']['url'] ?? '',
+                        'alt'     => $prop_image['caption'] ?? ( $property['name'] ?? '' ),
+                        'caption' => $prop_image['caption'] ?? '',
+                    );
+                }
+            }
+
+            $property['images'] = $images;
         }
 
-        // Fallback: Extract additional images from property_images array (legacy format)
-        if ( isset( $property['property_images'] ) && is_array( $property['property_images'] ) ) {
-            foreach ( $property['property_images'] as $prop_image ) {
-                // Skip if no large URL available
-                if ( ! isset( $prop_image['image']['large']['url'] ) ) {
-                    continue;
-                }
+        // Extract specs from units array (single property endpoint nests these)
+        if ( isset( $property['units'][0] ) ) {
+            $unit = $property['units'][0];
 
-                $images[] = array(
-                    'url'     => $prop_image['image']['large']['url'],
-                    'medium'  => $prop_image['image']['medium']['url'] ?? '',
-                    'small'   => $prop_image['image']['small']['url'] ?? '',
-                    'alt'     => $prop_image['caption'] ?? ( $property['name'] ?? '' ),
-                    'caption' => $prop_image['caption'] ?? '',
-                );
+            if ( ! isset( $property['bedrooms'] ) && isset( $unit['num_bedrooms'] ) ) {
+                $property['bedrooms'] = $unit['num_bedrooms'];
+            }
+            if ( ! isset( $property['bathrooms'] ) && isset( $unit['num_bathrooms'] ) ) {
+                $property['bathrooms'] = $unit['num_bathrooms'];
+            }
+            if ( ! isset( $property['guests'] ) && ! isset( $property['sleeps'] ) && isset( $unit['occupancy'] ) ) {
+                $property['guests'] = $unit['occupancy'];
             }
         }
 
-        // Set the normalized images array
-        $property['images'] = $images;
+        // Map description field
+        if ( ! isset( $property['description'] ) && isset( $property['summary_description'] ) ) {
+            $property['description'] = $property['summary_description'];
+        }
 
         return $property;
     }
