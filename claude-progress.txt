@@ -1,3 +1,85 @@
+## Session: 2026-01-30 (Feature #69 - Parallel Agent)
+
+### Feature #69: Amenities icons display correctly - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 69
+- Name: Amenities icons display correctly
+- Description: Amenity icons are properly sized and aligned
+- Category: style
+- Dependencies: Feature #33 ([bwg_property_amenities] displays amenities list) PASSED
+- Steps:
+  1. Add [bwg_property_amenities show_icons='true']
+  2. View on frontend
+  3. Verify icons display at consistent size
+  4. Verify icons align with text
+
+#### Implementation Details (Already Implemented):
+
+**Template (templates/property-amenities.php):**
+- Line 35: `<span class="bwg-property-amenities__icon">✓</span>` - Checkmark icon
+- Icon displayed when `show_icons='true'` (default)
+
+**CSS Styling (assets/css/bwg-rentals-public.css):**
+- Lines 209-214: `.bwg-property-amenities__item` - flexbox layout
+  - `display: flex;`
+  - `align-items: center;`
+  - `gap: var(--bwg-spacing-sm);` (8px)
+
+- Lines 216-220: `.bwg-property-amenities__icon`
+  - `width: 1.25em;` (25px)
+  - `height: 1.25em;`
+  - `color: var(--bwg-accent-color);` (#00a32a - green)
+
+- Lines 704-727: Responsive breakpoints
+  - At 768px: columns-3 and columns-4 become 2-column
+  - At 480px: all column variants become single column
+
+#### Browser Verification:
+
+**Test 1: Desktop 2-column layout**
+- Test page: /amenities-test-feature-33/
+- Shortcode: `[bwg_property_amenities id="1"]`
+- Icons display with:
+  - Color: rgb(0, 163, 42) (#00a32a) - green accent ✓
+  - Size: 25px × 25px ✓
+  - Grid: 2 columns (301px each) ✓
+- Screenshot: feature-69-amenities-icons-display.png
+
+**Test 2: Desktop 3-column layout**
+- Test page: /feature-34-amenities-3-columns-test/
+- Shortcode: `[bwg_property_amenities id="1" columns="3"]`
+- Icons display correctly in 3-column grid ✓
+- Screenshot: feature-69-amenities-3-columns-icons.png
+
+**Test 3: Different property (Property 2)**
+- Test page: /amenities-test-property-2-feature-33/
+- Icons display correctly with different amenities ✓
+- Screenshot: feature-69-amenities-property-2-icons.png
+
+**Test 4: Mobile responsive (375px width)**
+- Grid collapses to single column (345px) ✓
+- Icons remain visible and properly aligned ✓
+- Screenshot: feature-69-amenities-mobile-icons.png
+
+#### Console Errors: None
+
+#### Git Commit:
+- Hash: dd2d6a5
+- Message: "Verify Feature #69: Amenities icons display correctly"
+
+#### Result:
+Feature #69 PASSING - Amenities icons display correctly:
+1. Checkmark (✓) icons displayed in green accent color
+2. Icons properly sized at 1.25em (25px)
+3. Icons aligned center with amenity text using flexbox
+4. Responsive layout works on desktop and mobile
+5. Works with different column configurations
+
+---
+
 ## Session: 2026-01-30 (Feature #65 - Parallel Agent)
 
 ### Feature #65: Booking button has hover state - PASSED
