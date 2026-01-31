@@ -45,20 +45,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <tr>
                     <th scope="row">
-                        <label for="bwg_rentals_organization_id"><?php esc_html_e( 'Organization ID', 'bwg-rentals' ); ?></label>
+                        <label for="bwg_rentals_org_id"><?php esc_html_e( 'Organization ID', 'bwg-rentals' ); ?></label>
                     </th>
                     <td>
                         <input
                             type="text"
-                            name="bwg_rentals_organization_id"
-                            id="bwg_rentals_organization_id"
+                            name="bwg_rentals_org_id"
+                            id="bwg_rentals_org_id"
                             value="<?php echo esc_attr( $org_id ); ?>"
                             class="regular-text"
                             data-validate="org-id"
                             minlength="2"
                             pattern="[a-zA-Z0-9_\-]+"
                         />
-                        <span class="bwg-field-error" id="bwg_rentals_organization_id-error" role="alert"></span>
+                        <span class="bwg-field-error" id="bwg_rentals_org_id-error" role="alert"></span>
                         <p class="description">
                             <?php esc_html_e( 'Enter your Direct Software organization ID.', 'bwg-rentals' ); ?>
                         </p>
