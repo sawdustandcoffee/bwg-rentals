@@ -467,4 +467,61 @@ if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) {
 
 	</div><!-- .bwg-property-full__layout -->
 
+	<?php if ( 'true' === $atts['show_related'] && ! empty( $related_properties ) ) : ?>
+		<div class="bwg-property-full__related">
+			<h2 class="bwg-property-full__related-title"><?php esc_html_e( 'You May Also Like', 'bwg-rentals' ); ?></h2>
+			<div class="bwg-related-properties">
+				<?php foreach ( $related_properties as $related_prop ) : ?>
+					<div class="bwg-related-property-card">
+						<?php if ( ! empty( $related_prop['images'][0]['url'] ) ) : ?>
+							<div class="bwg-related-property-card__image">
+								<img
+									src="<?php echo esc_url( $related_prop['images'][0]['url'] ); ?>"
+									alt="<?php echo esc_attr( $related_prop['name'] ?? '' ); ?>"
+									loading="lazy"
+								/>
+							</div>
+						<?php endif; ?>
+						<div class="bwg-related-property-card__content">
+							<h3 class="bwg-related-property-card__title">
+								<?php echo esc_html( $related_prop['name'] ?? '' ); ?>
+							</h3>
+							<?php if ( isset( $related_prop['bedrooms'] ) || isset( $related_prop['bathrooms'] ) || isset( $related_prop['guests'] ) ) : ?>
+								<div class="bwg-related-property-card__specs">
+									<?php if ( isset( $related_prop['bedrooms'] ) ) : ?>
+										<span class="bwg-related-property-card__spec">
+											🛏️ <?php echo esc_html( $related_prop['bedrooms'] . ' ' . _n( 'bed', 'beds', $related_prop['bedrooms'], 'bwg-rentals' ) ); ?>
+										</span>
+									<?php endif; ?>
+									<?php if ( isset( $related_prop['bathrooms'] ) ) : ?>
+										<span class="bwg-related-property-card__spec">
+											🚿 <?php echo esc_html( $related_prop['bathrooms'] . ' ' . _n( 'bath', 'baths', $related_prop['bathrooms'], 'bwg-rentals' ) ); ?>
+										</span>
+									<?php endif; ?>
+									<?php if ( isset( $related_prop['guests'] ) ) : ?>
+										<span class="bwg-related-property-card__spec">
+											👥 <?php echo esc_html( $related_prop['guests'] . ' ' . _n( 'guest', 'guests', $related_prop['guests'], 'bwg-rentals' ) ); ?>
+										</span>
+									<?php endif; ?>
+								</div>
+							<?php endif; ?>
+							<?php
+							// Build related property booking URL
+							$related_booking_url = 'https://app.getdirect.io/listings/' . $org_id . '/' . $related_prop['id'];
+							?>
+							<a
+								href="<?php echo esc_url( $related_booking_url ); ?>"
+								class="bwg-related-property-card__link"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<?php esc_html_e( 'View Property', 'bwg-rentals' ); ?>
+							</a>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	<?php endif; ?>
+
 </div>

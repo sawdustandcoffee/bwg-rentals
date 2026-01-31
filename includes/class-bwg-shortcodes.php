@@ -175,6 +175,94 @@ class BWG_Shortcodes {
     }
 
     /**
+     * Get related properties based on similarity
+     *
+     * Finds properties similar to the given property based on:
+     * - Number of bedrooms (primary factor)
+     * - Location (city/state)
+     *
+     * @param array $property The current property.
+     * @param int   $limit    Number of related properties to return (default 4).
+     * @return array Array of related properties.
+     */
+    private function get_related_properties( $property, $limit = 4 ) {
+        // Get all properties
+        $all_properties = $this->api->get_properties();
+
+        if ( is_wp_error( $all_properties ) || empty( $all_properties ) ) {
+            return array();
+        }
+
+        $current_id      = isset( $property['id'] ) ? $property['id'] : '';
+        $current_beds    = isset( $property['bedrooms'] ) ? intval( $property['bedrooms'] ) : 0;
+        $current_city    = isset( $property['address']['city'] ) ? $property['address']['city'] : '';
+        $current_state   = isset( $property['address']['state'] ) ? $property['address']['state'] : '';
+
+        $scored_properties = array();
+
+        foreach ( $all_properties as $prop ) {
+            // Skip the current property
+            if ( isset( $prop['id'] ) && $prop['id'] === $current_id ) {
+                continue;
+            }
+
+            $score = 0;
+
+            // Score based on bedroom similarity (0-100 points)
+            $prop_beds = isset( $prop['bedrooms'] ) ? intval( $prop['bedrooms'] ) : 0;
+            $bed_diff  = abs( $current_beds - $prop_beds );
+
+            if ( $bed_diff === 0 ) {
+                $score += 100; // Exact match
+            } elseif ( $bed_diff === 1 ) {
+                $score += 50;  // Close match
+            } elseif ( $bed_diff === 2 ) {
+                $score += 25;  // Somewhat similar
+            }
+
+            // Score based on location (0-50 points)
+            $prop_city  = isset( $prop['address']['city'] ) ? $prop['address']['city'] : '';
+            $prop_state = isset( $prop['address']['state'] ) ? $prop['address']['state'] : '';
+
+            if ( $prop_city === $current_city && ! empty( $current_city ) ) {
+                $score += 50; // Same city
+            } elseif ( $prop_state === $current_state && ! empty( $current_state ) ) {
+                $score += 25; // Same state
+            }
+
+            // Only include properties with some similarity
+            if ( $score > 0 ) {
+                $scored_properties[] = array(
+                    'property' => $prop,
+                    'score'    => $score,
+                );
+            }
+        }
+
+        // Sort by score (highest first)
+        usort(
+            $scored_properties,
+            function ( $a, $b ) {
+                return $b['score'] - $a['score'];
+            }
+        );
+
+        // Extract just the properties and limit
+        $related = array_slice(
+            array_map(
+                function ( $item ) {
+                    return $item['property'];
+                },
+                $scored_properties
+            ),
+            0,
+            $limit
+        );
+
+        return $related;
+    }
+
+    /**
      * Render empty state message
      *
      * @param string $message Empty state message.
@@ -832,6 +920,8 @@ class BWG_Shortcodes {
                 'show_policies'        => 'true',
                 'show_booking_button'  => 'true',
                 'show_anchors'         => 'true', // Show section anchor navigation
+                'show_related'         => 'true', // Show related/similar properties
+                'related_limit'        => '4',    // Number of related properties to show
             ),
             $atts,
             'bwg_property'
@@ -852,6 +942,12 @@ class BWG_Shortcodes {
         // Get availability and rates data for the full property view
         $availability = 'true' === $atts['show_availability'] ? $this->api->get_availability( $atts['id'] ) : null;
         $rates        = 'true' === $atts['show_rates'] ? $this->api->get_rates( $atts['id'] ) : null;
+
+        // Get related properties if enabled
+        $related_properties = null;
+        if ( 'true' === $atts['show_related'] ) {
+            $related_properties = $this->get_related_properties( $property, absint( $atts['related_limit'] ) );
+        }
 
         ob_start();
         include $this->get_template( 'property-full.php' );
