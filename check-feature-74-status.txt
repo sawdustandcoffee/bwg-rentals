@@ -1,2 +1,0 @@
-Feature #74 is already marked as in_progress.
-Let me use the blocked features list to understand what might be waiting.

@@ -30,6 +30,8 @@ tests/
 coverage/
 .coverage
 .playwright-mcp/
+test-results/
+*.backup
 
 # Environment files
 .env
@@ -49,6 +51,8 @@ dist/
 features.db
 features.db-shm
 features.db-wal
+bwg_features.db
+*.db
 .agent.lock
 .claude_settings.json
 .claude_assistant_settings.json
@@ -62,10 +66,64 @@ FEATURE-*.md
 FEATURE-*.txt
 SESSION-*.md
 SESSION-*.txt
+feature-*.md
+feature-*.txt
+session-*.md
+session-*.txt
+progress-*.txt
+*-notes.txt
+*-summary.txt
+*-summary.md
+*-session-*.txt
+*-session-*.md
+PROJECT-COMPLETE.md
+
+# Test/debug scripts (agent artifacts)
+check-*.js
+check-*.py
+check-*.sh
+check-*.php
+check_*.py
+check_*.js
+check_*.sh
+check_*.php
+get-*.js
+get-*.py
+get-*.sh
+get-*.php
+get_*.py
+get_*.js
+get_*.sh
+get_*.php
+create-*.js
+create-*.py
+create-*.sh
+create-*.php
+test-*.html
+test-*.js
+test-*.py
+test-*.sh
+test-*.php
+verify-*.py
+verify-*.php
+verify_*.py
+verify_*.php
+query-*.php
+query-*.py
+query_*.php
+query_*.py
+debug-*.html
+analyze_*.sh
+analyze-*.sh
+show-*.php
+set-*.php
+final-review-*.sh
 
 # Development scripts (not needed in plugin distribution)
 init.sh
 theme-override-test.php
+property-card-override.php
+*.override.php
 
 # CLAUDE.md - Remove before production
 CLAUDE.md
