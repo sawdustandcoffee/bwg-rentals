@@ -43,6 +43,7 @@ sort( $sleeps_options, SORT_NUMERIC );
 $current_beds = isset( $_GET['bwg_beds'] ) ? absint( $_GET['bwg_beds'] ) : 0;
 $current_baths = isset( $_GET['bwg_baths'] ) ? absint( $_GET['bwg_baths'] ) : 0;
 $current_sleeps = isset( $_GET['bwg_sleeps'] ) ? absint( $_GET['bwg_sleeps'] ) : 0;
+$current_orderby = isset( $_GET['bwg_orderby'] ) ? sanitize_text_field( $_GET['bwg_orderby'] ) : sanitize_text_field( $atts['orderby'] );
 
 // Generate unique ID for this instance
 $instance_id = 'bwg-filters-' . uniqid();
@@ -85,6 +86,24 @@ $instance_id = 'bwg-filters-' . uniqid();
                         <?php echo esc_html( $sleeps ); ?>+
                     </option>
                 <?php endforeach; ?>
+            </select>
+
+            <label for="bwg-filter-sort-<?php echo esc_attr( $instance_id ); ?>" class="bwg-filter__label">
+                <?php esc_html_e( 'Sort By', 'bwg-rentals' ); ?>
+            </label>
+            <select id="bwg-filter-sort-<?php echo esc_attr( $instance_id ); ?>" class="bwg-filter__select" name="bwg_orderby" data-filter="orderby">
+                <option value="name" <?php selected( $current_orderby, 'name' ); ?>>
+                    <?php esc_html_e( 'Property Name', 'bwg-rentals' ); ?>
+                </option>
+                <option value="beds" <?php selected( $current_orderby, 'beds' ); ?>>
+                    <?php esc_html_e( 'Bedrooms', 'bwg-rentals' ); ?>
+                </option>
+                <option value="guests" <?php selected( $current_orderby, 'guests' ); ?>>
+                    <?php esc_html_e( 'Guests', 'bwg-rentals' ); ?>
+                </option>
+                <option value="sqft" <?php selected( $current_orderby, 'sqft' ); ?>>
+                    <?php esc_html_e( 'Size (sqft)', 'bwg-rentals' ); ?>
+                </option>
             </select>
 
             <button type="button" class="bwg-filter__reset" id="bwg-filter-reset-<?php echo esc_attr( $instance_id ); ?>">

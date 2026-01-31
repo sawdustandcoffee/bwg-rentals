@@ -372,8 +372,13 @@
                 var $button = $(this);
                 var $container = $button.closest('.bwg-properties-container');
 
-                // Reset all selects
-                $container.find('.bwg-filter__select').val('');
+                // Reset filter selects (beds, baths, sleeps)
+                $container.find('[data-filter="beds"]').val('');
+                $container.find('[data-filter="baths"]').val('');
+                $container.find('[data-filter="sleeps"]').val('');
+
+                // Reset orderby to default
+                $container.find('[data-filter="orderby"]').val('name');
 
                 // Update properties
                 self.updateProperties($container);
@@ -393,8 +398,9 @@
             var beds = urlParams.get('bwg_beds');
             var baths = urlParams.get('bwg_baths');
             var sleeps = urlParams.get('bwg_sleeps');
+            var orderby = urlParams.get('bwg_orderby');
 
-            if (beds || baths || sleeps) {
+            if (beds || baths || sleeps || orderby) {
                 // Set select values
                 if (beds) {
                     $container.find('[data-filter="beds"]').val(beds);
@@ -404,6 +410,9 @@
                 }
                 if (sleeps) {
                     $container.find('[data-filter="sleeps"]').val(sleeps);
+                }
+                if (orderby) {
+                    $container.find('[data-filter="orderby"]').val(orderby);
                 }
             }
         },
@@ -420,13 +429,14 @@
             var beds = $container.find('[data-filter="beds"]').val() || '';
             var baths = $container.find('[data-filter="baths"]').val() || '';
             var sleeps = $container.find('[data-filter="sleeps"]').val() || '';
+            var orderby = $container.find('[data-filter="orderby"]').val() || 'name';
 
             // Get shortcode attributes (stored in data attributes if needed)
             var atts = {
                 layout: 'grid',
                 columns: 3,
                 limit: -1,
-                orderby: 'name'
+                orderby: orderby
             };
 
             // Show loading state
@@ -434,7 +444,7 @@
             $grid.css('pointer-events', 'none');
 
             // Update URL without page reload
-            self.updateUrl(beds, baths, sleeps);
+            self.updateUrl(beds, baths, sleeps, orderby);
 
             // Make AJAX request
             $.ajax({
@@ -478,13 +488,14 @@
         /**
          * Update URL parameters without page reload
          */
-        updateUrl: function(beds, baths, sleeps) {
+        updateUrl: function(beds, baths, sleeps, orderby) {
             var url = new URL(window.location);
 
             // Remove existing filter parameters
             url.searchParams.delete('bwg_beds');
             url.searchParams.delete('bwg_baths');
             url.searchParams.delete('bwg_sleeps');
+            url.searchParams.delete('bwg_orderby');
 
             // Add new parameters if they have values
             if (beds) {
@@ -495,6 +506,10 @@
             }
             if (sleeps) {
                 url.searchParams.set('bwg_sleeps', sleeps);
+            }
+            if (orderby && orderby !== 'name') {
+                // Only add orderby to URL if it's not the default
+                url.searchParams.set('bwg_orderby', orderby);
             }
 
             // Update URL without reloading page
