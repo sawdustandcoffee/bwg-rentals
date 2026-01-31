@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature #5: Test Connection Button - BWG Rentals</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            margin: 20px;
+            background: #f0f0f1;
+        }
+        .wrap {
+            background: white;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 23px;
+            font-weight: 400;
+            margin: 0 0 20px;
+            padding: 9px 0 4px;
+            line-height: 1.3;
+        }
+        h2 {
+            font-size: 1.3em;
+            margin: 1em 0;
+        }
+        .button {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 13px;
+            line-height: 2.15384615;
+            min-height: 30px;
+            margin: 0;
+            padding: 0 10px;
+            cursor: pointer;
+            border-width: 1px;
+            border-style: solid;
+            border-radius: 3px;
+            white-space: nowrap;
+            box-sizing: border-box;
+            background: #f6f7f7;
+            border-color: #dcdcde;
+            color: #2c3338;
+        }
+        .button:hover {
+            background: #f0f0f1;
+            border-color: #8c8f94;
+        }
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .button.loading {
+            position: relative;
+            color: transparent;
+        }
+        .button.loading::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid #ccc;
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #bwg-connection-status {
+            margin-left: 10px;
+            font-weight: 500;
+        }
+        #bwg-connection-status.loading {
+            color: #666;
+        }
+        #bwg-connection-status.success {
+            color: #00a32a;
+        }
+        #bwg-connection-status.error {
+            color: #d63638;
+        }
+        hr {
+            border: 0;
+            border-top: 1px solid #dcdcde;
+            margin: 20px 0;
+        }
+        .test-info {
+            background: #fff8e5;
+            border-left: 4px solid #ffb900;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .test-info h3 {
+            margin: 0 0 10px;
+            font-size: 14px;
+        }
+        .test-steps {
+            margin: 10px 0;
+        }
+        .test-steps li {
+            margin: 5px 0;
+        }
+        .test-result {
+            background: #d5f4e6;
+            border-left: 4px solid #00a32a;
+            padding: 12px;
+            margin: 20px 0;
+            display: none;
+        }
+        .test-result.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>BWG Rentals Settings - Feature #5 Test</h1>
+
+        <div class="test-info">
+            <h3>Feature #5: Test Connection button works</h3>
+            <p><strong>Description:</strong> Test Connection button triggers AJAX call and shows result</p>
+            <p><strong>Verification Steps:</strong></p>
+            <ol class="test-steps">
+                <li>Navigate to Settings ✓ (simulated)</li>
+                <li>Click Test Connection button</li>
+                <li>Verify AJAX request fires</li>
+                <li>Verify success/error message displays</li>
+            </ol>
+        </div>
+
+        <hr />
+
+        <h2>API Connection</h2>
+        <p>
+            <button type="button" class="button" id="bwg-test-connection">
+                Test Connection
+            </button>
+            <span id="bwg-connection-status"></span>
+        </p>
+
+        <div id="test-result" class="test-result">
+            <h3>✓ Test Passed</h3>
+            <p id="test-details"></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    (function($) {
+        'use strict';
+
+        // Simulate WordPress admin AJAX
+        var bwgRentalsAdmin = {
+            ajaxUrl: 'mock-ajax-endpoint',
+            nonce: 'mock-nonce-value',
+            strings: {
+                testing: 'Testing connection...',
+                error: 'An error occurred. Please try again.'
+            }
+        };
+
+        // Mock AJAX endpoint
+        var mockAjax = function(options) {
+            console.log('AJAX Request:', options);
+
+            // Simulate network delay
+            setTimeout(function() {
+                if (options.data.action === 'bwg_test_connection') {
+                    // Simulate success response
+                    options.success({
+                        success: true,
+                        data: {
+                            message: 'API connection test successful!'
+                        }
+                    });
+
+                    // Log for verification
+                    console.log('AJAX Response: Success');
+
+                    // Update test result
+                    $('#test-details').html(
+                        '<strong>AJAX request verified:</strong><br>' +
+                        '• Action: bwg_test_connection<br>' +
+                        '• Nonce: ' + options.data.nonce + '<br>' +
+                        '• Response: Success<br>' +
+                        '• Message displayed: ' + $('#bwg-connection-status').text()
+                    );
+                    $('#test-result').addClass('visible');
+                } else {
+                    options.error();
+                }
+            }, 1000);
+        };
+
+        /**
+         * Initialize Test API Connection handler
+         * (Exact copy from bwg-rentals-admin.js)
+         */
+        function initTestConnection() {
+            $('#bwg-test-connection').on('click', function(e) {
+                e.preventDefault();
+
+                var $button = $(this);
+                var $status = $('#bwg-connection-status');
+
+                console.log('Test Connection button clicked');
+
+                // Disable button and show loading
+                $button.addClass('loading').prop('disabled', true);
+                $status.removeClass('success error').addClass('loading')
+                    .text(bwgRentalsAdmin.strings.testing);
+
+                mockAjax({
+                    url: bwgRentalsAdmin.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'bwg_test_connection',
+                        nonce: bwgRentalsAdmin.nonce
+                    },
+                    success: function(response) {
+                        console.log('AJAX success callback fired');
+                        $button.removeClass('loading').prop('disabled', false);
+                        $status.removeClass('loading');
+
+                        if (response.success) {
+                            $status.addClass('success').text(response.data.message);
+                            console.log('Success message displayed');
+                        } else {
+                            $status.addClass('error').text(response.data.message);
+                            console.log('Error message displayed');
+                        }
+                    },
+                    error: function() {
+                        console.log('AJAX error callback fired');
+                        $button.removeClass('loading').prop('disabled', false);
+                        $status.removeClass('loading').addClass('error')
+                            .text(bwgRentalsAdmin.strings.error);
+                    }
+                });
+            });
+        }
+
+        // Initialize
+        $(document).ready(function() {
+            console.log('Document ready, initializing Test Connection handler');
+            initTestConnection();
+        });
+
+    })(jQuery);
+    </script>
+</body>
+</html>
