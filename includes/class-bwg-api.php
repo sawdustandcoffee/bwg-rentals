@@ -707,20 +707,29 @@ class BWG_API {
     /**
      * Normalize property images from API response
      *
-     * Transforms featured_image and property_images from the Direct API format
-     * into a unified 'images' array for consistent template usage.
+     * Transforms images from the Direct API format into a unified 'images' array
+     * for consistent template usage.
      *
-     * API format:
+     * Handles multiple API formats:
      * - featured_image: { image: { large: { url }, medium: { url }, small: { url } } }
-     * - property_images: [ { image: { large: { url }, ... }, caption }, ... ]
+     * - images (Direct API): [ { uri, label }, ... ]
+     * - property_images (legacy): [ { image: { large: { url }, ... }, caption }, ... ]
+     *
+     * Also detects and preserves already-normalized data (mock data with 'url' keys).
      *
      * @param array $property Property data from API.
      * @return array Property data with normalized images array.
      */
     private function normalize_property_images( $property ) {
-        // If images array already exists and is populated, return as-is (mock data or already normalized)
+        // Check if images array exists and is already normalized (has 'url' key in first item)
+        // Mock data and already-normalized data will have 'url' keys
+        // Raw Direct API data will have 'uri' keys instead
         if ( isset( $property['images'] ) && ! empty( $property['images'] ) ) {
-            return $property;
+            $first_image = reset( $property['images'] );
+            if ( isset( $first_image['url'] ) ) {
+                // Already normalized (mock data or previously processed)
+                return $property;
+            }
         }
 
         $images = array();
@@ -735,7 +744,26 @@ class BWG_API {
             );
         }
 
-        // Extract additional images from property_images array
+        // Extract additional images from Direct API 'images' array (uri format)
+        // Direct API returns: images[].uri and images[].label
+        if ( isset( $property['images'] ) && is_array( $property['images'] ) ) {
+            foreach ( $property['images'] as $api_image ) {
+                // Skip if no uri available
+                if ( ! isset( $api_image['uri'] ) ) {
+                    continue;
+                }
+
+                $images[] = array(
+                    'url'     => $api_image['uri'],
+                    'medium'  => $api_image['uri'], // Direct API only provides one size
+                    'small'   => $api_image['uri'],
+                    'alt'     => $api_image['label'] ?? ( $property['name'] ?? '' ),
+                    'caption' => $api_image['label'] ?? '',
+                );
+            }
+        }
+
+        // Fallback: Extract additional images from property_images array (legacy format)
         if ( isset( $property['property_images'] ) && is_array( $property['property_images'] ) ) {
             foreach ( $property['property_images'] as $prop_image ) {
                 // Skip if no large URL available
