@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature #82: Property Search Compact Mode - Test Page</title>
+</head>
+<body>
+    <h1>Feature #82: Property Search Compact Mode - Test</h1>
+
+    <h2>Test 1: Compact Mode Enabled</h2>
+    <p>Shortcode: <code>[bwg_property_search compact="true"]</code></p>
+    <p>Expected: Only shows Check-In, Check-Out, and Guests fields. "More Filters" button shows Bedrooms, Amenities, and Location when clicked.</p>
+
+    <h2>Test 2: Normal Mode (No Compact)</h2>
+    <p>Shortcode: <code>[bwg_property_search]</code></p>
+    <p>Expected: Shows all filter fields (dates, guests, bedrooms, amenities, location) without "More Filters" button.</p>
+
+    <h2>Test 3: Compact Mode with Limited Filters</h2>
+    <p>Shortcode: <code>[bwg_property_search compact="true" show_amenities="false"]</code></p>
+    <p>Expected: Compact mode, but amenities filter hidden even in expanded state.</p>
+
+    <hr>
+
+    <h3>Verification Steps:</h3>
+    <ol>
+        <li>Navigate to http://localhost:8088/feature-82-compact-mode-test/</li>
+        <li>In Test 1, verify only 3 fields visible initially (Check-In, Check-Out, Guests)</li>
+        <li>Click "More Filters" button</li>
+        <li>Verify additional fields appear (Bedrooms, Amenities, Location)</li>
+        <li>Click "More Filters" again to collapse</li>
+        <li>Verify fields hide again</li>
+        <li>In Test 2, verify all fields visible without toggle button</li>
+        <li>Test form submission works in both modes</li>
+    </ol>
+</body>
+</html>

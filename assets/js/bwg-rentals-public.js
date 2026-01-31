@@ -406,6 +406,11 @@
 
                 // Initial state
                 updateSlider();
+
+                // Start autoplay if enabled
+                if (autoplay) {
+                    startAutoplay();
+                }
             });
         }
     };
@@ -681,6 +686,27 @@
                         // Fallback: just reset the form
                         $form[0].reset();
                         $resultsContainer.empty();
+                    }
+                });
+
+                // Handle "More Filters" toggle for compact mode
+                $form.find('.bwg-property-search__more-filters-toggle').on('click', function(e) {
+                    e.preventDefault();
+                    var $toggle = $(this);
+                    var $moreFilters = $toggle.siblings('.bwg-property-search__more-filters');
+                    var $icon = $toggle.find('.bwg-property-search__more-filters-icon');
+                    var isExpanded = $moreFilters.attr('aria-hidden') === 'false';
+
+                    if (isExpanded) {
+                        // Collapse filters
+                        $moreFilters.attr('aria-hidden', 'true').slideUp(300);
+                        $toggle.removeClass('bwg-property-search__more-filters-toggle--expanded');
+                        $icon.text('▼');
+                    } else {
+                        // Expand filters
+                        $moreFilters.attr('aria-hidden', 'false').slideDown(300);
+                        $toggle.addClass('bwg-property-search__more-filters-toggle--expanded');
+                        $icon.text('▲');
                     }
                 });
             });
