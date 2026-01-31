@@ -122,6 +122,17 @@ class BWG_API {
                     'message' => 'Property not found.',
                 );
             }
+        } elseif ( strpos( $url, '/search' ) !== false ) {
+            // Mock search endpoint - check for empty mock key
+            if ( strpos( $credentials['api_key'], 'MOCK_EMPTY_' ) === 0 ) {
+                $mock_data = array(
+                    'results'          => array(),
+                    'total_pages'      => 0,
+                    'total_properties' => 0,
+                );
+            } else {
+                $mock_data = $this->get_mock_search_results();
+            }
         } elseif ( strpos( $url, '/properties' ) !== false ) {
             // Mock properties list - check for empty mock key
             if ( strpos( $credentials['api_key'], 'MOCK_EMPTY_' ) === 0 ) {
@@ -201,6 +212,8 @@ class BWG_API {
             $mock_data = $this->get_mock_rates();
         } elseif ( preg_match( '/\/properties\/(\d+)$/', $url, $matches ) ) {
             $mock_data = $this->get_mock_property( (int) $matches[1] );
+        } elseif ( strpos( $url, '/search' ) !== false ) {
+            $mock_data = $this->get_mock_search_results();
         } elseif ( strpos( $url, '/properties' ) !== false ) {
             $mock_data = $this->get_mock_properties();
         }
@@ -355,6 +368,79 @@ class BWG_API {
                 'longitude'   => -118.4065,
             ),
             ),
+        );
+    }
+
+    /**
+     * Get mock search results matching the /search endpoint response format
+     *
+     * The search endpoint returns a different structure than /properties:
+     * - results: Array of property objects with featured_image data
+     * - total_pages: Number of pages available
+     * - total_properties: Total count of matching properties
+     *
+     * @return array Mock search results data.
+     */
+    private function get_mock_search_results() {
+        $properties_data = $this->get_mock_properties();
+        $properties = isset( $properties_data['properties'] ) ? $properties_data['properties'] : array();
+
+        $results = array();
+        foreach ( $properties as $property ) {
+            // Build featured_image structure matching Direct API search response
+            $featured_image = null;
+            if ( ! empty( $property['images'] ) ) {
+                $first_image = $property['images'][0];
+                $image_url   = isset( $first_image['url'] ) ? $first_image['url'] : '';
+                $featured_image = array(
+                    'image' => array(
+                        'url'    => $image_url,
+                        'tiny'   => array( 'url' => $image_url ),
+                        'small'  => array( 'url' => $image_url ),
+                        'medium' => array( 'url' => $image_url ),
+                        'large'  => array( 'url' => $image_url ),
+                        'xlarge' => array( 'url' => $image_url ),
+                    ),
+                );
+            }
+
+            // Build images array matching Direct API format (uri/label)
+            $api_images = array();
+            if ( isset( $property['images'] ) && is_array( $property['images'] ) ) {
+                foreach ( $property['images'] as $img ) {
+                    $api_images[] = array(
+                        'uri'   => isset( $img['url'] ) ? $img['url'] : '',
+                        'label' => isset( $img['caption'] ) ? $img['caption'] : '',
+                    );
+                }
+            }
+
+            // Build result object matching search endpoint structure
+            $result = array(
+                'id'             => $property['id'],
+                'name'           => $property['name'],
+                'headline'       => isset( $property['headline'] ) ? $property['headline'] : '',
+                'description'    => isset( $property['description'] ) ? $property['description'] : '',
+                'bedrooms'       => isset( $property['bedrooms'] ) ? $property['bedrooms'] : 0,
+                'bathrooms'      => isset( $property['bathrooms'] ) ? $property['bathrooms'] : 0,
+                'sleeps'         => isset( $property['sleeps'] ) ? $property['sleeps'] : 0,
+                'sqft'           => isset( $property['sqft'] ) ? $property['sqft'] : 0,
+                'base_rate'      => isset( $property['base_rate'] ) ? $property['base_rate'] : 0,
+                'featured_image' => $featured_image,
+                'images'         => $api_images,
+                'amenities'      => isset( $property['amenities'] ) ? $property['amenities'] : array(),
+                'address'        => isset( $property['address'] ) ? $property['address'] : array(),
+                'latitude'       => isset( $property['latitude'] ) ? $property['latitude'] : null,
+                'longitude'      => isset( $property['longitude'] ) ? $property['longitude'] : null,
+            );
+
+            $results[] = $result;
+        }
+
+        return array(
+            'results'          => $results,
+            'total_pages'      => 1,
+            'total_properties' => count( $results ),
         );
     }
 
@@ -674,6 +760,10 @@ class BWG_API {
     /**
      * Get all properties
      *
+     * Uses the /search endpoint which returns full property data including
+     * featured_image with responsive URLs. The /properties endpoint only
+     * returns id, name, updated_at without image data.
+     *
      * @param bool $use_cache Whether to use cached data.
      * @return array|WP_Error Properties array or error.
      */
@@ -687,14 +777,16 @@ class BWG_API {
             }
         }
 
-        $data = $this->request( 'properties' );
+        // Use /search endpoint which returns full property data with images
+        // The /properties endpoint only returns id, name, updated_at (no images)
+        $data = $this->request( 'search?_limit=100' );
 
         if ( is_wp_error( $data ) ) {
             return $data;
         }
 
-        // Extract properties array from response
-        $properties = isset( $data['properties'] ) ? $data['properties'] : array();
+        // Extract properties array from search results
+        $properties = isset( $data['results'] ) ? $data['results'] : array();
 
         // Normalize images for each property
         $properties = array_map( array( $this, 'normalize_property_images' ), $properties );
