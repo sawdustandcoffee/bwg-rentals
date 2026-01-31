@@ -100,7 +100,7 @@ $bedrooms  = isset( $_GET['bedrooms'] ) ? absint( $_GET['bedrooms'] ) : '';
         <button type="submit" class="bwg-property-search__button">
             <?php echo esc_html( $button_text ); ?>
         </button>
-        <button type="reset" class="bwg-property-search__reset" onclick="window.location.href='<?php echo esc_url( strtok( $_SERVER['REQUEST_URI'], '?' ) ); ?>';return false;">
+        <button type="reset" class="bwg-property-search__reset" data-clear-url="<?php echo esc_url( strtok( $_SERVER['REQUEST_URI'], '?' ) ); ?>">
             <?php esc_html_e( 'Clear', 'bwg-rentals' ); ?>
         </button>
     </div>

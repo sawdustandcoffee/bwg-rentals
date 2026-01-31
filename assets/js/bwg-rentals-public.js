@@ -518,6 +518,102 @@
     };
 
     /**
+     * Property Search AJAX
+     */
+    var BWGSearch = {
+        init: function() {
+            var $searchForms = $('.bwg-property-search');
+
+            $searchForms.each(function() {
+                var $form = $(this);
+                var $button = $form.find('.bwg-property-search__button');
+                var $resultsContainer = $form.next('.bwg-search-results');
+
+                // If no results container exists, create one
+                if ($resultsContainer.length === 0) {
+                    $resultsContainer = $('<div class="bwg-search-results"></div>');
+                    $form.after($resultsContainer);
+                }
+
+                // Handle form submission
+                $form.on('submit', function(e) {
+                    e.preventDefault();
+
+                    // Get form data
+                    var checkIn = $form.find('[name="check_in"]').val();
+                    var checkOut = $form.find('[name="check_out"]').val();
+                    var guests = $form.find('[name="guests"]').val();
+                    var bedrooms = $form.find('[name="bedrooms"]').val();
+
+                    // Show loading state
+                    $resultsContainer.addClass('bwg-search-results--loading');
+                    $resultsContainer.html('<div class="bwg-search-results__loader"><span class="bwg-spinner"></span><p>Searching properties...</p></div>');
+                    $button.prop('disabled', true).addClass('bwg-property-search__button--loading');
+
+                    // Make AJAX request
+                    $.ajax({
+                        url: bwgRentals.ajaxUrl,
+                        type: 'POST',
+                        data: {
+                            action: 'bwg_search_properties',
+                            nonce: bwgRentals.searchNonce,
+                            check_in: checkIn,
+                            check_out: checkOut,
+                            guests: guests,
+                            bedrooms: bedrooms
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Update results container with HTML
+                                $resultsContainer.html(response.data.html);
+
+                                // Show count message
+                                if (response.data.count !== undefined) {
+                                    var countMessage = response.data.count === 0 ?
+                                        'No properties found matching your criteria.' :
+                                        'Found ' + response.data.count + ' ' + (response.data.count === 1 ? 'property' : 'properties');
+
+                                    $resultsContainer.prepend('<div class="bwg-search-results__count">' + countMessage + '</div>');
+                                }
+
+                                // Scroll to results
+                                $('html, body').animate({
+                                    scrollTop: $resultsContainer.offset().top - 100
+                                }, 500);
+                            } else {
+                                $resultsContainer.html('<div class="bwg-search-results__error">' + response.data.message + '</div>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Search AJAX error:', error);
+                            $resultsContainer.html('<div class="bwg-search-results__error">Error searching properties. Please try again.</div>');
+                        },
+                        complete: function() {
+                            // Remove loading state
+                            $resultsContainer.removeClass('bwg-search-results--loading');
+                            $button.prop('disabled', false).removeClass('bwg-property-search__button--loading');
+                        }
+                    });
+                });
+
+                // Handle reset button
+                $form.find('.bwg-property-search__reset').on('click', function(e) {
+                    e.preventDefault();
+                    var clearUrl = $(this).data('clear-url');
+                    if (clearUrl) {
+                        // Redirect to base URL without query parameters
+                        window.location.href = clearUrl;
+                    } else {
+                        // Fallback: just reset the form
+                        $form[0].reset();
+                        $resultsContainer.empty();
+                    }
+                });
+            });
+        }
+    };
+
+    /**
      * Initialize on DOM ready
      */
     $(document).ready(function() {
@@ -526,6 +622,7 @@
         BWGCalendar.init();
         BWGPropertySlider.init();
         BWGFilters.init();
+        BWGSearch.init();
     });
 
 })(jQuery);

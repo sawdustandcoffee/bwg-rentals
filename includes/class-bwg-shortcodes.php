@@ -49,6 +49,8 @@ class BWG_Shortcodes {
         // Public AJAX handlers (accessible to both logged-in and logged-out users)
         add_action( 'wp_ajax_bwg_filter_properties', array( $this, 'ajax_filter_properties' ) );
         add_action( 'wp_ajax_nopriv_bwg_filter_properties', array( $this, 'ajax_filter_properties' ) );
+        add_action( 'wp_ajax_bwg_search_properties', array( $this, 'ajax_search_properties' ) );
+        add_action( 'wp_ajax_nopriv_bwg_search_properties', array( $this, 'ajax_search_properties' ) );
     }
 
     /**
@@ -93,6 +95,7 @@ class BWG_Shortcodes {
         wp_localize_script( 'bwg-rentals-public', 'bwgRentals', array(
             'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
             'filterNonce' => wp_create_nonce( 'bwg_filter_properties' ),
+            'searchNonce' => wp_create_nonce( 'bwg_search_properties' ),
         ) );
 
         $this->assets_enqueued = true;
@@ -125,6 +128,27 @@ class BWG_Shortcodes {
      */
     private function render_error( $message ) {
         return '<div class="bwg-error">' . esc_html( $message ) . '</div>';
+    }
+
+    /**
+     * Get property ID from shortcode attribute or URL parameter
+     *
+     * @param int|string $id_from_atts Property ID from shortcode attributes.
+     * @return int Property ID.
+     */
+    private function get_property_id_from_request( $id_from_atts = 0 ) {
+        // If ID provided in shortcode attributes, use that
+        if ( ! empty( $id_from_atts ) ) {
+            return absint( $id_from_atts );
+        }
+
+        // Otherwise, check for property_id URL parameter
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading URL parameter only
+        if ( isset( $_GET['property_id'] ) ) {
+            return absint( $_GET['property_id'] );
+        }
+
+        return 0;
     }
 
     /**
@@ -535,11 +559,14 @@ class BWG_Shortcodes {
             'bwg_property_gallery'
         );
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -571,11 +598,14 @@ class BWG_Shortcodes {
             'bwg_property_title'
         );
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -615,11 +645,14 @@ class BWG_Shortcodes {
             'bwg_property_specs'
         );
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -651,11 +684,14 @@ class BWG_Shortcodes {
             'bwg_property_description'
         );
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -693,11 +729,14 @@ class BWG_Shortcodes {
             'bwg_property_amenities'
         );
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -729,11 +768,14 @@ class BWG_Shortcodes {
             'bwg_property_availability'
         );
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $availability = $this->api->get_availability( $atts['id'] );
+        $availability = $this->api->get_availability( $property_id );
 
         if ( is_wp_error( $availability ) ) {
             return $this->render_error( $availability->get_error_message() );
@@ -929,19 +971,22 @@ class BWG_Shortcodes {
 
         $this->enqueue_assets();
 
-        if ( empty( $atts['id'] ) ) {
+        // Get property ID from shortcode attribute or URL parameter
+        $property_id = $this->get_property_id_from_request( $atts['id'] );
+
+        if ( empty( $property_id ) ) {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
         }
 
         // Get availability and rates data for the full property view
-        $availability = 'true' === $atts['show_availability'] ? $this->api->get_availability( $atts['id'] ) : null;
-        $rates        = 'true' === $atts['show_rates'] ? $this->api->get_rates( $atts['id'] ) : null;
+        $availability = 'true' === $atts['show_availability'] ? $this->api->get_availability( $property_id ) : null;
+        $rates        = 'true' === $atts['show_rates'] ? $this->api->get_rates( $property_id ) : null;
 
         // Get related properties if enabled
         $related_properties = null;
@@ -1259,6 +1304,127 @@ class BWG_Shortcodes {
         wp_send_json_success( array(
             'html' => $html,
             'count' => $total_count,
+        ) );
+    }
+
+    /**
+     * AJAX handler for searching properties
+     *
+     * @return void
+     */
+    public function ajax_search_properties() {
+        // Verify nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'bwg_search_properties' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed', 'bwg-rentals' ) ) );
+        }
+
+        // Get search parameters
+        $check_in  = isset( $_POST['check_in'] ) ? sanitize_text_field( $_POST['check_in'] ) : '';
+        $check_out = isset( $_POST['check_out'] ) ? sanitize_text_field( $_POST['check_out'] ) : '';
+        $guests    = isset( $_POST['guests'] ) ? absint( $_POST['guests'] ) : 0;
+        $bedrooms  = isset( $_POST['bedrooms'] ) ? absint( $_POST['bedrooms'] ) : 0;
+
+        // Get all properties
+        $properties = $this->api->get_properties();
+
+        if ( is_wp_error( $properties ) ) {
+            wp_send_json_error( array( 'message' => $properties->get_error_message() ) );
+        }
+
+        if ( empty( $properties ) ) {
+            wp_send_json_success( array(
+                'html'  => '<div class="bwg-search-results__empty">' . esc_html__( 'No properties available.', 'bwg-rentals' ) . '</div>',
+                'count' => 0,
+            ) );
+        }
+
+        // Apply search filters
+        $filtered_properties = array_filter( $properties, function( $property ) use ( $guests, $bedrooms ) {
+            $matches = true;
+
+            // Filter by guests (must accommodate at least the requested number)
+            if ( $guests > 0 && isset( $property['guests'] ) ) {
+                $matches = $matches && ( $property['guests'] >= $guests );
+            }
+
+            // Filter by bedrooms (must have at least the requested number)
+            if ( $bedrooms > 0 && isset( $property['bedrooms'] ) ) {
+                $matches = $matches && ( $property['bedrooms'] >= $bedrooms );
+            }
+
+            return $matches;
+        } );
+
+        // Store filtered count
+        $count = count( $filtered_properties );
+
+        // Generate property cards HTML
+        ob_start();
+        if ( $count > 0 ) {
+            echo '<div class="bwg-properties bwg-properties--grid bwg-properties--grid-3">';
+            foreach ( $filtered_properties as $property ) :
+                ?>
+                <div class="bwg-property-card">
+                    <?php if ( ! empty( $property['images'] ) ) : ?>
+                        <div class="bwg-property-card__image">
+                            <img
+                                src="<?php echo esc_url( $property['images'][0]['url'] ?? '' ); ?>"
+                                alt="<?php echo esc_attr( $property['name'] ?? '' ); ?>"
+                                loading="lazy"
+                            />
+                        </div>
+                    <?php endif; ?>
+                    <div class="bwg-property-card__content">
+                        <h3 class="bwg-property-card__title">
+                            <?php echo esc_html( $property['name'] ?? '' ); ?>
+                        </h3>
+                        <div class="bwg-property-specs">
+                            <?php if ( isset( $property['bedrooms'] ) ) : ?>
+                                <span class="bwg-property-specs__item">
+                                    <span class="bwg-icon">🛏️</span>
+                                    <?php echo esc_html( $property['bedrooms'] ); ?> <?php esc_html_e( 'Beds', 'bwg-rentals' ); ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if ( isset( $property['bathrooms'] ) ) : ?>
+                                <span class="bwg-property-specs__item">
+                                    <span class="bwg-icon">🚿</span>
+                                    <?php echo esc_html( $property['bathrooms'] ); ?> <?php esc_html_e( 'Baths', 'bwg-rentals' ); ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if ( isset( $property['guests'] ) ) : ?>
+                                <span class="bwg-property-specs__item">
+                                    <span class="bwg-icon">👥</span>
+                                    <?php echo esc_html( $property['guests'] ); ?> <?php esc_html_e( 'Guests', 'bwg-rentals' ); ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ( isset( $property['starting_rate'] ) ) : ?>
+                            <div class="bwg-property-card__rate">
+                                <?php esc_html_e( 'From', 'bwg-rentals' ); ?>
+                                <strong>$<?php echo esc_html( number_format( $property['starting_rate'], 2 ) ); ?></strong>
+                                <?php esc_html_e( '/night', 'bwg-rentals' ); ?>
+                            </div>
+                        <?php endif; ?>
+                        <a href="<?php echo esc_url( $property['booking_url'] ?? '#' ); ?>" class="bwg-property-card__button" target="_blank">
+                            <?php esc_html_e( 'View Details', 'bwg-rentals' ); ?>
+                        </a>
+                    </div>
+                </div>
+                <?php
+            endforeach;
+            echo '</div>';
+        } else {
+            echo '<div class="bwg-search-results__empty">';
+            echo '<p>' . esc_html__( 'No properties found matching your search criteria.', 'bwg-rentals' ) . '</p>';
+            echo '<p>' . esc_html__( 'Try adjusting your filters to see more results.', 'bwg-rentals' ) . '</p>';
+            echo '</div>';
+        }
+        $html = ob_get_clean();
+
+        // Send success response
+        wp_send_json_success( array(
+            'html'  => $html,
+            'count' => $count,
         ) );
     }
 }
