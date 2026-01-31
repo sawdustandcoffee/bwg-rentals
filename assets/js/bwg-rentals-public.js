@@ -545,6 +545,17 @@
                     var guests = $form.find('[name="guests"]').val();
                     var bedrooms = $form.find('[name="bedrooms"]').val();
 
+                    // Validate date range (check-out must be after check-in)
+                    if (checkIn && checkOut) {
+                        var checkInDate = new Date(checkIn);
+                        var checkOutDate = new Date(checkOut);
+
+                        if (checkOutDate <= checkInDate) {
+                            alert('Check-out date must be after check-in date.');
+                            return false;
+                        }
+                    }
+
                     // Show loading state
                     $resultsContainer.addClass('bwg-search-results--loading');
                     $resultsContainer.html('<div class="bwg-search-results__loader"><span class="bwg-spinner"></span><p>Searching properties...</p></div>');
