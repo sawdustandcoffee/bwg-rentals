@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feature #16: show_image Attribute Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 20px auto; padding: 20px; }
+        .test-section { margin-bottom: 40px; padding: 20px; border: 2px solid #ddd; }
+        .test-section h2 { margin-top: 0; }
+        .expected { background: #e8f5e9; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Feature #16: [bwg_property_card] show_image Attribute Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: show_image="true" (Image Should Show)</h2>
+        <div class="expected">
+            <strong>Expected:</strong> Image should be visible at the top of the card
+        </div>
+        [bwg_property_card id="1" show_image="true"]
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: show_image="false" (Image Should Be Hidden)</h2>
+        <div class="expected">
+            <strong>Expected:</strong> NO image should be visible, only content
+        </div>
+        [bwg_property_card id="1" show_image="false"]
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Default (no show_image attribute)</h2>
+        <div class="expected">
+            <strong>Expected:</strong> Image should be visible (defaults to "true")
+        </div>
+        [bwg_property_card id="1"]
+    </div>
+</body>
+</html>
