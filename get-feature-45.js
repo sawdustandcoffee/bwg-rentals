@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-const sqlite3 = require('better-sqlite3');
-const db = new sqlite3('./features.db', { readonly: true });
+const fs = require('fs');
+const { DatabaseSync } = require('node:sqlite');
 
 try {
-    const stmt = db.prepare('SELECT id, category, name, description, steps, passes, in_progress, dependencies FROM features WHERE id = ?');
-    const feature = stmt.get(45);
+    const db = new DatabaseSync('./features.db');
+
+    const query = 'SELECT id, category, name, description, steps, passes, in_progress, dependencies FROM features WHERE id = 45';
+    const stmt = db.prepare(query);
+    const feature = stmt.get();
 
     if (feature) {
         feature.steps = JSON.parse(feature.steps);
@@ -14,8 +17,9 @@ try {
     } else {
         console.log('Feature #45 not found');
     }
+
+    db.close();
 } catch (error) {
     console.error('Error:', error.message);
-} finally {
-    db.close();
+    console.error(error.stack);
 }
