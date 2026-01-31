@@ -430,4 +430,56 @@ class BWG_Admin {
             'message' => __( 'Cache cleared successfully!', 'bwg-rentals' ),
         ) );
     }
+
+    /**
+     * Encrypt sensitive values before storing
+     *
+     * @param string $value Value to encrypt.
+     * @return string Encrypted value.
+     */
+    public function encrypt_value( $value ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        // Use WordPress auth key for encryption
+        $key = wp_salt( 'auth' );
+
+        if ( function_exists( 'openssl_encrypt' ) ) {
+            $iv     = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+            $encrypted = openssl_encrypt( $value, 'aes-256-cbc', $key, 0, $iv );
+            return base64_encode( $iv . $encrypted );
+        }
+
+        // Fallback: base64 encode if openssl not available
+        return base64_encode( $value );
+    }
+
+    /**
+     * Decrypt stored values
+     *
+     * @param string $encrypted_value Encrypted value.
+     * @return string Decrypted value.
+     */
+    public static function decrypt_value( $encrypted_value ) {
+        if ( empty( $encrypted_value ) ) {
+            return '';
+        }
+
+        $key = wp_salt( 'auth' );
+
+        if ( function_exists( 'openssl_decrypt' ) ) {
+            $data   = base64_decode( $encrypted_value );
+            $iv_len = openssl_cipher_iv_length( 'aes-256-cbc' );
+            $iv     = substr( $data, 0, $iv_len );
+            $encrypted = substr( $data, $iv_len );
+
+            $decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
+
+            return $decrypted !== false ? $decrypted : '';
+        }
+
+        // Fallback: base64 decode
+        return base64_decode( $encrypted_value );
+    }
 }
