@@ -48,6 +48,7 @@ class BWG_Shortcodes {
         // Archive shortcodes
         add_shortcode( 'bwg_properties', array( $this, 'properties' ) );
         add_shortcode( 'bwg_property_card', array( $this, 'property_card' ) );
+        add_shortcode( 'bwg_property_slider', array( $this, 'property_slider' ) );
 
         // Single property shortcodes
         add_shortcode( 'bwg_property', array( $this, 'property_full' ) ); // Full property page
@@ -61,6 +62,9 @@ class BWG_Shortcodes {
         add_shortcode( 'bwg_property_booking_button', array( $this, 'property_booking_button' ) );
         add_shortcode( 'bwg_property_location', array( $this, 'property_location' ) );
         add_shortcode( 'bwg_property_policies', array( $this, 'property_policies' ) );
+
+        // Search shortcode
+        add_shortcode( 'bwg_property_search', array( $this, 'property_search' ) );
     }
 
     /**
@@ -680,5 +684,102 @@ class BWG_Shortcodes {
         $output = ob_get_clean();
 
         return apply_filters( 'bwg_property_full_output', $output, $property );
+    }
+
+    /**
+     * Property slider shortcode
+     *
+     * Displays properties in a carousel/slider format with navigation controls.
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string HTML output.
+     */
+    public function property_slider( $atts ) {
+        $this->enqueue_assets();
+
+        $atts = shortcode_atts(
+            array(
+                'limit'   => -1,
+                'orderby' => 'name',
+            ),
+            $atts,
+            'bwg_property_slider'
+        );
+
+        $properties = $this->api->get_properties();
+
+        if ( is_wp_error( $properties ) ) {
+            return $this->render_error( $properties->get_error_message() );
+        }
+
+        if ( empty( $properties ) ) {
+            return $this->render_empty( __( 'No properties available for the slider.', 'bwg-rentals' ) );
+        }
+
+        // Apply sorting
+        $orderby = sanitize_text_field( $atts['orderby'] );
+        $properties = $this->sort_properties( $properties, $orderby );
+
+        // Apply limit
+        if ( $atts['limit'] > 0 ) {
+            $properties = array_slice( $properties, 0, absint( $atts['limit'] ) );
+        }
+
+        ob_start();
+        include $this->get_template( 'property-slider.php' );
+        $output = ob_get_clean();
+
+        return apply_filters( 'bwg_property_slider_output', $output, $properties );
+    }
+
+    /**
+     * Property search form shortcode
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string HTML output.
+     */
+    public function property_search( $atts ) {
+        $this->enqueue_assets();
+
+        $atts = shortcode_atts(
+            array(
+                'show_dates'     => 'true',
+                'show_guests'    => 'true',
+                'show_bedrooms'  => 'true',
+                'results_page'   => '',
+                'button_text'    => 'Search Properties',
+                'layout'         => 'horizontal',
+            ),
+            $atts,
+            'bwg_property_search'
+        );
+
+        // Convert string booleans to actual booleans
+        $show_dates    = filter_var( $atts['show_dates'], FILTER_VALIDATE_BOOLEAN );
+        $show_guests   = filter_var( $atts['show_guests'], FILTER_VALIDATE_BOOLEAN );
+        $show_bedrooms = filter_var( $atts['show_bedrooms'], FILTER_VALIDATE_BOOLEAN );
+        $results_page  = sanitize_text_field( $atts['results_page'] );
+        $button_text   = sanitize_text_field( $atts['button_text'] );
+        $layout        = sanitize_text_field( $atts['layout'] );
+
+        // Get properties to extract bedroom options
+        $properties = $this->api->get_properties();
+        $bedroom_options = array();
+
+        if ( ! is_wp_error( $properties ) && ! empty( $properties ) ) {
+            foreach ( $properties as $property ) {
+                if ( isset( $property->bedrooms ) ) {
+                    $bedroom_options[] = absint( $property->bedrooms );
+                }
+            }
+            $bedroom_options = array_unique( $bedroom_options );
+            sort( $bedroom_options );
+        }
+
+        ob_start();
+        include $this->get_template( 'property-search.php' );
+        $output = ob_get_clean();
+
+        return apply_filters( 'bwg_property_search_output', $output );
     }
 }

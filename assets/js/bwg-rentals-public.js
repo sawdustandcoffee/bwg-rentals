@@ -236,12 +236,129 @@
     };
 
     /**
+     * Property Slider/Carousel
+     *
+     * Handles the [bwg_property_slider] shortcode functionality
+     */
+    var BWGPropertySlider = {
+        init: function() {
+            var $sliders = $('.bwg-property-slider');
+
+            $sliders.each(function() {
+                var $slider = $(this);
+                var $track = $slider.find('.bwg-property-slider__track');
+                var $slides = $slider.find('.bwg-property-slider__slide');
+                var $prevBtn = $slider.find('.bwg-property-slider__nav--prev');
+                var $nextBtn = $slider.find('.bwg-property-slider__nav--next');
+                var $indicators = $slider.find('.bwg-property-slider__indicator');
+                var currentIndex = 0;
+                var totalSlides = $slides.length;
+
+                // Skip if only one slide
+                if (totalSlides <= 1) {
+                    $prevBtn.hide();
+                    $nextBtn.hide();
+                    $slider.find('.bwg-property-slider__indicators').hide();
+                    return;
+                }
+
+                // Previous button handler
+                $prevBtn.on('click', function() {
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        updateSlider();
+                    }
+                });
+
+                // Next button handler
+                $nextBtn.on('click', function() {
+                    if (currentIndex < totalSlides - 1) {
+                        currentIndex++;
+                        updateSlider();
+                    }
+                });
+
+                // Indicator click handler
+                $indicators.on('click', function() {
+                    currentIndex = parseInt($(this).data('slide-to'), 10);
+                    updateSlider();
+                });
+
+                // Keyboard navigation
+                $slider.on('keydown', function(e) {
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                            currentIndex--;
+                            updateSlider();
+                        } else if (e.key === 'ArrowRight' && currentIndex < totalSlides - 1) {
+                            currentIndex++;
+                            updateSlider();
+                        }
+                    }
+                });
+
+                // Touch/swipe support
+                var touchStartX = 0;
+                var touchEndX = 0;
+
+                $track.on('touchstart', function(e) {
+                    touchStartX = e.touches[0].clientX;
+                });
+
+                $track.on('touchmove', function(e) {
+                    touchEndX = e.touches[0].clientX;
+                });
+
+                $track.on('touchend', function() {
+                    var swipeThreshold = 50;
+                    var diff = touchStartX - touchEndX;
+
+                    if (Math.abs(diff) > swipeThreshold) {
+                        if (diff > 0 && currentIndex < totalSlides - 1) {
+                            // Swipe left - next slide
+                            currentIndex++;
+                            updateSlider();
+                        } else if (diff < 0 && currentIndex > 0) {
+                            // Swipe right - previous slide
+                            currentIndex--;
+                            updateSlider();
+                        }
+                    }
+                });
+
+                // Update slider position and controls
+                function updateSlider() {
+                    // Move track
+                    $track.css('transform', 'translateX(-' + (currentIndex * 100) + '%)');
+
+                    // Update indicators
+                    $indicators.removeClass('bwg-property-slider__indicator--active');
+                    $indicators.eq(currentIndex).addClass('bwg-property-slider__indicator--active');
+
+                    // Update navigation button states
+                    $prevBtn.prop('disabled', currentIndex === 0);
+                    $nextBtn.prop('disabled', currentIndex === totalSlides - 1);
+
+                    // Update ARIA attributes
+                    $slides.attr('aria-hidden', 'true');
+                    $slides.eq(currentIndex).attr('aria-hidden', 'false');
+                }
+
+                // Initial state
+                updateSlider();
+            });
+        }
+    };
+
+    /**
      * Initialize on DOM ready
      */
     $(document).ready(function() {
         BWGSlider.init();
         BWGLightbox.init();
         BWGCalendar.init();
+        BWGPropertySlider.init();
     });
 
 })(jQuery);
