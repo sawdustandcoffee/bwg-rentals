@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWG Rentals - List Layout Test</title>
+    <link rel="stylesheet" href="assets/css/bwg-rentals-public.css">
+    <style>
+        body {
+            font-family: var(--bwg-font-family);
+            padding: 40px;
+            background: #f5f5f5;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-bottom: 30px;
+            color: #1d2327;
+        }
+        .test-section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #23282d;
+            border-bottom: 2px solid #0073aa;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BWG Rentals - List Layout Styling Test</h1>
+
+    <div class="test-section">
+        <h2>Desktop View - List Layout</h2>
+        <div class="bwg-properties bwg-properties--list">
+            <!-- Property Card 1 -->
+            <div class="bwg-property-card">
+                <div class="bwg-property-card__image">
+                    <img src="https://via.placeholder.com/400x300/0073aa/ffffff?text=Beach+House" alt="Luxurious Beach House">
+                </div>
+                <div class="bwg-property-card__content">
+                    <h3 class="bwg-property-card__title">Luxurious Beach House with Ocean Views</h3>
+                    <div class="bwg-property-specs">
+                        <span class="bwg-property-specs__item">4 Beds</span>
+                        <span class="bwg-property-specs__item">3 Baths</span>
+                        <span class="bwg-property-specs__item">8 Guests</span>
+                    </div>
+                    <div class="bwg-property-card__excerpt">
+                        Experience the ultimate coastal retreat in this stunning beachfront property. Wake up to breathtaking ocean views, relax on your private deck, and enjoy direct beach access. Perfect for families seeking a memorable vacation with modern amenities and luxurious comfort.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Card 2 -->
+            <div class="bwg-property-card">
+                <div class="bwg-property-card__image">
+                    <img src="https://via.placeholder.com/400x300/00a32a/ffffff?text=Mountain+Cabin" alt="Cozy Mountain Cabin">
+                </div>
+                <div class="bwg-property-card__content">
+                    <h3 class="bwg-property-card__title">Cozy Mountain Cabin</h3>
+                    <div class="bwg-property-specs">
+                        <span class="bwg-property-specs__item">2 Beds</span>
+                        <span class="bwg-property-specs__item">1 Bath</span>
+                        <span class="bwg-property-specs__item">4 Guests</span>
+                    </div>
+                    <div class="bwg-property-card__excerpt">
+                        Escape to the mountains in this charming cabin. Surrounded by nature, featuring a fireplace, and offering stunning mountain views. Ideal for a peaceful getaway with hiking trails nearby.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Card 3 -->
+            <div class="bwg-property-card">
+                <div class="bwg-property-card__image">
+                    <img src="https://via.placeholder.com/400x300/d63638/ffffff?text=City+Loft" alt="Modern City Loft">
+                </div>
+                <div class="bwg-property-card__content">
+                    <h3 class="bwg-property-card__title">Modern City Loft in Downtown with Amazing Amenities and Prime Location</h3>
+                    <div class="bwg-property-specs">
+                        <span class="bwg-property-specs__item">3 Beds</span>
+                        <span class="bwg-property-specs__item">2 Baths</span>
+                        <span class="bwg-property-specs__item">6 Guests</span>
+                    </div>
+                    <div class="bwg-property-card__excerpt">
+                        Stay in the heart of the city in this contemporary loft. High ceilings, modern design, and walking distance to restaurants, shopping, and entertainment. Perfect for urban explorers.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Card 4 - No Image -->
+            <div class="bwg-property-card">
+                <div class="bwg-property-card__content">
+                    <h3 class="bwg-property-card__title">Lakefront Cottage</h3>
+                    <div class="bwg-property-specs">
+                        <span class="bwg-property-specs__item">3 Beds</span>
+                        <span class="bwg-property-specs__item">2 Baths</span>
+                        <span class="bwg-property-specs__item">6 Guests</span>
+                    </div>
+                    <div class="bwg-property-card__excerpt">
+                        Peaceful lakeside retreat with private dock. Enjoy fishing, kayaking, and stunning sunsets. Fully equipped kitchen and cozy living spaces make this the perfect summer getaway.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Mobile View Simulation (max-width: 768px)</h2>
+        <div style="max-width: 768px; margin: 0 auto;">
+            <div class="bwg-properties bwg-properties--list">
+                <div class="bwg-property-card">
+                    <div class="bwg-property-card__image">
+                        <img src="https://via.placeholder.com/400x300/0073aa/ffffff?text=Beach+House" alt="Beach House">
+                    </div>
+                    <div class="bwg-property-card__content">
+                        <h3 class="bwg-property-card__title">Beach House</h3>
+                        <div class="bwg-property-specs">
+                            <span class="bwg-property-specs__item">4 Beds</span>
+                            <span class="bwg-property-specs__item">3 Baths</span>
+                            <span class="bwg-property-specs__item">8 Guests</span>
+                        </div>
+                        <div class="bwg-property-card__excerpt">
+                            Experience coastal living at its finest with ocean views and beach access.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Empty State</h2>
+        <div class="bwg-empty">
+            <div class="bwg-empty__icon">🏠</div>
+            <p class="bwg-empty__message">No properties found matching your criteria.</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Error State</h2>
+        <div class="bwg-error">
+            ⚠️ Unable to load properties. Please check your API connection and try again.
+        </div>
+    </div>
+
+    <script>
+        // Add visual indicators for testing
+        console.log('List Layout Test Loaded');
+        console.log('Window width:', window.innerWidth);
+
+        window.addEventListener('resize', () => {
+            console.log('Window resized to:', window.innerWidth);
+        });
+    </script>
+</body>
+</html>

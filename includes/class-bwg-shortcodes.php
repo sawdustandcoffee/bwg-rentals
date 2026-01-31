@@ -176,7 +176,108 @@ class BWG_Shortcodes {
     }
 
     /**
-     * Properties grid/list shortcode
+     * Render pagination HTML
+     *
+     * @param int $current_page Current page number.
+     * @param int $total_pages  Total number of pages.
+     * @return string HTML output.
+     */
+    private function render_pagination( $current_page, $total_pages ) {
+        if ( $total_pages <= 1 ) {
+            return '';
+        }
+
+        $output = '<nav class="bwg-pagination" aria-label="' . esc_attr__( 'Properties pagination', 'bwg-rentals' ) . '">';
+        $output .= '<ul class="bwg-pagination__list">';
+
+        // Get current URL without bwg_page parameter
+        $base_url = remove_query_arg( 'bwg_page' );
+
+        // Previous button
+        if ( $current_page > 1 ) {
+            $prev_url = add_query_arg( 'bwg_page', $current_page - 1, $base_url );
+            $output .= '<li class="bwg-pagination__item bwg-pagination__item--prev">';
+            $output .= '<a href="' . esc_url( $prev_url ) . '" class="bwg-pagination__link">';
+            $output .= '<span aria-hidden="true">&laquo;</span>';
+            $output .= '<span class="screen-reader-text">' . esc_html__( 'Previous page', 'bwg-rentals' ) . '</span>';
+            $output .= '</a>';
+            $output .= '</li>';
+        } else {
+            $output .= '<li class="bwg-pagination__item bwg-pagination__item--prev bwg-pagination__item--disabled">';
+            $output .= '<span class="bwg-pagination__link" aria-disabled="true">&laquo;</span>';
+            $output .= '</li>';
+        }
+
+        // Page numbers
+        $range = 2; // Number of pages to show on each side of current page
+        $start = max( 1, $current_page - $range );
+        $end = min( $total_pages, $current_page + $range );
+
+        // First page + ellipsis if needed
+        if ( $start > 1 ) {
+            $first_url = add_query_arg( 'bwg_page', 1, $base_url );
+            $output .= '<li class="bwg-pagination__item">';
+            $output .= '<a href="' . esc_url( $first_url ) . '" class="bwg-pagination__link">1</a>';
+            $output .= '</li>';
+
+            if ( $start > 2 ) {
+                $output .= '<li class="bwg-pagination__item bwg-pagination__item--ellipsis">';
+                $output .= '<span class="bwg-pagination__link">&hellip;</span>';
+                $output .= '</li>';
+            }
+        }
+
+        // Page number links
+        for ( $i = $start; $i <= $end; $i++ ) {
+            if ( $i === $current_page ) {
+                $output .= '<li class="bwg-pagination__item bwg-pagination__item--current">';
+                $output .= '<span class="bwg-pagination__link" aria-current="page">' . esc_html( $i ) . '</span>';
+                $output .= '</li>';
+            } else {
+                $page_url = add_query_arg( 'bwg_page', $i, $base_url );
+                $output .= '<li class="bwg-pagination__item">';
+                $output .= '<a href="' . esc_url( $page_url ) . '" class="bwg-pagination__link">' . esc_html( $i ) . '</a>';
+                $output .= '</li>';
+            }
+        }
+
+        // Last page + ellipsis if needed
+        if ( $end < $total_pages ) {
+            if ( $end < $total_pages - 1 ) {
+                $output .= '<li class="bwg-pagination__item bwg-pagination__item--ellipsis">';
+                $output .= '<span class="bwg-pagination__link">&hellip;</span>';
+                $output .= '</li>';
+            }
+
+            $last_url = add_query_arg( 'bwg_page', $total_pages, $base_url );
+            $output .= '<li class="bwg-pagination__item">';
+            $output .= '<a href="' . esc_url( $last_url ) . '" class="bwg-pagination__link">' . esc_html( $total_pages ) . '</a>';
+            $output .= '</li>';
+        }
+
+        // Next button
+        if ( $current_page < $total_pages ) {
+            $next_url = add_query_arg( 'bwg_page', $current_page + 1, $base_url );
+            $output .= '<li class="bwg-pagination__item bwg-pagination__item--next">';
+            $output .= '<a href="' . esc_url( $next_url ) . '" class="bwg-pagination__link">';
+            $output .= '<span aria-hidden="true">&raquo;</span>';
+            $output .= '<span class="screen-reader-text">' . esc_html__( 'Next page', 'bwg-rentals' ) . '</span>';
+            $output .= '</a>';
+            $output .= '</li>';
+        } else {
+            $output .= '<li class="bwg-pagination__item bwg-pagination__item--next bwg-pagination__item--disabled">';
+            $output .= '<span class="bwg-pagination__link" aria-disabled="true">&raquo;</span>';
+            $output .= '</li>';
+        }
+
+        $output .= '</ul>';
+        $output .= '</nav>';
+
+        return $output;
+    }
+
+    /**
+     * Properties grid/list/masonry shortcode
      *
      * @param array $atts Shortcode attributes.
      * @return string HTML output.
@@ -186,10 +287,12 @@ class BWG_Shortcodes {
 
         $atts = shortcode_atts(
             array(
-                'layout'  => 'grid',
-                'columns' => 3,
-                'limit'   => -1,
-                'orderby' => 'name',
+                'layout'     => 'grid',
+                'columns'    => 3,
+                'limit'      => -1,
+                'orderby'    => 'name',
+                'pagination' => 'false',
+                'per_page'   => 12,
             ),
             $atts,
             'bwg_properties'
@@ -209,15 +312,66 @@ class BWG_Shortcodes {
         $orderby = sanitize_text_field( $atts['orderby'] );
         $properties = $this->sort_properties( $properties, $orderby );
 
+        // Store total count for pagination
+        $total_properties = count( $properties );
+
         // Apply limit (after sorting so we get the right items)
+        // Note: limit takes precedence over pagination
         if ( $atts['limit'] > 0 ) {
             $properties = array_slice( $properties, 0, absint( $atts['limit'] ) );
+            $total_properties = count( $properties );
+        }
+
+        // Handle pagination
+        $pagination_enabled = 'true' === $atts['pagination'] || '1' === $atts['pagination'];
+        $current_page = 1;
+        $total_pages = 1;
+        $pagination_html = '';
+
+        if ( $pagination_enabled && $atts['limit'] <= 0 ) {
+            $per_page = absint( $atts['per_page'] );
+            if ( $per_page < 1 ) {
+                $per_page = 12; // Default fallback
+            }
+
+            // Get current page from query parameter
+            $current_page = isset( $_GET['bwg_page'] ) ? absint( $_GET['bwg_page'] ) : 1;
+            if ( $current_page < 1 ) {
+                $current_page = 1;
+            }
+
+            // Calculate pagination
+            $total_pages = ceil( $total_properties / $per_page );
+            if ( $current_page > $total_pages && $total_pages > 0 ) {
+                $current_page = $total_pages;
+            }
+
+            // Slice properties for current page
+            $offset = ( $current_page - 1 ) * $per_page;
+            $properties = array_slice( $properties, $offset, $per_page );
+
+            // Generate pagination HTML
+            $pagination_html = $this->render_pagination( $current_page, $total_pages );
         }
 
         ob_start();
 
-        $template = 'grid' === $atts['layout'] ? 'properties-grid.php' : 'properties-list.php';
+        // Select template based on layout
+        $layout = sanitize_text_field( $atts['layout'] );
+        if ( 'masonry' === $layout ) {
+            $template = 'properties-masonry.php';
+        } elseif ( 'list' === $layout ) {
+            $template = 'properties-list.php';
+        } else {
+            $template = 'properties-grid.php';
+        }
+
         include $this->get_template( $template );
+
+        // Add pagination after the property list
+        if ( $pagination_html ) {
+            echo $pagination_html;
+        }
 
         return ob_get_clean();
     }
