@@ -156,6 +156,7 @@ class BWG_Admin {
         // Prepare variables for template
         $api_key = get_option( 'bwg_rentals_api_key', '' );
         $org_id = get_option( 'bwg_rentals_org_id', '' );
+        $cache_dur = get_option( 'bwg_rentals_cache_duration', 24 );
         $btn_text = get_option( 'bwg_rentals_booking_button_text', 'Book Now' );
         $cache_status = $this->get_cache_status();
 
