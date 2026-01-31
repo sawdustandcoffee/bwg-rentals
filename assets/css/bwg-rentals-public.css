@@ -1006,6 +1006,24 @@
     flex-direction: column;
 }
 
+.bwg-property-search--inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.bwg-property-search--inline .bwg-property-search__field {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--bwg-spacing-xs);
+    flex: 0 1 auto;
+}
+
+.bwg-property-search--inline .bwg-property-search__label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
 .bwg-property-search__field {
     display: flex;
     flex-direction: column;

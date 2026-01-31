@@ -544,6 +544,8 @@
                     var checkOut = $form.find('[name="check_out"]').val();
                     var guests = $form.find('[name="guests"]').val();
                     var bedrooms = $form.find('[name="bedrooms"]').val();
+                    var location = $form.find('[name="location"]').val();
+                    var amenities = $form.find('[name="amenities[]"]').val() || [];
 
                     // Validate date range (check-out must be after check-in)
                     if (checkIn && checkOut) {
@@ -571,7 +573,8 @@
                             check_in: checkIn,
                             check_out: checkOut,
                             guests: guests,
-                            bedrooms: bedrooms
+                            bedrooms: bedrooms,
+                            amenities: amenities
                         },
                         success: function(response) {
                             if (response.success) {

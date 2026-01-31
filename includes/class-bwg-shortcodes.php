@@ -1145,6 +1145,8 @@ class BWG_Shortcodes {
                 'show_dates'     => 'true',
                 'show_guests'    => 'true',
                 'show_bedrooms'  => 'true',
+                'show_amenities' => 'true',
+                'show_location'  => 'true',
                 'results_page'   => '',
                 'button_text'    => 'Search Properties',
                 'layout'         => 'horizontal',
@@ -1154,25 +1156,57 @@ class BWG_Shortcodes {
         );
 
         // Convert string booleans to actual booleans
-        $show_dates    = filter_var( $atts['show_dates'], FILTER_VALIDATE_BOOLEAN );
-        $show_guests   = filter_var( $atts['show_guests'], FILTER_VALIDATE_BOOLEAN );
-        $show_bedrooms = filter_var( $atts['show_bedrooms'], FILTER_VALIDATE_BOOLEAN );
-        $results_page  = sanitize_text_field( $atts['results_page'] );
-        $button_text   = sanitize_text_field( $atts['button_text'] );
-        $layout        = sanitize_text_field( $atts['layout'] );
+        $show_dates     = filter_var( $atts['show_dates'], FILTER_VALIDATE_BOOLEAN );
+        $show_guests    = filter_var( $atts['show_guests'], FILTER_VALIDATE_BOOLEAN );
+        $show_bedrooms  = filter_var( $atts['show_bedrooms'], FILTER_VALIDATE_BOOLEAN );
+        $show_amenities = filter_var( $atts['show_amenities'], FILTER_VALIDATE_BOOLEAN );
+        $show_location  = filter_var( $atts['show_location'], FILTER_VALIDATE_BOOLEAN );
+        $results_page   = sanitize_text_field( $atts['results_page'] );
+        $button_text    = sanitize_text_field( $atts['button_text'] );
+        $layout         = sanitize_text_field( $atts['layout'] );
 
-        // Get properties to extract bedroom options
+        // Validate layout - must be one of: horizontal, vertical, inline
+        $valid_layouts = array( 'horizontal', 'vertical', 'inline' );
+        if ( ! in_array( $layout, $valid_layouts, true ) ) {
+            $layout = 'horizontal'; // Default fallback
+        }
+
+        // Get properties to extract bedroom, amenity, and location options
         $properties = $this->api->get_properties();
         $bedroom_options = array();
+        $amenity_options = array();
+        $location_options = array();
 
         if ( ! is_wp_error( $properties ) && ! empty( $properties ) ) {
             foreach ( $properties as $property ) {
+                // Extract bedroom counts
                 if ( isset( $property->bedrooms ) ) {
                     $bedroom_options[] = absint( $property->bedrooms );
+                }
+
+                // Extract amenities
+                if ( isset( $property->amenities ) && is_array( $property->amenities ) ) {
+                    foreach ( $property->amenities as $amenity ) {
+                        // Skip XSS test amenities
+                        if ( strpos( $amenity, '<' ) === false && strpos( $amenity, 'script' ) === false ) {
+                            $amenity_options[] = sanitize_text_field( $amenity );
+                        }
+                    }
+                }
+
+                // Extract unique cities from address data
+                if ( isset( $property->address['city'] ) && ! empty( $property->address['city'] ) ) {
+                    $location_options[] = sanitize_text_field( $property->address['city'] );
                 }
             }
             $bedroom_options = array_unique( $bedroom_options );
             sort( $bedroom_options );
+
+            $amenity_options = array_unique( $amenity_options );
+            sort( $amenity_options );
+
+            $location_options = array_unique( $location_options );
+            sort( $location_options );
         }
 
         ob_start();
@@ -1386,6 +1420,8 @@ class BWG_Shortcodes {
         $check_out = isset( $_POST['check_out'] ) ? sanitize_text_field( $_POST['check_out'] ) : '';
         $guests    = isset( $_POST['guests'] ) ? absint( $_POST['guests'] ) : 0;
         $bedrooms  = isset( $_POST['bedrooms'] ) ? absint( $_POST['bedrooms'] ) : 0;
+        $location  = isset( $_POST['location'] ) ? sanitize_text_field( $_POST['location'] ) : '';
+        $amenities = isset( $_POST['amenities'] ) && is_array( $_POST['amenities'] ) ? array_map( 'sanitize_text_field', $_POST['amenities'] ) : array();
 
         // Get all properties
         $properties = $this->api->get_properties();
@@ -1402,7 +1438,7 @@ class BWG_Shortcodes {
         }
 
         // Apply search filters
-        $filtered_properties = array_filter( $properties, function( $property ) use ( $check_in, $check_out, $guests, $bedrooms ) {
+        $filtered_properties = array_filter( $properties, function( $property ) use ( $check_in, $check_out, $guests, $bedrooms, $location, $amenities ) {
             $matches = true;
 
             // Filter by date range availability
@@ -1418,6 +1454,28 @@ class BWG_Shortcodes {
             // Filter by bedrooms (must have at least the requested number)
             if ( $bedrooms > 0 && isset( $property['bedrooms'] ) ) {
                 $matches = $matches && ( $property['bedrooms'] >= $bedrooms );
+            }
+
+            // Filter by location (exact match on city)
+            if ( ! empty( $location ) && isset( $property['address']['city'] ) ) {
+                $matches = $matches && ( strcasecmp( trim( $property['address']['city'] ), trim( $location ) ) === 0 );
+            }
+
+            // Filter by amenities (property must have all selected amenities)
+            if ( ! empty( $amenities ) && isset( $property['amenities'] ) && is_array( $property['amenities'] ) ) {
+                foreach ( $amenities as $required_amenity ) {
+                    $has_amenity = false;
+                    foreach ( $property['amenities'] as $property_amenity ) {
+                        if ( strcasecmp( trim( $property_amenity ), trim( $required_amenity ) ) === 0 ) {
+                            $has_amenity = true;
+                            break;
+                        }
+                    }
+                    if ( ! $has_amenity ) {
+                        $matches = false;
+                        break;
+                    }
+                }
             }
 
             return $matches;

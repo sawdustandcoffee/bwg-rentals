@@ -3,13 +3,17 @@
  * Template for property search form
  *
  * Available variables:
- * @var bool   $show_dates      Whether to show date picker fields
- * @var bool   $show_guests     Whether to show guests dropdown
- * @var bool   $show_bedrooms   Whether to show bedrooms filter
- * @var string $results_page    URL or page slug for search results
- * @var string $button_text     Search button text
- * @var string $layout          Layout mode: horizontal, vertical
- * @var array  $bedroom_options Available bedroom counts from properties
+ * @var bool   $show_dates       Whether to show date picker fields
+ * @var bool   $show_guests      Whether to show guests dropdown
+ * @var bool   $show_bedrooms    Whether to show bedrooms filter
+ * @var bool   $show_amenities   Whether to show amenities filter
+ * @var bool   $show_location    Whether to show location filter
+ * @var string $results_page     URL or page slug for search results
+ * @var string $button_text      Search button text
+ * @var string $layout           Layout mode: horizontal, vertical
+ * @var array  $bedroom_options  Available bedroom counts from properties
+ * @var array  $amenity_options  Available amenities from properties
+ * @var array  $location_options Available locations/cities from properties
  *
  * @package BWG_Rentals
  */
@@ -30,6 +34,8 @@ $check_in  = isset( $_GET['check_in'] ) ? sanitize_text_field( $_GET['check_in']
 $check_out = isset( $_GET['check_out'] ) ? sanitize_text_field( $_GET['check_out'] ) : '';
 $guests    = isset( $_GET['guests'] ) ? absint( $_GET['guests'] ) : '';
 $bedrooms  = isset( $_GET['bedrooms'] ) ? absint( $_GET['bedrooms'] ) : '';
+$amenities = isset( $_GET['amenities'] ) && is_array( $_GET['amenities'] ) ? array_map( 'sanitize_text_field', $_GET['amenities'] ) : array();
+$location  = isset( $_GET['location'] ) ? sanitize_text_field( $_GET['location'] ) : '';
 ?>
 
 <form class="bwg-property-search bwg-property-search--<?php echo esc_attr( $layout ); ?>" method="get" action="<?php echo esc_url( $action_url ); ?>">
@@ -90,6 +96,38 @@ $bedrooms  = isset( $_GET['bedrooms'] ) ? absint( $_GET['bedrooms'] ) : '';
             <?php foreach ( $bedroom_options as $bedroom_count ) : ?>
             <option value="<?php echo esc_attr( $bedroom_count ); ?>" <?php selected( $bedrooms, $bedroom_count ); ?>>
                 <?php echo esc_html( sprintf( _n( '%d Bedroom', '%d Bedrooms', $bedroom_count, 'bwg-rentals' ), $bedroom_count ) ); ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <?php endif; ?>
+
+    <?php if ( $show_amenities && ! empty( $amenity_options ) ) : ?>
+    <div class="bwg-property-search__field">
+        <label for="bwg-search-amenities" class="bwg-property-search__label">
+            <?php esc_html_e( 'Amenities', 'bwg-rentals' ); ?>
+        </label>
+        <select id="bwg-search-amenities" name="amenities[]" class="bwg-property-search__select" multiple size="1">
+            <option value="" disabled><?php esc_html_e( 'Select amenities...', 'bwg-rentals' ); ?></option>
+            <?php foreach ( $amenity_options as $amenity ) : ?>
+            <option value="<?php echo esc_attr( $amenity ); ?>" <?php echo in_array( $amenity, $amenities, true ) ? 'selected' : ''; ?>>
+                <?php echo esc_html( $amenity ); ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <?php endif; ?>
+
+    <?php if ( $show_location && ! empty( $location_options ) ) : ?>
+    <div class="bwg-property-search__field">
+        <label for="bwg-search-location" class="bwg-property-search__label">
+            <?php esc_html_e( 'Location', 'bwg-rentals' ); ?>
+        </label>
+        <select id="bwg-search-location" name="location" class="bwg-property-search__select">
+            <option value=""><?php esc_html_e( 'Any', 'bwg-rentals' ); ?></option>
+            <?php foreach ( $location_options as $location_option ) : ?>
+            <option value="<?php echo esc_attr( $location_option ); ?>" <?php selected( $location, $location_option ); ?>>
+                <?php echo esc_html( $location_option ); ?>
             </option>
             <?php endforeach; ?>
         </select>
