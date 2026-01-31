@@ -1021,6 +1021,7 @@ class BWG_Shortcodes {
                 'slides_to_show'  => '1',
                 'slides_to_scroll' => '1',
                 'navigation'      => 'both',
+                'loop'            => 'true',
             ),
             $atts,
             'bwg_property_slider'
