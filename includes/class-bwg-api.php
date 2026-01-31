@@ -693,9 +693,67 @@ class BWG_API {
         // Extract properties array from response
         $properties = isset( $data['properties'] ) ? $data['properties'] : array();
 
+        // Normalize images for each property
+        $properties = array_map( array( $this, 'normalize_property_images' ), $properties );
+
         $this->cache->set( $cache_key, $properties );
 
         return $properties;
+    }
+
+    /**
+     * Normalize property images from API response
+     *
+     * Transforms featured_image and property_images from the Direct API format
+     * into a unified 'images' array for consistent template usage.
+     *
+     * API format:
+     * - featured_image: { image: { large: { url }, medium: { url }, small: { url } } }
+     * - property_images: [ { image: { large: { url }, ... }, caption }, ... ]
+     *
+     * @param array $property Property data from API.
+     * @return array Property data with normalized images array.
+     */
+    private function normalize_property_images( $property ) {
+        // If images array already exists and is populated, return as-is (mock data or already normalized)
+        if ( isset( $property['images'] ) && ! empty( $property['images'] ) ) {
+            return $property;
+        }
+
+        $images = array();
+
+        // Extract featured_image as the first/primary image
+        if ( isset( $property['featured_image']['image']['large']['url'] ) ) {
+            $images[] = array(
+                'url'    => $property['featured_image']['image']['large']['url'],
+                'medium' => $property['featured_image']['image']['medium']['url'] ?? '',
+                'small'  => $property['featured_image']['image']['small']['url'] ?? '',
+                'alt'    => $property['name'] ?? '',
+            );
+        }
+
+        // Extract additional images from property_images array
+        if ( isset( $property['property_images'] ) && is_array( $property['property_images'] ) ) {
+            foreach ( $property['property_images'] as $prop_image ) {
+                // Skip if no large URL available
+                if ( ! isset( $prop_image['image']['large']['url'] ) ) {
+                    continue;
+                }
+
+                $images[] = array(
+                    'url'     => $prop_image['image']['large']['url'],
+                    'medium'  => $prop_image['image']['medium']['url'] ?? '',
+                    'small'   => $prop_image['image']['small']['url'] ?? '',
+                    'alt'     => $prop_image['caption'] ?? ( $property['name'] ?? '' ),
+                    'caption' => $prop_image['caption'] ?? '',
+                );
+            }
+        }
+
+        // Set the normalized images array
+        $property['images'] = $images;
+
+        return $property;
     }
 
     /**
@@ -719,6 +777,8 @@ class BWG_API {
         $data = $this->request( 'properties/' . $property_id );
 
         if ( ! is_wp_error( $data ) ) {
+            // Normalize images from API format to unified array
+            $data = $this->normalize_property_images( $data );
             $this->cache->set( $cache_key, $data );
         }
 
