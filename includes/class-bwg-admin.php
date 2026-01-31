@@ -321,7 +321,8 @@ class BWG_Admin {
         $iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
         $encrypted = openssl_encrypt( $value, 'aes-256-cbc', $key, 0, $iv );
 
-        return base64_encode( $encrypted . '::' . $iv );
+        // Base64 encode both parts separately, then combine
+        return base64_encode( $encrypted ) . '::' . base64_encode( $iv );
     }
 
     /**
@@ -332,16 +333,24 @@ class BWG_Admin {
             return '';
         }
 
-        $key = $this->get_encryption_key();
-        $data = base64_decode( $value );
-
-        if ( strpos( $data, '::' ) === false ) {
+        // Check if it's in the new format (two base64 strings separated by ::)
+        if ( strpos( $value, '::' ) === false ) {
             return $value; // Not encrypted, return as-is
         }
 
-        list( $encrypted, $iv ) = explode( '::', $data, 2 );
+        $key = $this->get_encryption_key();
+        list( $encrypted_b64, $iv_b64 ) = explode( '::', $value, 2 );
 
-        return openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
+        $encrypted = base64_decode( $encrypted_b64 );
+        $iv = base64_decode( $iv_b64 );
+
+        if ( $encrypted === false || $iv === false ) {
+            return ''; // Invalid data
+        }
+
+        $decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
+
+        return $decrypted !== false ? $decrypted : '';
     }
 
     /**
