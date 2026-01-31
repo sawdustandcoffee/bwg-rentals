@@ -1,30 +1,19 @@
 import sqlite3
 import json
 
-conn = sqlite3.connect('features.db')
-cursor = conn.cursor()
-
-cursor.execute('''
-    SELECT id, category, name, description, steps, passes, in_progress, dependencies
-    FROM features
-    WHERE id = 4
-''')
-
-result = cursor.fetchone()
-
-if result:
-    feature = {
-        'id': result[0],
-        'category': result[1],
-        'name': result[2],
-        'description': result[3],
-        'steps': result[4],
-        'passes': result[5],
-        'in_progress': result[6],
-        'dependencies': result[7]
-    }
+db = sqlite3.connect('features.db')
+cursor = db.cursor()
+cursor.execute("SELECT * FROM features WHERE id = 64")
+columns = [description[0] for description in cursor.description]
+row = cursor.fetchone()
+if row:
+    feature = dict(zip(columns, row))
+    # Parse JSON fields
+    if feature.get('steps'):
+        feature['steps'] = json.loads(feature['steps'])
+    if feature.get('dependencies'):
+        feature['dependencies'] = json.loads(feature['dependencies'])
     print(json.dumps(feature, indent=2))
 else:
-    print("Feature #4 not found")
-
-conn.close()
+    print("Feature #64 not found")
+db.close()
