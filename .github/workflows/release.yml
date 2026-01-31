@@ -1,0 +1,83 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create plugin zip
+        run: |
+          # Create a temporary directory for the plugin
+          mkdir -p build/bwg-rentals
+
+          # Copy only the files needed for the plugin distribution
+          # Main plugin file
+          cp bwg-rentals.php build/bwg-rentals/
+
+          # WordPress readme
+          cp readme.txt build/bwg-rentals/
+
+          # Uninstall script (if exists)
+          [ -f uninstall.php ] && cp uninstall.php build/bwg-rentals/
+
+          # PHP includes
+          cp -r includes build/bwg-rentals/
+
+          # Shortcodes directory (if exists and has files)
+          [ -d shortcodes ] && [ "$(ls -A shortcodes 2>/dev/null)" ] && cp -r shortcodes build/bwg-rentals/
+
+          # Assets (CSS/JS)
+          cp -r assets build/bwg-rentals/
+
+          # Templates
+          cp -r templates build/bwg-rentals/
+
+          # Languages
+          cp -r languages build/bwg-rentals/
+
+          # Vendor (plugin-update-checker only)
+          mkdir -p build/bwg-rentals/vendor
+          cp -r vendor/plugin-update-checker build/bwg-rentals/vendor/
+
+          # Create the zip file
+          cd build
+          zip -r ../bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip bwg-rentals
+          cd ..
+
+          # Also create a generic "latest" zip for easier downloading
+          cp bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip bwg-rentals.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip
+            bwg-rentals.zip
+          generate_release_notes: true
+          body: |
+            ## BWG Rentals v${{ steps.get_version.outputs.VERSION }}
+
+            ### Installation
+            1. Download `bwg-rentals-${{ steps.get_version.outputs.VERSION }}.zip`
+            2. Go to WordPress Admin > Plugins > Add New > Upload Plugin
+            3. Upload the zip file and click "Install Now"
+            4. Activate the plugin
+            5. Go to Settings > BWG Rentals to configure
+
+            ### Automatic Updates
+            If you already have the plugin installed, WordPress will notify you of this update automatically.

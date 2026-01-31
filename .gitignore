@@ -29,6 +29,7 @@ phpunit.xml
 tests/
 coverage/
 .coverage
+.playwright-mcp/
 
 # Environment files
 .env
@@ -50,8 +51,15 @@ features.db-shm
 features.db-wal
 .agent.lock
 .claude_settings.json
+.claude_assistant_settings.json
 app_spec.txt
 prompts/
+assistant.db
+claude-progress.txt
+
+# Development scripts (not needed in plugin distribution)
+init.sh
+theme-override-test.php
 
 # CLAUDE.md - Remove before production
 CLAUDE.md
