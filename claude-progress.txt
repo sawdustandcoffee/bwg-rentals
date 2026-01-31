@@ -1,3 +1,68 @@
+## Session: 2026-01-30 (Feature #60 - Parallel Agent)
+
+### Feature #60: Filters allow output modification - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 60
+- Name: Filters allow output modification
+- Description: WordPress filters can modify shortcode output
+- Category: functional
+- Dependencies: Feature #27 ([bwg_property_title] renders property name) PASSED
+- Steps:
+  1. Add filter hook for bwg_property_title_output
+  2. Modify output in filter callback
+  3. View property title on frontend
+  4. Verify filter modification is applied
+
+#### Implementation Details (Already Implemented):
+
+**Available Filters in class-bwg-shortcodes.php:**
+- `bwg_property_gallery_output` (line 287) - Filter gallery HTML output
+- `bwg_property_title_output` (line 331) - Filter title HTML output
+- `bwg_property_specs_output` (line 367) - Filter specs HTML output
+- `bwg_property_description_output` (line 408) - Filter description HTML output
+- `bwg_property_amenities_output` (line 445) - Filter amenities HTML output
+- `bwg_property_availability_output` (line 481) - Filter availability calendar output
+- `bwg_property_rates_output` (line 517) - Filter rates table output
+- `bwg_booking_button_text` (line 553) - Filter booking button text
+- `bwg_property_booking_button_output` (line 561) - Filter booking button HTML output
+- `bwg_property_location_output` (line 597) - Filter location HTML output
+- `bwg_property_policies_output` (line 632) - Filter policies HTML output
+
+#### Browser Verification:
+
+**Test 1: bwg_property_title_output filter**
+- Added custom filter to theme functions.php that adds "FILTER APPLIED" badge
+- Visited /property-title-test-feature-27/
+- Result: Title shows green "FILTER APPLIED" badge prepended to "Oceanfront Beach House"
+- Screenshot: feature-60-title-filter-applied.png
+
+**Test 2: bwg_booking_button_text filter**
+- Added custom filter to modify button text with "CUSTOM: ... (Filtered)" wrapper
+- Visited /feature-39-custom-booking-button-text-test/
+- Result: Button shows "CUSTOM: Reserve Now (Filtered)" instead of just "Reserve Now"
+- Screenshot: feature-60-booking-button-filter-applied.png
+
+**Test 3: Filter cleanup verification**
+- Removed filter test from theme
+- Verified page displays normally without filter modifications
+- Title shows "Oceanfront Beach House" without badge
+- Button shows original text
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-60-title-filter-applied.png - Title with FILTER APPLIED badge
+- feature-60-title-filter-full-view.png - Full page view
+- feature-60-booking-button-filter-applied.png - Button with filtered text
+
+#### Result:
+Feature #60 PASSING - WordPress filters correctly allow modification of shortcode output. Both `bwg_property_title_output` and `bwg_booking_button_text` filters were tested and work as expected.
+
+---
+
 ## Session: 2026-01-30 (Feature #53 - Parallel Agent)
 
 ### Feature #53: Shortcode without required ID attribute shows error - PASSED
@@ -366,4 +431,60 @@ $output = sprintf(
 Feature #28 PASSING - The tag attribute correctly controls the heading level. Tested tag="h1" (renders as H1) and tag="h3" (renders as H3).
 
 ---
+
+[Testing] Feature #2 verified - plugin deactivates cleanly, still passing (2026-01-30)
+
+---
+
+## Session: 2026-01-30 (Regression Testing)
+
+### Feature #10: Manual cache clear button works - VERIFIED PASSING
+
+**Status: REGRESSION TEST PASSED**
+
+#### Feature Definition:
+- ID: 10
+- Name: Manual cache clear button works
+- Description: Administrator can clear all cached data manually
+- Category: functional
+- Dependencies: Feature #5 (API credentials can be saved) PASSED
+- Steps:
+  1. Navigate to Settings > BWG Rentals
+  2. Verify Clear Cache button exists
+  3. Click Clear Cache button
+  4. Verify success confirmation appears
+  5. Verify transients are deleted from database
+
+#### Regression Test Results:
+
+**Step 1: Navigate to Settings > BWG Rentals** ✅
+- URL: http://localhost:8088/wp-admin/options-general.php?page=bwg-rentals
+- Page loaded successfully
+
+**Step 2: Verify Clear Cache button exists** ✅
+- Button found with id="bwg-clear-cache"
+- Button text: "Clear All Cache"
+
+**Step 3: Click Clear Cache button** ✅
+- AJAX call made to admin-ajax.php
+- Response: 200 OK
+
+**Step 4: Verify success confirmation appears** ✅
+- Cache Status updated:
+  - Before: Last Updated: January 30, 2026 11:26 pm, Cached Items: 1
+  - After: Last Updated: Never, Cached Items: 0
+
+**Step 5: Verify transients are deleted from database** ✅
+- WP-CLI check: No BWG transients found (cache is clear)
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-10-regression-before-clear.png
+- feature-10-regression-after-clear.png
+
+#### Result:
+Feature #10 STILL PASSING - No regression detected.
+
+[Testing] Feature #10 verified - still passing (2026-01-30)
 
