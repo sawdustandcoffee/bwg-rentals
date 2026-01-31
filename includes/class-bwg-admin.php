@@ -153,6 +153,12 @@ class BWG_Admin {
             wp_die( __( 'You do not have sufficient permissions to access this page.', 'bwg-rentals' ) );
         }
 
+        // Prepare variables for template
+        $api_key = get_option( 'bwg_rentals_api_key', '' );
+        $org_id = get_option( 'bwg_rentals_org_id', '' );
+        $btn_text = get_option( 'bwg_rentals_booking_button_text', 'Book Now' );
+        $cache_status = $this->get_cache_status();
+
         // Include template
         $template = BWG_RENTALS_PLUGIN_DIR . 'templates/admin-settings.php';
         if ( file_exists( $template ) ) {
@@ -481,5 +487,34 @@ class BWG_Admin {
 
         // Fallback: base64 decode
         return base64_decode( $encrypted_value );
+    }
+
+    /**
+     * Get cache status information
+     *
+     * @return array Cache status data.
+     */
+    private function get_cache_status() {
+        global $wpdb;
+
+        // Count cached items
+        $count = $wpdb->get_var(
+            "SELECT COUNT(*)
+            FROM {$wpdb->options}
+            WHERE option_name LIKE '_transient_bwg_rentals_%'"
+        );
+
+        // Get cache duration setting
+        $duration = get_option( 'bwg_rentals_cache_duration', 24 );
+
+        // Try to get last update time from properties transient
+        $properties_transient = get_transient( 'bwg_rentals_properties' );
+        $last_updated = $properties_transient ? __( 'Recently', 'bwg-rentals' ) : __( 'Never', 'bwg-rentals' );
+
+        return array(
+            'item_count' => (int) $count,
+            'duration' => $duration . ' ' . __( 'hours', 'bwg-rentals' ),
+            'last_updated' => $last_updated,
+        );
     }
 }
