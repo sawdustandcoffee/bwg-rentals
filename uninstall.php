@@ -16,11 +16,20 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
  * Delete all plugin options
  */
 $options = array(
+    // API credentials (primary option name)
     'bwg_rentals_api_key',
+
+    // Organization ID (both variants - admin uses org_id, API uses organization_id)
+    'bwg_rentals_org_id',
     'bwg_rentals_organization_id',
+
+    // Cache settings
     'bwg_rentals_cache_duration',
-    'bwg_rentals_button_text',
     'bwg_rentals_cache_metadata',
+
+    // Button text (both variants - admin uses booking_button_text, shortcodes use button_text)
+    'bwg_rentals_booking_button_text',
+    'bwg_rentals_button_text',
 );
 
 foreach ( $options as $option ) {
