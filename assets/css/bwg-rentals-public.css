@@ -668,10 +668,30 @@
     margin-bottom: var(--bwg-spacing-md);
 }
 
+.bwg-property-location__map-container {
+    margin-top: var(--bwg-spacing-md);
+}
+
 .bwg-property-location__map {
     width: 100%;
     border: 1px solid var(--bwg-border-color);
     border-radius: var(--bwg-border-radius);
+}
+
+.bwg-property-location__map-attribution {
+    display: block;
+    margin-top: var(--bwg-spacing-xs);
+    font-size: 0.85em;
+    color: var(--bwg-text-light);
+}
+
+.bwg-property-location__map-attribution a {
+    color: var(--bwg-primary-color);
+    text-decoration: none;
+}
+
+.bwg-property-location__map-attribution a:hover {
+    text-decoration: underline;
 }
 
 /* Property Policies */
