@@ -1505,3 +1505,84 @@ Feature #79 PASSING - All interactive elements meet the minimum 44x44 pixel touc
 - This Session: Feature #79 completed
 
 [Testing] Feature #79 verified - mobile touch targets meet minimum size (2026-01-30)
+
+---
+
+## Session: 2026-01-30 (Feature #81 - Parallel Agent)
+
+### Feature #81: Location shortcode show_map attribute works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 81
+- Name: Location shortcode show_map attribute works
+- Description: Map can be toggled on/off via attribute
+- Category: functional
+- Dependencies: Feature #40 ([bwg_property_location] displays address) PASSED
+- Steps:
+  1. Add [bwg_property_location show_map='true']
+  2. Verify map displays (if coordinates available)
+  3. Change to show_map='false'
+  4. Verify only address text shows
+
+#### Implementation Changes:
+
+**Template (templates/property-location.php):**
+- Changed from Google Maps (requires API key) to OpenStreetMap (no API key needed)
+- Added proper coordinate handling for OpenStreetMap embed URL
+- Added map_height attribute parsing (extracts numeric value, defaults to 300px)
+- Added "View Larger Map" link to full OpenStreetMap site
+- Added proper accessibility title attribute
+
+**CSS (assets/css/bwg-rentals-public.css):**
+- Added .bwg-property-location__map-container styles
+- Added .bwg-property-location__map-attribution styles
+- Styled attribution link with primary color and hover state
+
+#### Browser Verification:
+
+**Test 1: show_map='true'** ✅
+- Test page: /feature-81-show-map-true-test/
+- Shortcode: `[bwg_property_location id="1" show_map="true"]`
+- Address displays: "123 Ocean Drive, Beach Town, FL, 33139, USA"
+- OpenStreetMap iframe renders with:
+  - Zoom in/out buttons
+  - Property marker at lat=25.7617, lon=-80.1918
+  - OpenStreetMap attribution
+  - "View Larger Map" link
+- Screenshot: feature-81-show-map-true.png
+
+**Test 2: show_map='false'** ✅
+- Test page: /feature-81-show-map-false-test/
+- Shortcode: `[bwg_property_location id="1" show_map="false"]`
+- Address displays: "123 Ocean Drive, Beach Town, FL, 33139, USA"
+- NO map iframe present (as expected)
+- Screenshot: feature-81-show-map-false.png
+
+**Test 3: Custom map_height='400px'** ✅
+- Test page: /feature-81-show-map-custom-height-test/
+- Shortcode: `[bwg_property_location id="1" show_map="true" map_height="400px"]`
+- Map iframe height verified: 400px (via JS evaluation)
+- Screenshot: feature-81-show-map-custom-height.png
+
+#### Console Errors: None
+
+#### Git Commit:
+- Hash: 24c2a5d
+- Message: "Implement Feature #81: Location shortcode show_map attribute works"
+
+#### Result:
+Feature #81 PASSING - The show_map attribute correctly toggles map display:
+1. show_map='true' displays OpenStreetMap embed with property coordinates
+2. show_map='false' shows only address text
+3. map_height attribute controls the iframe height
+4. Works without requiring an external API key
+
+---
+
+### Updated Statistics
+- Total Passing: 85/90 features (94.4%)
+- This Session: Feature #81 completed
+
+[Testing] Feature #81 verified - show_map attribute works (2026-01-30)
