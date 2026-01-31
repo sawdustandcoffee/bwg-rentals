@@ -479,10 +479,12 @@ class BWG_API {
         $credentials = $this->get_credentials();
 
         if ( empty( $credentials['api_key'] ) || empty( $credentials['org_id'] ) ) {
+            BWG_Rentals::log( 'Credentials check failed - api_key empty: ' . ( empty( $credentials['api_key'] ) ? 'yes' : 'no' ) . ', org_id empty: ' . ( empty( $credentials['org_id'] ) ? 'yes' : 'no' ) );
             return new WP_Error( 'no_credentials', __( 'API credentials not configured.', 'bwg-rentals' ) );
         }
 
         $url = self::API_BASE_URL . $credentials['org_id'] . '/' . $endpoint;
+        BWG_Rentals::log( 'API Request URL: ' . $url );
 
         $default_args = array(
             'headers' => array(
