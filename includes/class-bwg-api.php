@@ -233,6 +233,7 @@ class BWG_API {
                 'bathrooms'   => 3,
                 'sleeps'      => 10,
                 'sqft'        => 2500,
+                'base_rate'   => 350,
                 'images'      => array(
                     array( 'url' => 'https://picsum.photos/800/600?random=1', 'caption' => 'Living Room' ),
                     array( 'url' => 'https://picsum.photos/800/600?random=2', 'caption' => 'Master Bedroom' ),
@@ -259,6 +260,7 @@ class BWG_API {
                 'bathrooms'   => 2,
                 'sleeps'      => 8,
                 'sqft'        => 1800,
+                'base_rate'   => 225,
                 'images'      => array(
                     array( 'url' => 'https://picsum.photos/800/600?random=5', 'caption' => 'Cabin Exterior' ),
                     array( 'url' => 'https://picsum.photos/800/600?random=6', 'caption' => 'Living Area' ),
@@ -284,6 +286,7 @@ class BWG_API {
                 'bathrooms'   => 2,
                 'sleeps'      => 4,
                 'sqft'        => 1200,
+                'base_rate'   => 175,
                 'images'      => array(
                     array( 'url' => 'https://picsum.photos/800/600?random=8', 'caption' => 'Living Space' ),
                     array( 'url' => 'https://picsum.photos/800/600?random=9', 'caption' => 'City View' ),
@@ -309,6 +312,7 @@ class BWG_API {
                 'bathrooms'   => 5,
                 'sleeps'      => 16,
                 'sqft'        => 4500,
+                'base_rate'   => 500,
                 'images'      => array(
                     array( 'url' => 'https://picsum.photos/800/600?random=11', 'caption' => 'Main View' ),
                     array( 'url' => 'https://picsum.photos/800/600?random=12', 'caption' => 'Pool' ),
@@ -334,6 +338,7 @@ class BWG_API {
                 'bathrooms'   => 1,
                 'sleeps'      => 4,
                 'sqft'        => 1000,
+                'base_rate'   => 125,
                 'images'      => array(
                     array( 'url' => 'https://picsum.photos/800/600?random=10', 'caption' => '<script>alert("XSS")</script>' ),
                 ),

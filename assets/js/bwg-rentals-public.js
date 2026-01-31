@@ -574,6 +574,7 @@
                             check_out: checkOut,
                             guests: guests,
                             bedrooms: bedrooms,
+                            location: location,
                             amenities: amenities
                         },
                         success: function(response) {
