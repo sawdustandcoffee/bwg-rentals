@@ -39,6 +39,16 @@ class BWG_Shortcodes {
     public function __construct( $api ) {
         $this->api = $api;
         $this->register_shortcodes();
+        $this->register_ajax_handlers();
+    }
+
+    /**
+     * Register AJAX handlers
+     */
+    private function register_ajax_handlers() {
+        // Public AJAX handlers (accessible to both logged-in and logged-out users)
+        add_action( 'wp_ajax_bwg_filter_properties', array( $this, 'ajax_filter_properties' ) );
+        add_action( 'wp_ajax_nopriv_bwg_filter_properties', array( $this, 'ajax_filter_properties' ) );
     }
 
     /**
@@ -1020,5 +1030,130 @@ class BWG_Shortcodes {
         $output = ob_get_clean();
 
         return apply_filters( 'bwg_property_search_output', $output );
+    }
+
+    /**
+     * AJAX handler for filtering properties
+     *
+     * @return void
+     */
+    public function ajax_filter_properties() {
+        // Verify nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'bwg_filter_properties' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed', 'bwg-rentals' ) ) );
+        }
+
+        // Get filter parameters
+        $beds = isset( $_POST['beds'] ) ? absint( $_POST['beds'] ) : 0;
+        $baths = isset( $_POST['baths'] ) ? absint( $_POST['baths'] ) : 0;
+        $sleeps = isset( $_POST['sleeps'] ) ? absint( $_POST['sleeps'] ) : 0;
+
+        // Get shortcode attributes
+        $atts = isset( $_POST['atts'] ) ? json_decode( stripslashes( $_POST['atts'] ), true ) : array();
+        $atts = shortcode_atts(
+            array(
+                'layout'     => 'grid',
+                'columns'    => 3,
+                'limit'      => -1,
+                'orderby'    => 'name',
+                'pagination' => 'false',
+                'per_page'   => 12,
+            ),
+            $atts,
+            'bwg_properties'
+        );
+
+        // Get all properties
+        $properties = $this->api->get_properties();
+
+        if ( is_wp_error( $properties ) ) {
+            wp_send_json_error( array( 'message' => $properties->get_error_message() ) );
+        }
+
+        if ( empty( $properties ) ) {
+            wp_send_json_success( array(
+                'html' => '<div class="bwg-empty">' . esc_html__( 'No properties found matching your filters.', 'bwg-rentals' ) . '</div>',
+                'count' => 0,
+            ) );
+        }
+
+        // Apply filters
+        if ( $beds > 0 || $baths > 0 || $sleeps > 0 ) {
+            $properties = array_filter( $properties, function( $property ) use ( $beds, $baths, $sleeps ) {
+                $matches = true;
+
+                if ( $beds > 0 && isset( $property['bedrooms'] ) ) {
+                    $matches = $matches && ( $property['bedrooms'] >= $beds );
+                }
+
+                if ( $baths > 0 && isset( $property['bathrooms'] ) ) {
+                    $matches = $matches && ( $property['bathrooms'] >= $baths );
+                }
+
+                if ( $sleeps > 0 && isset( $property['sleeps'] ) ) {
+                    $matches = $matches && ( $property['sleeps'] >= $sleeps );
+                }
+
+                return $matches;
+            } );
+        }
+
+        // Apply sorting
+        $orderby = sanitize_text_field( $atts['orderby'] );
+        $properties = $this->sort_properties( $properties, $orderby );
+
+        // Store count before limiting
+        $total_count = count( $properties );
+
+        // Apply limit
+        if ( $atts['limit'] > 0 ) {
+            $properties = array_slice( $properties, 0, absint( $atts['limit'] ) );
+        }
+
+        // Generate HTML
+        ob_start();
+        foreach ( $properties as $property ) :
+            ?>
+            <div class="bwg-property-card">
+                <?php if ( ! empty( $property['images'] ) ) : ?>
+                    <div class="bwg-property-card__image">
+                        <img
+                            src="<?php echo esc_url( $property['images'][0]['url'] ?? '' ); ?>"
+                            alt="<?php echo esc_attr( $property['name'] ?? '' ); ?>"
+                        />
+                    </div>
+                <?php endif; ?>
+                <div class="bwg-property-card__content">
+                    <h3 class="bwg-property-card__title">
+                        <?php echo esc_html( $property['name'] ?? '' ); ?>
+                    </h3>
+                    <div class="bwg-property-specs">
+                        <?php if ( isset( $property['bedrooms'] ) ) : ?>
+                            <span class="bwg-property-specs__item">
+                                <?php echo esc_html( $property['bedrooms'] ); ?> <?php esc_html_e( 'Beds', 'bwg-rentals' ); ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if ( isset( $property['bathrooms'] ) ) : ?>
+                            <span class="bwg-property-specs__item">
+                                <?php echo esc_html( $property['bathrooms'] ); ?> <?php esc_html_e( 'Baths', 'bwg-rentals' ); ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if ( isset( $property['guests'] ) ) : ?>
+                            <span class="bwg-property-specs__item">
+                                <?php echo esc_html( $property['guests'] ); ?> <?php esc_html_e( 'Guests', 'bwg-rentals' ); ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php
+        endforeach;
+        $html = ob_get_clean();
+
+        // Send success response
+        wp_send_json_success( array(
+            'html' => $html,
+            'count' => $total_count,
+        ) );
     }
 }
