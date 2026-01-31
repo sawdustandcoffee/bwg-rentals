@@ -57,6 +57,12 @@ prompts/
 assistant.db
 claude-progress.txt
 
+# Session/feature tracking files (agent artifacts)
+FEATURE-*.md
+FEATURE-*.txt
+SESSION-*.md
+SESSION-*.txt
+
 # Development scripts (not needed in plugin distribution)
 init.sh
 theme-override-test.php
