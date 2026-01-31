@@ -303,12 +303,13 @@ class BWG_Shortcodes {
 
         $atts = shortcode_atts(
             array(
-                'layout'     => 'grid',
-                'columns'    => 3,
-                'limit'      => -1,
-                'orderby'    => 'name',
-                'pagination' => 'false',
-                'per_page'   => 12,
+                'layout'       => 'grid',
+                'columns'      => 3,
+                'limit'        => -1,
+                'orderby'      => 'name',
+                'pagination'   => 'false',
+                'per_page'     => 12,
+                'show_filters' => 'true',
             ),
             $atts,
             'bwg_properties'

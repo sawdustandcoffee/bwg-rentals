@@ -47,8 +47,12 @@ $current_orderby = isset( $_GET['bwg_orderby'] ) ? sanitize_text_field( $_GET['b
 
 // Generate unique ID for this instance
 $instance_id = 'bwg-filters-' . uniqid();
+
+// Check if filters should be shown
+$show_filters = filter_var( $atts['show_filters'], FILTER_VALIDATE_BOOLEAN );
 ?>
 <div class="bwg-properties-container" id="<?php echo esc_attr( $instance_id ); ?>">
+    <?php if ( $show_filters ) : ?>
     <!-- Filter Controls -->
     <div class="bwg-filters">
         <div class="bwg-filters__inner">
@@ -111,6 +115,7 @@ $instance_id = 'bwg-filters-' . uniqid();
             </button>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- Properties Grid -->
     <div class="bwg-properties bwg-properties--grid <?php echo esc_attr( $columns_class ); ?>" data-instance="<?php echo esc_attr( $instance_id ); ?>">
