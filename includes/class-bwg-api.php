@@ -299,6 +299,55 @@ class BWG_API {
                 'latitude'    => 40.7484,
                 'longitude'   => -73.9857,
             ),
+            // Long Name Test Property - Tests that long property names are handled gracefully
+            array(
+                'id'          => 5,
+                'name'        => 'The Absolutely Magnificent Oceanfront Beach House Estate with Private Pool, Spa, and Direct Beach Access - Perfect for Large Family Reunions and Special Celebrations',
+                'headline'    => 'An extraordinarily long headline that tests how the UI handles very long text content across multiple lines',
+                'description' => 'This property has a very long name to test that the UI handles long text gracefully without breaking the layout. The card should truncate or wrap the text appropriately.',
+                'bedrooms'    => 6,
+                'bathrooms'   => 5,
+                'sleeps'      => 16,
+                'sqft'        => 4500,
+                'images'      => array(
+                    array( 'url' => 'https://picsum.photos/800/600?random=11', 'caption' => 'Main View' ),
+                    array( 'url' => 'https://picsum.photos/800/600?random=12', 'caption' => 'Pool' ),
+                ),
+                'amenities'   => array( 'WiFi', 'Pool', 'Hot Tub', 'Beach Access', 'Game Room', 'Home Theater' ),
+                'address'     => array(
+                    'street'  => '999 Beachfront Boulevard',
+                    'city'    => 'Paradise Beach',
+                    'state'   => 'FL',
+                    'zip'     => '33333',
+                    'country' => 'USA',
+                ),
+                'latitude'    => 26.1224,
+                'longitude'   => -80.1373,
+            ),
+            // XSS Test Property - Tests that HTML/script injection is properly escaped
+            array(
+                'id'          => 4,
+                'name'        => '<script>alert("XSS")</script>Test Property',
+                'headline'    => '<img src=x onerror="alert(\'XSS\')">Injected headline',
+                'description' => 'This property has <b>HTML tags</b> and <script>document.write("XSS")</script> in its description. Also <a href="javascript:alert(\'click\')">click me</a>.',
+                'bedrooms'    => 2,
+                'bathrooms'   => 1,
+                'sleeps'      => 4,
+                'sqft'        => 1000,
+                'images'      => array(
+                    array( 'url' => 'https://picsum.photos/800/600?random=10', 'caption' => '<script>alert("XSS")</script>' ),
+                ),
+                'amenities'   => array( 'WiFi', '<script>alert("amenity")</script>', '<img src=x onerror="alert()">' ),
+                'address'     => array(
+                    'street'  => '<script>alert("street")</script>123 Test St',
+                    'city'    => '<b>Injected City</b>',
+                    'state'   => 'CA',
+                    'zip'     => '90210',
+                    'country' => 'USA',
+                ),
+                'latitude'    => 34.0902,
+                'longitude'   => -118.4065,
+            ),
         );
     }
 
