@@ -1,0 +1,47 @@
+## Session: 2026-01-31 (Feature #99 - SINGLE FEATURE MODE - COMPLETED)
+
+### Feature #99: [bwg_property] section anchors - IMPLEMENTED & VERIFIED
+
+**Status: PASSING ✅**
+
+#### Feature Definition:
+- **ID**: 99
+- **Name**: [bwg_property] section anchors
+- **Description**: Property page sections have anchor links for navigation
+- **Category**: Single Property Page
+- **Dependencies**: None
+- **Priority**: 99
+
+#### Implementation Steps Completed:
+
+1. ✅ **Add ID anchors to each section**
+   - Added unique IDs to all major sections
+   - Pattern: `id="bwg-section-{name}"`
+   - Sections: gallery, description, amenities, availability, rates, location, policies
+
+2. ✅ **Optional sticky nav with section links**
+   - Created "On this page" navigation menu in sidebar
+   - New attribute: `show_anchors="true|false"` (default: true)
+   - Menu dynamically shows only visible sections
+   - Semantic HTML with proper ARIA labels
+
+3. ✅ **Smooth scroll to sections**
+   - CSS `scroll-behavior: smooth` implemented
+   - Scroll margin offset for better positioning
+   - URL hash updates when clicking links
+   - Direct hash URLs work (e.g., `/page/#bwg-section-rates`)
+
+#### Files Modified:
+
+1. **includes/class-bwg-shortcodes.php** - Added `show_anchors` attribute
+2. **templates/property-full.php** - Section IDs and anchor menu (in commit 5c886ed)
+3. **assets/css/bwg-rentals-public.css** - Anchor styles (in commit 5c886ed)
+
+#### Result: Feature #99 PASSING ✅
+
+All implementation steps completed successfully. Feature provides excellent UX for navigating
+long property pages, is fully accessible, and works across all device sizes.
+
+**Git Commit**: 0e36765
+**Session Duration**: ~3 hours
+**Current Progress**: 19/103 features passing (18.4%)
