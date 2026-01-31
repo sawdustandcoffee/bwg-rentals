@@ -154,8 +154,8 @@ class BWG_Admin {
         }
 
         // Prepare variables for template
-        $api_key = get_option( 'bwg_rentals_api_key', '' );
-        $org_id = get_option( 'bwg_rentals_org_id', '' );
+        $api_key = $this->decrypt_api_key( get_option( 'bwg_rentals_api_key', '' ) );
+        $org_id = $this->decrypt_org_id( get_option( 'bwg_rentals_org_id', '' ) );
         $cache_dur = get_option( 'bwg_rentals_cache_duration', 24 );
         $btn_text = get_option( 'bwg_rentals_booking_button_text', 'Book Now' );
         $cache_status = $this->get_cache_status();
@@ -390,6 +390,20 @@ class BWG_Admin {
             wp_localize_script( 'bwg-rentals-admin', 'bwgRentalsAdmin', array(
                 'ajaxUrl' => admin_url( 'admin-ajax.php' ),
                 'nonce' => wp_create_nonce( 'bwg_rentals_admin' ),
+                'strings' => array(
+                    'apiKeyTooShort' => __( 'API Key must be at least 8 characters.', 'bwg-rentals' ),
+                    'apiKeyInvalidChars' => __( 'API Key can only contain letters, numbers, dashes, and underscores.', 'bwg-rentals' ),
+                    'orgIdTooShort' => __( 'Organization ID must be at least 2 characters.', 'bwg-rentals' ),
+                    'orgIdInvalidChars' => __( 'Organization ID can only contain letters, numbers, dashes, and underscores.', 'bwg-rentals' ),
+                    'cacheDurationRequired' => __( 'Cache duration is required.', 'bwg-rentals' ),
+                    'cacheDurationTooLow' => __( 'Cache duration must be at least 1 hour.', 'bwg-rentals' ),
+                    'cacheDurationTooHigh' => __( 'Cache duration cannot exceed 168 hours.', 'bwg-rentals' ),
+                    'buttonTextTooLong' => __( 'Button text cannot exceed 50 characters.', 'bwg-rentals' ),
+                    'testing' => __( 'Testing connection...', 'bwg-rentals' ),
+                    'clearing' => __( 'Clearing cache...', 'bwg-rentals' ),
+                    'cacheCleared' => __( 'Cache cleared successfully!', 'bwg-rentals' ),
+                    'error' => __( 'An error occurred. Please try again.', 'bwg-rentals' ),
+                ),
             ) );
         }
     }
