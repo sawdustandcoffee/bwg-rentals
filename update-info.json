@@ -1,7 +1,7 @@
 {
     "name": "BWG Rentals",
     "slug": "bwg-rentals",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "requires": "6.0",
     "tested": "6.4",
     "requires_php": "7.4",
