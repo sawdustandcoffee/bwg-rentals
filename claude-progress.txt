@@ -717,3 +717,140 @@ Feature #63 PASSING - Gallery slider has smooth CSS transitions:
 - Total Passing: 75/90 features (83.3%)
 - This Session: Feature #63 completed
 
+
+---
+
+## Session: 2026-01-31 (Regression Testing)
+
+### Feature #67: Rate limiting is handled with retry - VERIFIED PASSING
+
+**Status: REGRESSION TEST PASSED**
+
+#### Feature Definition:
+- ID: 67
+- Name: Rate limiting is handled with retry
+- Description: API client handles 429 responses with appropriate retry logic
+- Category: functional
+- Dependencies: Feature #17 (API client) PASSED
+- Steps:
+  1. Simulate API rate limit (429 response)
+  2. Verify client retries after delay
+  3. Verify retry succeeds on subsequent attempt
+  4. Verify no user-facing errors during retry
+
+#### Regression Test Results:
+
+**Step 1: Simulate API rate limit (429 response)** ✅
+- Set API key to MOCK_RATELIMIT_TEST to trigger rate limiting simulation
+- Mock returns 429 on first 2 requests, then 200 on subsequent attempts
+
+**Step 2: Verify client retries after delay** ✅
+- Debug log confirms: "API rate limited. Retry 1/3 in 2 seconds"
+- Debug log confirms: "API rate limited. Retry 2/3 in 2 seconds"
+- Client respects Retry-After header or uses exponential backoff
+
+**Step 3: Verify retry succeeds on subsequent attempt** ✅
+- Debug log confirms: "Mock API: Rate limit retry successful, returning data"
+- Third request succeeded after two 429 responses
+
+**Step 4: Verify no user-facing errors during retry** ✅
+- Admin: "Connection successful! API is responding." displayed
+- Frontend: Property title "Oceanfront Beach House" displayed correctly
+- Zero console errors
+
+#### Debug Log Evidence:
+```
+[31-Jan-2026 01:07:14 UTC] [BWG Rentals DEBUG] Mock API: Simulating rate limit (attempt 1/2)
+[31-Jan-2026 01:07:14 UTC] [BWG Rentals WARNING] API rate limited. Retry 1/3 in 2 seconds.
+[31-Jan-2026 01:07:16 UTC] [BWG Rentals DEBUG] Mock API: Simulating rate limit (attempt 2/2)
+[31-Jan-2026 01:07:16 UTC] [BWG Rentals WARNING] API rate limited. Retry 2/3 in 2 seconds.
+[31-Jan-2026 01:07:18 UTC] [BWG Rentals DEBUG] Mock API: Rate limit retry successful, returning data.
+```
+
+#### Implementation Details (class-bwg-api.php):
+- MAX_RETRIES = 3 (max attempts before failing)
+- BASE_DELAY = 2 seconds (exponential backoff: 2, 4, 8 seconds)
+- Respects Retry-After header (capped at 60 seconds)
+- Returns user-friendly error if all retries exhausted
+
+#### Screenshots:
+- feature-67-rate-limit-admin-test.png - Admin "Connection successful" after retry
+- feature-67-rate-limit-frontend-test.png - Frontend property displayed after retry
+
+#### Result:
+Feature #67 STILL PASSING - No regression detected. Rate limiting retry mechanism works correctly.
+
+[Testing] Feature #67 verified - still passing (2026-01-31)
+
+---
+
+## Session: 2026-01-30 (Feature #66 - Parallel Agent)
+
+### Feature #66: Booking button opens in new tab - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 66
+- Name: Booking button opens in new tab
+- Description: Default behavior opens Direct Software in new browser tab
+- Category: functional
+- Dependencies: Feature #38 ([bwg_property_booking_button] renders CTA button) PASSED
+- Steps:
+  1. Add [bwg_property_booking_button] to page
+  2. Click the button
+  3. Verify Direct Software site opens in new tab
+  4. Verify original page remains open
+
+#### Implementation Details (Already Implemented):
+
+**Shortcode (includes/class-bwg-shortcodes.php):**
+- Line 536: Default `target` attribute is `'_blank'`
+- Line 555: `$target = esc_attr( $atts['target'] );` - extracted from attributes
+
+**Template (templates/property-booking-button.php):**
+- Line 22: `target="<?php echo esc_attr( $target ); ?>"` - applied to anchor tag
+- Line 23: `rel="noopener noreferrer"` - security attribute for `target="_blank"` links
+
+#### Browser Verification:
+
+**Test 1: Custom text booking button**
+- Test page: /feature-39-custom-booking-button-text-test/
+- Shortcode: `[bwg_property_booking_button id="1" text="Reserve Now"]`
+- Button attributes verified:
+  - href: https://app.getdirect.io/listings/test-org-123/1 ✓
+  - target: _blank ✓
+  - rel: noopener noreferrer ✓
+- Clicked button: **NEW TAB OPENED** (Tab 1) with booking URL ✓
+- Original page remained on Tab 0 ✓
+- Screenshot: feature-66-booking-button-with-target-blank.png
+
+**Test 2: Default text booking button**
+- Test page: /feature-39-default-button-text-test/
+- Shortcode: `[bwg_property_booking_button id="1"]`
+- Button attributes verified:
+  - href: https://app.getdirect.io/listings/test-org-123/1 ✓
+  - target: _blank ✓
+  - rel: noopener noreferrer ✓
+- Screenshot: feature-66-default-button-target-blank.png
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-66-booking-button-with-target-blank.png - Custom text button with target="_blank"
+- feature-66-default-button-target-blank.png - Default text button with target="_blank"
+
+#### Result:
+Feature #66 PASSING - Booking button opens in new tab:
+1. Default `target="_blank"` is set in shortcode attributes
+2. `rel="noopener noreferrer"` is included for security (prevents reverse tabnabbing)
+3. Clicking the button opens Direct Software booking site in a new tab
+4. Original page remains open in the original tab
+
+---
+
+### Updated Statistics
+- Total Passing: 79/90 features (87.8%)
+- This Session: Feature #66 completed
+
+[Testing] Feature #66 verified - booking button opens in new tab (2026-01-30)
