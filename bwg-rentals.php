@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin version
-define( 'BWG_RENTALS_VERSION', '1.0.0' );
+define( 'BWG_RENTALS_VERSION', '1.0.15' );
 
 // Plugin directory path
 define( 'BWG_RENTALS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );

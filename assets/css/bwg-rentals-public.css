@@ -2112,6 +2112,97 @@
 }
 
 /* ========================================
+   Property Full - Minimal Layout
+   ======================================== */
+
+/* Minimal layout: Clean, simple single-column design */
+.bwg-property-full--minimal {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Minimal: Single column layout (no sidebar) */
+.bwg-property-full--minimal .bwg-property-full__layout {
+    display: block;
+}
+
+/* Minimal: Hide sidebar completely */
+.bwg-property-full--minimal .bwg-property-full__sidebar {
+    display: none;
+}
+
+/* Minimal: Full width content */
+.bwg-property-full--minimal .bwg-property-full__content {
+    max-width: 100%;
+    padding: 0;
+}
+
+/* Minimal: Cleaner gallery */
+.bwg-property-full--minimal .bwg-property-full__gallery {
+    margin-bottom: var(--bwg-spacing-xl);
+    border-radius: var(--bwg-border-radius-md);
+    overflow: hidden;
+}
+
+/* Minimal: Centered title section */
+.bwg-property-full--minimal .bwg-property-full__section--title {
+    text-align: center;
+    padding: var(--bwg-spacing-lg) 0;
+}
+
+/* Minimal: Smaller title */
+.bwg-property-full--minimal .bwg-property-title {
+    font-size: 2rem;
+    margin-bottom: var(--bwg-spacing-sm);
+}
+
+/* Minimal: Subtle headline */
+.bwg-property-full--minimal .bwg-property-headline {
+    font-size: 1rem;
+    color: var(--bwg-text-muted);
+}
+
+/* Minimal: Centered specs */
+.bwg-property-full--minimal .bwg-property-full__section--specs {
+    justify-content: center;
+    margin-bottom: var(--bwg-spacing-lg);
+}
+
+.bwg-property-full--minimal .bwg-property-specs {
+    justify-content: center;
+    gap: var(--bwg-spacing-xl);
+}
+
+/* Minimal: Clean description */
+.bwg-property-full--minimal .bwg-property-full__section--description {
+    padding: var(--bwg-spacing-lg);
+    background: var(--bwg-surface);
+    border-radius: var(--bwg-border-radius-md);
+    margin-bottom: var(--bwg-spacing-xl);
+}
+
+.bwg-property-full--minimal .bwg-property-full__section--description h2 {
+    display: none; /* Hide "Description" heading for cleaner look */
+}
+
+.bwg-property-full--minimal .bwg-property-description {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* Minimal: Prominent centered booking button */
+.bwg-property-full--minimal .bwg-property-booking-button {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: var(--bwg-spacing-xl) auto;
+    padding: var(--bwg-spacing-md) var(--bwg-spacing-xl);
+    font-size: 1.125rem;
+    text-align: center;
+}
+
+/* ========================================
    Property Full - Responsive Design
    ======================================== */
 

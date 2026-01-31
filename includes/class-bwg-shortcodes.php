@@ -969,6 +969,20 @@ class BWG_Shortcodes {
             'bwg_property'
         );
 
+        // Apply minimal layout preset - show only essential info
+        if ( 'minimal' === $atts['layout'] ) {
+            // Essential: gallery, title, specs, description, booking button
+            // Non-essential (hide these): breadcrumbs, amenities, availability, rates, location, policies, anchors, related
+            $atts['show_breadcrumbs']  = 'false';
+            $atts['show_amenities']    = 'false';
+            $atts['show_availability'] = 'false';
+            $atts['show_rates']        = 'false';
+            $atts['show_location']     = 'false';
+            $atts['show_policies']     = 'false';
+            $atts['show_anchors']      = 'false';
+            $atts['show_related']      = 'false';
+        }
+
         $this->enqueue_assets();
 
         // Get property ID from shortcode attribute or URL parameter
