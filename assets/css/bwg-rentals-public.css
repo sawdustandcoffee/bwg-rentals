@@ -2147,3 +2147,105 @@
         gap: 6px;
     }
 }
+
+/* ==========================================================================
+   Section Anchors Navigation
+   ========================================================================== */
+
+/* Smooth scroll behavior for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Offset for sticky headers when jumping to sections */
+[id^="bwg-section-"] {
+    scroll-margin-top: 20px;
+}
+
+/* Anchor Navigation Container */
+.bwg-property-anchors {
+    margin-top: var(--bwg-spacing-lg);
+    padding-top: var(--bwg-spacing-lg);
+    border-top: 1px solid var(--bwg-border-color);
+}
+
+.bwg-property-anchors__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--bwg-text-light);
+    margin: 0 0 var(--bwg-spacing-sm) 0;
+}
+
+.bwg-property-anchors__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bwg-property-anchors__item {
+    margin: 0;
+    padding: 0;
+}
+
+.bwg-property-anchors__link {
+    display: block;
+    padding: 8px 12px;
+    font-size: 0.9375rem;
+    color: var(--bwg-text-color);
+    text-decoration: none;
+    border-radius: var(--bwg-border-radius);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.bwg-property-anchors__link:hover {
+    background-color: rgba(0, 115, 170, 0.05);
+    color: var(--bwg-primary-color);
+}
+
+.bwg-property-anchors__link:focus {
+    outline: 2px solid var(--bwg-primary-color);
+    outline-offset: 2px;
+}
+
+/* Active state for current section (can be added via JavaScript) */
+.bwg-property-anchors__link.is-active {
+    background-color: rgba(0, 115, 170, 0.1);
+    color: var(--bwg-primary-color);
+    font-weight: 500;
+}
+
+/* Mobile adjustments */
+@media (max-width: 991px) {
+    .bwg-property-anchors {
+        /* Hide on mobile if sidebar becomes full-width */
+        display: none;
+    }
+}
+
+/* Tablet: show as horizontal tabs */
+@media (min-width: 768px) and (max-width: 991px) {
+    .bwg-property-anchors {
+        display: block;
+        border-top: none;
+        border-bottom: 1px solid var(--bwg-border-color);
+        margin-bottom: var(--bwg-spacing-lg);
+        padding-bottom: 0;
+    }
+
+    .bwg-property-anchors__title {
+        display: none;
+    }
+
+    .bwg-property-anchors__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .bwg-property-anchors__link {
+        font-size: 0.875rem;
+        padding: 6px 10px;
+    }
+}
