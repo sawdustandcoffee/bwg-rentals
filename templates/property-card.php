@@ -12,6 +12,20 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Debug output - enable with: define('BWG_DEBUG', true); in wp-config.php
+if ( defined( 'BWG_DEBUG' ) && BWG_DEBUG ) : ?>
+<script>
+console.group('BWG Property Card Debug: <?php echo esc_js( $property['name'] ?? 'Unknown' ); ?>');
+console.log('Property ID:', <?php echo wp_json_encode( $property['id'] ?? null ); ?>);
+console.log('Images:', <?php echo wp_json_encode( $property['images'] ?? [] ); ?>);
+console.log('Bedrooms:', <?php echo wp_json_encode( $property['bedrooms'] ?? null ); ?>);
+console.log('Bathrooms:', <?php echo wp_json_encode( $property['bathrooms'] ?? null ); ?>);
+console.log('Guests:', <?php echo wp_json_encode( $property['guests'] ?? $property['sleeps'] ?? null ); ?>);
+console.log('Full property:', <?php echo wp_json_encode( array_keys( $property ) ); ?>);
+console.groupEnd();
+</script>
+<?php endif;
+
 $show_image = 'true' === $atts['show_image'];
 $show_specs = 'true' === $atts['show_specs'];
 $enable_link = 'true' === $atts['link'];

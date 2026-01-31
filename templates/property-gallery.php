@@ -17,6 +17,18 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Debug output - enable with: define('BWG_DEBUG', true); in wp-config.php
+if ( defined( 'BWG_DEBUG' ) && BWG_DEBUG ) : ?>
+<script>
+console.group('BWG Property Gallery Debug: <?php echo esc_js( $property['name'] ?? 'Unknown' ); ?>');
+console.log('Property ID:', <?php echo wp_json_encode( $property['id'] ?? null ); ?>);
+console.log('Images count:', <?php echo count( $property['images'] ?? [] ); ?>);
+console.log('Images:', <?php echo wp_json_encode( $property['images'] ?? [] ); ?>);
+console.log('Layout:', <?php echo wp_json_encode( $atts['layout'] ?? 'slider' ); ?>);
+console.groupEnd();
+</script>
+<?php endif;
+
 $images = $property['images'] ?? array();
 $layout = $atts['layout'];
 $gallery_id = 'bwg-gallery-' . uniqid();
