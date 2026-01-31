@@ -180,6 +180,29 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Linked property card */
+.bwg-property-card--linked {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.bwg-property-card--linked:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+}
+
+.bwg-property-card--linked .bwg-property-card__title {
+    color: var(--bwg-text-color);
+    transition: color 0.2s ease;
+}
+
+.bwg-property-card--linked:hover .bwg-property-card__title {
+    color: var(--bwg-primary-color);
+}
+
 .bwg-property-card__image {
     width: 100%;
     aspect-ratio: 4/3;

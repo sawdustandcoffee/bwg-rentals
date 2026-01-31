@@ -14,8 +14,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $show_image = 'true' === $atts['show_image'];
 $show_specs = 'true' === $atts['show_specs'];
+$enable_link = 'true' === $atts['link'];
+
+// Generate property page URL if linking is enabled
+$property_url = '#';
+if ( $enable_link ) {
+    // Get the property page setting or use current page
+    $property_page_id = get_option( 'bwg_rentals_property_page', 0 );
+
+    if ( $property_page_id > 0 ) {
+        // Link to configured property page with property_id parameter
+        $property_url = add_query_arg( 'property_id', $property['id'], get_permalink( $property_page_id ) );
+    } else {
+        // No configured page - use current page with property_id parameter
+        $property_url = add_query_arg( 'property_id', $property['id'] );
+    }
+
+    // Allow developers to customize the URL
+    $property_url = apply_filters( 'bwg_property_card_url', $property_url, $property );
+}
+
+// Determine if card should be wrapped in a link
+$tag_open = $enable_link ? '<a href="' . esc_url( $property_url ) . '" class="bwg-property-card bwg-property-card--linked">' : '<div class="bwg-property-card">';
+$tag_close = $enable_link ? '</a>' : '</div>';
 ?>
-<div class="bwg-property-card">
+<?php echo $tag_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
     <?php if ( $show_image && ! empty( $property['images'] ) ) : ?>
         <div class="bwg-property-card__image">
             <img
@@ -48,4 +71,4 @@ $show_specs = 'true' === $atts['show_specs'];
             </div>
         <?php endif; ?>
     </div>
-</div>
+<?php echo $tag_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
