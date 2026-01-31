@@ -1,3 +1,88 @@
+## Session: 2026-01-30 (Feature #36 - Parallel Agent)
+
+### Feature #36: [bwg_property_availability] months_to_show attribute works - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 36
+- Name: [bwg_property_availability] months_to_show attribute works
+- Description: The calendar displays configurable number of months
+- Category: functional
+- Dependencies: Feature #35 ([bwg_property_availability] renders calendar) PASSED
+- Steps:
+  1. Add [bwg_property_availability id='X' months_to_show='2']
+  2. Verify 2 months are displayed
+  3. Change to months_to_show='6'
+  4. Verify 6 months display
+
+#### Implementation Already Present:
+- Shortcode in includes/class-bwg-shortcodes.php (Lines 454-482)
+  - Line 460: `'months_to_show' => 3` - Default attribute value
+- Template in templates/property-availability.php (Lines 15, 44, 72)
+  - Line 15: `$months_to_show = absint( $atts['months_to_show'] );` - Extracts attribute
+  - Line 44: `data-months-to-show="<?php echo esc_attr( $months_to_show ); ?>"` - Data attribute
+  - Line 72: `for ( $m = 0; $m < $months_to_show; $m++ )` - Loop renders months
+
+#### Browser Verification:
+
+**Test Page Created: /feature-36-months-to-show-test/**
+
+**Test 1: Default (3 months)** - PASSED
+- Shortcode: `[bwg_property_availability id="1"]`
+- Result: Displays January, February, March 2026 (3 months)
+- data-months-to-show: "3"
+- Actual months rendered: 3
+
+**Test 2: months_to_show="1" (1 month only)** - PASSED
+- Shortcode: `[bwg_property_availability id="1" months_to_show="1"]`
+- Result: Displays only January 2026 (1 month)
+- data-months-to-show: "1"
+- Actual months rendered: 1
+
+**Test 3: months_to_show="6" (6 months)** - PASSED
+- Shortcode: `[bwg_property_availability id="1" months_to_show="6"]`
+- Result: Displays January through June 2026 (6 months)
+- data-months-to-show: "6"
+- Actual months rendered: 6
+
+**Test 4: months_to_show="2" (2 months)** - PASSED
+- Shortcode: `[bwg_property_availability id="1" months_to_show="2"]`
+- Result: Displays January, February 2026 (2 months)
+- data-months-to-show: "2"
+- Actual months rendered: 2
+
+#### JavaScript Verification:
+All calendars verified programmatically:
+- Calendar 1: monthsToShow=3, actualMonthsDisplayed=3
+- Calendar 2: monthsToShow=1, actualMonthsDisplayed=1
+- Calendar 3: monthsToShow=6, actualMonthsDisplayed=6
+- Calendar 4: monthsToShow=2, actualMonthsDisplayed=2
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-36-baseline-3-months.png - Existing test page showing default 3 months
+- feature-36-test1-default-3-months.png - Test page header
+- feature-36-full-page.png - Full page showing all 4 test cases
+
+#### Result:
+Feature #36 PASSING - The months_to_show attribute correctly controls the number of months displayed:
+1. Default value of 3 works correctly
+2. Custom values (1, 2, 6) all work correctly
+3. Data attribute correctly stores the value
+4. Template loop respects the attribute value
+
+---
+
+### Updated Statistics
+- Total Passing: 87/90 features (96.7%)
+- This Session: Feature #36 completed
+
+[Testing] Feature #36 verified - months_to_show attribute works (2026-01-30)
+
+---
+
 ## Session: 2026-01-30 (Feature #64 - Parallel Agent)
 
 ### Feature #64: Availability calendar styling is clear - PASSED
