@@ -16,8 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Generate unique ID for this slider instance
 $slider_id = 'bwg-slider-' . wp_rand( 1000, 9999 );
+
+// Determine which navigation elements to show
+$show_arrows = in_array( $atts['navigation'], array( 'arrows', 'both' ), true );
+$show_dots   = in_array( $atts['navigation'], array( 'dots', 'both' ), true );
 ?>
-<div class="bwg-property-slider" id="<?php echo esc_attr( $slider_id ); ?>" data-slider-id="<?php echo esc_attr( $slider_id ); ?>" data-autoplay="<?php echo esc_attr( $atts['autoplay'] ); ?>" data-speed="<?php echo esc_attr( $atts['speed'] ); ?>">
+<div class="bwg-property-slider" id="<?php echo esc_attr( $slider_id ); ?>" data-slider-id="<?php echo esc_attr( $slider_id ); ?>" data-autoplay="<?php echo esc_attr( $atts['autoplay'] ); ?>" data-speed="<?php echo esc_attr( $atts['speed'] ); ?>" data-slides-to-show="<?php echo esc_attr( $atts['slides_to_show'] ); ?>" data-slides-to-scroll="<?php echo esc_attr( $atts['slides_to_scroll'] ); ?>">
     <div class="bwg-property-slider__container">
         <div class="bwg-property-slider__track">
             <?php foreach ( $properties as $index => $property ) : ?>
@@ -60,6 +64,7 @@ $slider_id = 'bwg-slider-' . wp_rand( 1000, 9999 );
         </div>
     </div>
 
+    <?php if ( $show_arrows ) : ?>
     <!-- Navigation Controls -->
     <button class="bwg-property-slider__nav bwg-property-slider__nav--prev" aria-label="<?php esc_attr_e( 'Previous property', 'bwg-rentals' ); ?>">
         <span aria-hidden="true">&lsaquo;</span>
@@ -67,7 +72,9 @@ $slider_id = 'bwg-slider-' . wp_rand( 1000, 9999 );
     <button class="bwg-property-slider__nav bwg-property-slider__nav--next" aria-label="<?php esc_attr_e( 'Next property', 'bwg-rentals' ); ?>">
         <span aria-hidden="true">&rsaquo;</span>
     </button>
+    <?php endif; ?>
 
+    <?php if ( $show_dots ) : ?>
     <!-- Slide Indicators/Dots -->
     <div class="bwg-property-slider__indicators">
         <?php foreach ( $properties as $index => $property ) : ?>
@@ -78,4 +85,5 @@ $slider_id = 'bwg-slider-' . wp_rand( 1000, 9999 );
             ></button>
         <?php endforeach; ?>
     </div>
+    <?php endif; ?>
 </div>

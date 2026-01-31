@@ -254,11 +254,39 @@
                 var currentIndex = 0;
                 var totalSlides = $slides.length;
 
-                // Skip if only one slide
-                if (totalSlides <= 1) {
+                // Get configuration from data attributes
+                var slidesToShow = parseInt($slider.data('slides-to-show'), 10) || 1;
+                var slidesToScroll = parseInt($slider.data('slides-to-scroll'), 10) || 1;
+
+                // Responsive: Adjust slides to show based on screen width
+                function getResponsiveSlidesToShow() {
+                    var width = $(window).width();
+                    var currentSlidesToShow = slidesToShow;
+
+                    // Mobile: max 1 slide
+                    if (width < 768) {
+                        currentSlidesToShow = Math.min(1, slidesToShow);
+                    }
+                    // Tablet: max 2 slides
+                    else if (width < 1024) {
+                        currentSlidesToShow = Math.min(2, slidesToShow);
+                    }
+                    // Desktop: use configured value
+
+                    return currentSlidesToShow;
+                }
+
+                // Calculate responsive values
+                var responsiveSlidesToShow = getResponsiveSlidesToShow();
+
+                // Skip if insufficient slides
+                if (totalSlides <= responsiveSlidesToShow) {
                     $prevBtn.hide();
                     $nextBtn.hide();
                     $slider.find('.bwg-property-slider__indicators').hide();
+                    // Set slide widths for proper display
+                    var slideWidth = 100 / responsiveSlidesToShow;
+                    $slides.css('flex', '0 0 ' + slideWidth + '%');
                     return;
                 }
 
@@ -267,15 +295,31 @@
                 var speed = parseInt($slider.data('speed'), 10) || 5000;
                 var autoplayTimer = null;
 
+                // Set slide widths based on slides to show
+                function setSlidesWidth() {
+                    responsiveSlidesToShow = getResponsiveSlidesToShow();
+                    var slideWidth = 100 / responsiveSlidesToShow;
+                    $slides.css('flex', '0 0 ' + slideWidth + '%');
+                }
+
+                // Initial slide widths
+                setSlidesWidth();
+
+                // Update on window resize
+                $(window).on('resize', function() {
+                    setSlidesWidth();
+                    updateSlider();
+                });
+
                 // Start autoplay
                 function startAutoplay() {
                     if (!autoplay) return;
 
                     stopAutoplay(); // Clear any existing timer
                     autoplayTimer = setInterval(function() {
-                        currentIndex++;
-                        if (currentIndex >= totalSlides) {
-                            currentIndex = 0; // Loop back to first slide
+                        currentIndex += slidesToScroll;
+                        if (currentIndex + responsiveSlidesToShow > totalSlides) {
+                            currentIndex = 0; // Loop back to start
                         }
                         updateSlider();
                     }, speed);
@@ -303,7 +347,7 @@
                 // Previous button handler
                 $prevBtn.on('click', function() {
                     if (currentIndex > 0) {
-                        currentIndex--;
+                        currentIndex = Math.max(0, currentIndex - slidesToScroll);
                         updateSlider();
                         if (autoplay) {
                             startAutoplay(); // Restart autoplay after manual navigation
@@ -313,8 +357,9 @@
 
                 // Next button handler
                 $nextBtn.on('click', function() {
-                    if (currentIndex < totalSlides - 1) {
-                        currentIndex++;
+                    var maxIndex = totalSlides - responsiveSlidesToShow;
+                    if (currentIndex < maxIndex) {
+                        currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
                         updateSlider();
                         if (autoplay) {
                             startAutoplay(); // Restart autoplay after manual navigation
@@ -324,7 +369,9 @@
 
                 // Indicator click handler
                 $indicators.on('click', function() {
-                    currentIndex = parseInt($(this).data('slide-to'), 10);
+                    var targetIndex = parseInt($(this).data('slide-to'), 10);
+                    var maxIndex = totalSlides - responsiveSlidesToShow;
+                    currentIndex = Math.min(targetIndex, maxIndex);
                     updateSlider();
                     if (autoplay) {
                         startAutoplay(); // Restart autoplay after manual navigation
@@ -335,14 +382,15 @@
                 $slider.on('keydown', function(e) {
                     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                         e.preventDefault();
+                        var maxIndex = totalSlides - responsiveSlidesToShow;
                         if (e.key === 'ArrowLeft' && currentIndex > 0) {
-                            currentIndex--;
+                            currentIndex = Math.max(0, currentIndex - slidesToScroll);
                             updateSlider();
                             if (autoplay) {
                                 startAutoplay(); // Restart autoplay after manual navigation
                             }
-                        } else if (e.key === 'ArrowRight' && currentIndex < totalSlides - 1) {
-                            currentIndex++;
+                        } else if (e.key === 'ArrowRight' && currentIndex < maxIndex) {
+                            currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
                             updateSlider();
                             if (autoplay) {
                                 startAutoplay(); // Restart autoplay after manual navigation
@@ -366,18 +414,19 @@
                 $track.on('touchend', function() {
                     var swipeThreshold = 50;
                     var diff = touchStartX - touchEndX;
+                    var maxIndex = totalSlides - responsiveSlidesToShow;
 
                     if (Math.abs(diff) > swipeThreshold) {
-                        if (diff > 0 && currentIndex < totalSlides - 1) {
-                            // Swipe left - next slide
-                            currentIndex++;
+                        if (diff > 0 && currentIndex < maxIndex) {
+                            // Swipe left - next slides
+                            currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
                             updateSlider();
                             if (autoplay) {
                                 startAutoplay(); // Restart autoplay after manual navigation
                             }
                         } else if (diff < 0 && currentIndex > 0) {
-                            // Swipe right - previous slide
-                            currentIndex--;
+                            // Swipe right - previous slides
+                            currentIndex = Math.max(0, currentIndex - slidesToScroll);
                             updateSlider();
                             if (autoplay) {
                                 startAutoplay(); // Restart autoplay after manual navigation
@@ -388,20 +437,32 @@
 
                 // Update slider position and controls
                 function updateSlider() {
-                    // Move track
-                    $track.css('transform', 'translateX(-' + (currentIndex * 100) + '%)');
+                    responsiveSlidesToShow = getResponsiveSlidesToShow();
+                    var slideWidth = 100 / responsiveSlidesToShow;
+                    var maxIndex = totalSlides - responsiveSlidesToShow;
 
-                    // Update indicators
+                    // Constrain currentIndex to valid range
+                    currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
+
+                    // Move track (percentage based on slide width and current index)
+                    var translateX = -(currentIndex * slideWidth);
+                    $track.css('transform', 'translateX(' + translateX + '%)');
+
+                    // Update indicators - highlight indicators for visible slides
                     $indicators.removeClass('bwg-property-slider__indicator--active');
-                    $indicators.eq(currentIndex).addClass('bwg-property-slider__indicator--active');
+                    for (var i = currentIndex; i < Math.min(currentIndex + responsiveSlidesToShow, totalSlides); i++) {
+                        $indicators.eq(i).addClass('bwg-property-slider__indicator--active');
+                    }
 
                     // Update navigation button states
                     $prevBtn.prop('disabled', currentIndex === 0);
-                    $nextBtn.prop('disabled', currentIndex === totalSlides - 1);
+                    $nextBtn.prop('disabled', currentIndex >= maxIndex);
 
-                    // Update ARIA attributes
+                    // Update ARIA attributes - mark visible slides
                     $slides.attr('aria-hidden', 'true');
-                    $slides.eq(currentIndex).attr('aria-hidden', 'false');
+                    for (var j = currentIndex; j < Math.min(currentIndex + responsiveSlidesToShow, totalSlides); j++) {
+                        $slides.eq(j).attr('aria-hidden', 'false');
+                    }
                 }
 
                 // Initial state

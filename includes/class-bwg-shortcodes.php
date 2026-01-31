@@ -1014,10 +1014,13 @@ class BWG_Shortcodes {
 
         $atts = shortcode_atts(
             array(
-                'limit'    => -1,
-                'orderby'  => 'name',
-                'autoplay' => 'false',
-                'speed'    => '5000',
+                'limit'           => -1,
+                'orderby'         => 'name',
+                'autoplay'        => 'false',
+                'speed'           => '5000',
+                'slides_to_show'  => '1',
+                'slides_to_scroll' => '1',
+                'navigation'      => 'both',
             ),
             $atts,
             'bwg_property_slider'
@@ -1032,6 +1035,18 @@ class BWG_Shortcodes {
         if ( empty( $properties ) ) {
             return $this->render_empty( __( 'No properties available for the slider.', 'bwg-rentals' ) );
         }
+
+        // Validate and sanitize slides_to_show (1-4)
+        $atts['slides_to_show'] = max( 1, min( 4, absint( $atts['slides_to_show'] ) ) );
+
+        // Validate and sanitize slides_to_scroll (1-4)
+        $atts['slides_to_scroll'] = max( 1, min( 4, absint( $atts['slides_to_scroll'] ) ) );
+
+        // Validate navigation attribute (arrows, dots, both, none)
+        $valid_navigation = array( 'arrows', 'dots', 'both', 'none' );
+        $atts['navigation'] = in_array( $atts['navigation'], $valid_navigation, true )
+            ? $atts['navigation']
+            : 'both';
 
         // Apply sorting
         $orderby = sanitize_text_field( $atts['orderby'] );
