@@ -451,7 +451,8 @@ class BWG_Admin {
         }
 
         // Actually test the API
-        $api = new BWG_API();
+        $cache = new BWG_Cache();
+        $api = new BWG_API( $cache );
         $result = $api->test_connection();
 
         if ( $result['success'] ) {
