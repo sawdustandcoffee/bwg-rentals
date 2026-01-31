@@ -91,19 +91,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <tr>
                     <th scope="row">
-                        <label for="bwg_rentals_button_text"><?php esc_html_e( 'Default Button Text', 'bwg-rentals' ); ?></label>
+                        <label for="bwg_rentals_booking_button_text"><?php esc_html_e( 'Default Button Text', 'bwg-rentals' ); ?></label>
                     </th>
                     <td>
                         <input
                             type="text"
-                            name="bwg_rentals_button_text"
-                            id="bwg_rentals_button_text"
+                            name="bwg_rentals_booking_button_text"
+                            id="bwg_rentals_booking_button_text"
                             value="<?php echo esc_attr( $btn_text ); ?>"
                             class="regular-text"
                             data-validate="button-text"
                             maxlength="50"
                         />
-                        <span class="bwg-field-error" id="bwg_rentals_button_text-error" role="alert"></span>
+                        <span class="bwg-field-error" id="bwg_rentals_booking_button_text-error" role="alert"></span>
                         <p class="description">
                             <?php esc_html_e( 'Default text for the booking button shortcode (max 50 characters).', 'bwg-rentals' ); ?>
                         </p>

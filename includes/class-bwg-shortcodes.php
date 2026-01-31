@@ -833,7 +833,7 @@ class BWG_Shortcodes {
     public function property_booking_button( $atts ) {
         $this->enqueue_assets();
 
-        $default_text = get_option( 'bwg_rentals_button_text', __( 'Book Now', 'bwg-rentals' ) );
+        $default_text = get_option( 'bwg_rentals_booking_button_text', __( 'Book Now', 'bwg-rentals' ) );
 
         $atts = shortcode_atts(
             array(
