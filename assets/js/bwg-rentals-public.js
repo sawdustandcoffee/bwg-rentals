@@ -465,11 +465,30 @@
                     }
                 }
 
+                // Intersection Observer for visibility detection
+                if (autoplay && typeof IntersectionObserver !== 'undefined') {
+                    var observer = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(entry) {
+                            if (entry.isIntersecting) {
+                                // Slider is visible - start autoplay
+                                startAutoplay();
+                            } else {
+                                // Slider is not visible - stop autoplay
+                                stopAutoplay();
+                            }
+                        });
+                    }, {
+                        threshold: 0.1 // Trigger when at least 10% of slider is visible
+                    });
+
+                    observer.observe($slider[0]);
+                }
+
                 // Initial state
                 updateSlider();
 
-                // Start autoplay if enabled
-                if (autoplay) {
+                // Start autoplay if enabled (only if no Intersection Observer support)
+                if (autoplay && typeof IntersectionObserver === 'undefined') {
                     startAutoplay();
                 }
             });
