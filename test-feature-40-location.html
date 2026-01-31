@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Feature #40: Property Location Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+        .test-description {
+            background: #e8f4f8;
+            padding: 10px;
+            border-left: 4px solid #0066cc;
+            margin: 10px 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .expected {
+            color: #006600;
+            font-weight: bold;
+        }
+        .result-box {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feature #40: [bwg_property_location] Displays Address</h1>
+
+    <div class="test-description">
+        <strong>Feature Steps:</strong>
+        <ol>
+            <li>Add [bwg_property_location id='X'] to a page</li>
+            <li>View page on frontend</li>
+            <li>Verify address information displays</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 1: Property ID 1 (Basic Address Display)</h2>
+        <p><strong>Shortcode:</strong> <code>[bwg_property_location id="1"]</code></p>
+        <p class="expected">Expected: Display address for property ID 1</p>
+        <div class="result-box">
+            <h3>Result:</h3>
+            <!-- We'll check this via browser automation -->
+            <p>Navigate to a page with the shortcode to verify</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Property ID 2 (Different Property)</h2>
+        <p><strong>Shortcode:</strong> <code>[bwg_property_location id="2"]</code></p>
+        <p class="expected">Expected: Display different address for property ID 2</p>
+        <div class="result-box">
+            <h3>Result:</h3>
+            <p>Should show different address from Property 1</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: With Map (show_map attribute)</h2>
+        <p><strong>Shortcode:</strong> <code>[bwg_property_location id="1" show_map="true"]</code></p>
+        <p class="expected">Expected: Display address + map</p>
+        <div class="result-box">
+            <h3>Result:</h3>
+            <p>Should show address and OpenStreetMap embed</p>
+        </div>
+    </div>
+
+</body>
+</html>

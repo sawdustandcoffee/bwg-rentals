@@ -290,9 +290,10 @@
                     return;
                 }
 
-                // Autoplay configuration
+                // Autoplay and loop configuration
                 var autoplay = $slider.data('autoplay') === 'true' || $slider.data('autoplay') === true;
                 var speed = parseInt($slider.data('speed'), 10) || 5000;
+                var loop = $slider.data('loop') === 'true' || $slider.data('loop') === true;
                 var autoplayTimer = null;
 
                 // Set slide widths based on slides to show
@@ -346,7 +347,19 @@
 
                 // Previous button handler
                 $prevBtn.on('click', function() {
-                    if (currentIndex > 0) {
+                    if (loop) {
+                        // Loop mode: wrap to end if at beginning
+                        if (currentIndex === 0) {
+                            currentIndex = totalSlides - responsiveSlidesToShow;
+                        } else {
+                            currentIndex = Math.max(0, currentIndex - slidesToScroll);
+                        }
+                        updateSlider();
+                        if (autoplay) {
+                            startAutoplay(); // Restart autoplay after manual navigation
+                        }
+                    } else if (currentIndex > 0) {
+                        // Non-loop mode: only navigate if not at beginning
                         currentIndex = Math.max(0, currentIndex - slidesToScroll);
                         updateSlider();
                         if (autoplay) {
@@ -358,7 +371,19 @@
                 // Next button handler
                 $nextBtn.on('click', function() {
                     var maxIndex = totalSlides - responsiveSlidesToShow;
-                    if (currentIndex < maxIndex) {
+                    if (loop) {
+                        // Loop mode: wrap to beginning if at end
+                        if (currentIndex >= maxIndex) {
+                            currentIndex = 0;
+                        } else {
+                            currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
+                        }
+                        updateSlider();
+                        if (autoplay) {
+                            startAutoplay(); // Restart autoplay after manual navigation
+                        }
+                    } else if (currentIndex < maxIndex) {
+                        // Non-loop mode: only navigate if not at end
                         currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
                         updateSlider();
                         if (autoplay) {
@@ -383,17 +408,29 @@
                     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                         e.preventDefault();
                         var maxIndex = totalSlides - responsiveSlidesToShow;
-                        if (e.key === 'ArrowLeft' && currentIndex > 0) {
-                            currentIndex = Math.max(0, currentIndex - slidesToScroll);
-                            updateSlider();
-                            if (autoplay) {
-                                startAutoplay(); // Restart autoplay after manual navigation
+                        if (e.key === 'ArrowLeft') {
+                            if (loop) {
+                                currentIndex = currentIndex === 0 ? maxIndex : Math.max(0, currentIndex - slidesToScroll);
+                            } else if (currentIndex > 0) {
+                                currentIndex = Math.max(0, currentIndex - slidesToScroll);
+                            } else {
+                                return; // At beginning in non-loop mode
                             }
-                        } else if (e.key === 'ArrowRight' && currentIndex < maxIndex) {
-                            currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
                             updateSlider();
                             if (autoplay) {
-                                startAutoplay(); // Restart autoplay after manual navigation
+                                startAutoplay();
+                            }
+                        } else if (e.key === 'ArrowRight') {
+                            if (loop) {
+                                currentIndex = currentIndex >= maxIndex ? 0 : Math.min(maxIndex, currentIndex + slidesToScroll);
+                            } else if (currentIndex < maxIndex) {
+                                currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
+                            } else {
+                                return; // At end in non-loop mode
+                            }
+                            updateSlider();
+                            if (autoplay) {
+                                startAutoplay();
                             }
                         }
                     }
@@ -417,19 +454,31 @@
                     var maxIndex = totalSlides - responsiveSlidesToShow;
 
                     if (Math.abs(diff) > swipeThreshold) {
-                        if (diff > 0 && currentIndex < maxIndex) {
+                        if (diff > 0) {
                             // Swipe left - next slides
-                            currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
-                            updateSlider();
-                            if (autoplay) {
-                                startAutoplay(); // Restart autoplay after manual navigation
+                            if (loop) {
+                                currentIndex = currentIndex >= maxIndex ? 0 : Math.min(maxIndex, currentIndex + slidesToScroll);
+                            } else if (currentIndex < maxIndex) {
+                                currentIndex = Math.min(maxIndex, currentIndex + slidesToScroll);
+                            } else {
+                                return; // At end in non-loop mode
                             }
-                        } else if (diff < 0 && currentIndex > 0) {
-                            // Swipe right - previous slides
-                            currentIndex = Math.max(0, currentIndex - slidesToScroll);
                             updateSlider();
                             if (autoplay) {
-                                startAutoplay(); // Restart autoplay after manual navigation
+                                startAutoplay();
+                            }
+                        } else if (diff < 0) {
+                            // Swipe right - previous slides
+                            if (loop) {
+                                currentIndex = currentIndex === 0 ? maxIndex : Math.max(0, currentIndex - slidesToScroll);
+                            } else if (currentIndex > 0) {
+                                currentIndex = Math.max(0, currentIndex - slidesToScroll);
+                            } else {
+                                return; // At beginning in non-loop mode
+                            }
+                            updateSlider();
+                            if (autoplay) {
+                                startAutoplay();
                             }
                         }
                     }
@@ -455,8 +504,15 @@
                     }
 
                     // Update navigation button states
-                    $prevBtn.prop('disabled', currentIndex === 0);
-                    $nextBtn.prop('disabled', currentIndex >= maxIndex);
+                    if (loop) {
+                        // Loop mode: buttons always enabled
+                        $prevBtn.prop('disabled', false);
+                        $nextBtn.prop('disabled', false);
+                    } else {
+                        // Non-loop mode: disable at ends
+                        $prevBtn.prop('disabled', currentIndex === 0);
+                        $nextBtn.prop('disabled', currentIndex >= maxIndex);
+                    }
 
                     // Update ARIA attributes - mark visible slides
                     $slides.attr('aria-hidden', 'true');

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feature #87: Property Slider Loop Attribute Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-section h2 { margin-top: 0; color: #333; }
+        .test-section h3 { color: #666; font-size: 16px; margin-top: 20px; }
+        .shortcode { background: #f0f0f0; padding: 10px; border-left: 4px solid #0073aa; margin: 10px 0; font-family: monospace; }
+        .expected { background: #e7f5e7; padding: 10px; margin: 10px 0; border-left: 4px solid #28a745; }
+        .expected strong { color: #28a745; }
+        ul { line-height: 1.8; }
+        .controls { margin: 15px 0; }
+        .controls button { margin-right: 10px; padding: 8px 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Feature #87: [bwg_property_slider] Loop Attribute Test</h1>
+
+    <div class="test-section">
+        <h2>Feature Definition</h2>
+        <p><strong>Feature #87:</strong> [bwg_property_slider] loop attribute</p>
+        <p><strong>Description:</strong> Slider can loop infinitely or stop at ends</p>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>Add loop attribute (true/false)</li>
+            <li>Infinite loop seamlessly wraps</li>
+            <li>Non-loop disables prev/next at ends</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 1: Loop Mode Enabled (loop="true")</h2>
+        <div class="shortcode">[bwg_property_slider limit="5" loop="true"]</div>
+        <div class="expected">
+            <strong>Expected Behavior:</strong>
+            <ul>
+                <li>✅ Previous and Next buttons are always enabled</li>
+                <li>✅ Clicking Next on the last slide wraps to the first slide</li>
+                <li>✅ Clicking Previous on the first slide wraps to the last slide</li>
+                <li>✅ Infinite navigation in both directions</li>
+            </ul>
+        </div>
+        <div class="controls">
+            <p><strong>Manual Test Steps:</strong></p>
+            <ol>
+                <li>Navigate to the last slide (slide 5/5)</li>
+                <li>Click "Next" button - Should seamlessly wrap to slide 1/5</li>
+                <li>Click "Previous" button - Should seamlessly wrap back to slide 5/5</li>
+                <li>Use keyboard arrows - Left/Right should loop infinitely</li>
+                <li>Verify buttons are never disabled</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Loop Mode Disabled (loop="false")</h2>
+        <div class="shortcode">[bwg_property_slider limit="5" loop="false"]</div>
+        <div class="expected">
+            <strong>Expected Behavior:</strong>
+            <ul>
+                <li>✅ Previous button is disabled on the first slide</li>
+                <li>✅ Next button is disabled on the last slide</li>
+                <li>✅ Clicking disabled buttons has no effect</li>
+                <li>✅ Navigation stops at both ends</li>
+            </ul>
+        </div>
+        <div class="controls">
+            <p><strong>Manual Test Steps:</strong></p>
+            <ol>
+                <li>Check initial state - Previous button should be disabled</li>
+                <li>Navigate to the last slide (slide 5/5)</li>
+                <li>Next button should be disabled</li>
+                <li>Try clicking disabled buttons - No movement</li>
+                <li>Use keyboard arrows - Should stop at ends</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Default Behavior (no loop attribute)</h2>
+        <div class="shortcode">[bwg_property_slider limit="5"]</div>
+        <div class="expected">
+            <strong>Expected Behavior:</strong>
+            <ul>
+                <li>✅ Default is loop="true" (infinite looping)</li>
+                <li>✅ Buttons always enabled</li>
+                <li>✅ Seamless wrapping in both directions</li>
+            </ul>
+        </div>
+        <div class="controls">
+            <p><strong>Manual Test Steps:</strong></p>
+            <ol>
+                <li>Verify behavior matches Test 1 (loop enabled)</li>
+                <li>Default attribute value should be "true"</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Implementation Summary</h2>
+        <h3>Files Modified:</h3>
+        <ul>
+            <li><strong>includes/class-bwg-shortcodes.php</strong> - Added loop attribute (default: 'true')</li>
+            <li><strong>templates/property-slider.php</strong> - Added data-loop attribute</li>
+            <li><strong>assets/js/bwg-rentals-public.js</strong> - Implemented loop/non-loop logic</li>
+        </ul>
+
+        <h3>JavaScript Changes:</h3>
+        <ul>
+            <li>Previous button: Wraps to end when loop=true and at beginning</li>
+            <li>Next button: Wraps to start when loop=true and at end</li>
+            <li>updateSlider(): Disables buttons at ends when loop=false</li>
+            <li>Keyboard navigation: Supports looping with arrow keys</li>
+            <li>Touch/swipe: Supports looping on mobile devices</li>
+        </ul>
+
+        <h3>Verification:</h3>
+        <p>To test this feature in WordPress:</p>
+        <ol>
+            <li>Create a test page: <code>http://localhost:8088/feature-87-slider-loop-test/</code></li>
+            <li>Add the shortcodes above to the page content</li>
+            <li>Verify both loop and non-loop modes work as expected</li>
+            <li>Test with buttons, keyboard, and touch/swipe</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Status</h2>
+        <p><strong>Implementation:</strong> ✅ COMPLETE</p>
+        <p><strong>Code Review:</strong> ✅ COMPLETE</p>
+        <p><strong>Ready for Testing:</strong> ✅ YES</p>
+        <p><strong>Ready to Mark Passing:</strong> ⏳ AFTER BROWSER VERIFICATION</p>
+    </div>
+</body>
+</html>
