@@ -89,6 +89,12 @@ class BWG_Shortcodes {
         wp_enqueue_style( 'bwg-rentals-public' );
         wp_enqueue_script( 'bwg-rentals-public' );
 
+        // Localize script for AJAX
+        wp_localize_script( 'bwg-rentals-public', 'bwgRentals', array(
+            'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+            'filterNonce' => wp_create_nonce( 'bwg_filter_properties' ),
+        ) );
+
         $this->assets_enqueued = true;
     }
 

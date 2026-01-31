@@ -352,6 +352,157 @@
     };
 
     /**
+     * Property Filters (AJAX)
+     *
+     * Handles the filter dropdowns for [bwg_properties] shortcode
+     */
+    var BWGFilters = {
+        init: function() {
+            var self = this;
+
+            // Handle filter change
+            $(document).on('change', '.bwg-filter__select', function() {
+                var $select = $(this);
+                var $container = $select.closest('.bwg-properties-container');
+                self.updateProperties($container);
+            });
+
+            // Handle reset button
+            $(document).on('click', '.bwg-filter__reset', function() {
+                var $button = $(this);
+                var $container = $button.closest('.bwg-properties-container');
+
+                // Reset all selects
+                $container.find('.bwg-filter__select').val('');
+
+                // Update properties
+                self.updateProperties($container);
+            });
+
+            // On page load, check if there are URL parameters and apply filters
+            $('.bwg-properties-container').each(function() {
+                self.applyUrlFilters($(this));
+            });
+        },
+
+        /**
+         * Apply filters from URL parameters on page load
+         */
+        applyUrlFilters: function($container) {
+            var urlParams = new URLSearchParams(window.location.search);
+            var beds = urlParams.get('bwg_beds');
+            var baths = urlParams.get('bwg_baths');
+            var sleeps = urlParams.get('bwg_sleeps');
+
+            if (beds || baths || sleeps) {
+                // Set select values
+                if (beds) {
+                    $container.find('[data-filter="beds"]').val(beds);
+                }
+                if (baths) {
+                    $container.find('[data-filter="baths"]').val(baths);
+                }
+                if (sleeps) {
+                    $container.find('[data-filter="sleeps"]').val(sleeps);
+                }
+            }
+        },
+
+        /**
+         * Update properties via AJAX
+         */
+        updateProperties: function($container) {
+            var self = this;
+            var $grid = $container.find('.bwg-properties');
+            var instanceId = $grid.data('instance');
+
+            // Get filter values
+            var beds = $container.find('[data-filter="beds"]').val() || '';
+            var baths = $container.find('[data-filter="baths"]').val() || '';
+            var sleeps = $container.find('[data-filter="sleeps"]').val() || '';
+
+            // Get shortcode attributes (stored in data attributes if needed)
+            var atts = {
+                layout: 'grid',
+                columns: 3,
+                limit: -1,
+                orderby: 'name'
+            };
+
+            // Show loading state
+            $grid.css('opacity', '0.5');
+            $grid.css('pointer-events', 'none');
+
+            // Update URL without page reload
+            self.updateUrl(beds, baths, sleeps);
+
+            // Make AJAX request
+            $.ajax({
+                url: bwgRentals.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'bwg_filter_properties',
+                    nonce: bwgRentals.filterNonce,
+                    beds: beds,
+                    baths: baths,
+                    sleeps: sleeps,
+                    atts: JSON.stringify(atts)
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the grid content
+                        $grid.html(response.data.html);
+
+                        // Show result count if available
+                        if (response.data.count !== undefined) {
+                            // Could add a count display here if needed
+                            console.log('Found ' + response.data.count + ' properties');
+                        }
+                    } else {
+                        console.error('Filter error:', response.data.message);
+                        alert('Error filtering properties. Please try again.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    alert('Error filtering properties. Please try again.');
+                },
+                complete: function() {
+                    // Remove loading state
+                    $grid.css('opacity', '1');
+                    $grid.css('pointer-events', 'auto');
+                }
+            });
+        },
+
+        /**
+         * Update URL parameters without page reload
+         */
+        updateUrl: function(beds, baths, sleeps) {
+            var url = new URL(window.location);
+
+            // Remove existing filter parameters
+            url.searchParams.delete('bwg_beds');
+            url.searchParams.delete('bwg_baths');
+            url.searchParams.delete('bwg_sleeps');
+
+            // Add new parameters if they have values
+            if (beds) {
+                url.searchParams.set('bwg_beds', beds);
+            }
+            if (baths) {
+                url.searchParams.set('bwg_baths', baths);
+            }
+            if (sleeps) {
+                url.searchParams.set('bwg_sleeps', sleeps);
+            }
+
+            // Update URL without reloading page
+            window.history.pushState({}, '', url);
+        }
+    };
+
+    /**
      * Initialize on DOM ready
      */
     $(document).ready(function() {
@@ -359,6 +510,7 @@
         BWGLightbox.init();
         BWGCalendar.init();
         BWGPropertySlider.init();
+        BWGFilters.init();
     });
 
 })(jQuery);
