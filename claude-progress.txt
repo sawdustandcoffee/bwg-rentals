@@ -1,3 +1,83 @@
+## Session: 2026-01-30 (Feature #72 - Parallel Agent)
+
+### Feature #72: Long property names handle gracefully - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 72
+- Name: Long property names handle gracefully
+- Description: Very long property names truncate or wrap without breaking layout
+- Category: style
+- Dependencies: Feature #24 ([bwg_property_card] renders single property card) PASSED
+- Steps:
+  1. View property with very long name
+  2. Check property card display
+  3. Verify text wraps or truncates appropriately
+  4. Verify card layout is not broken
+
+#### Implementation Details:
+
+**CSS Changes (assets/css/bwg-rentals-public.css):**
+
+**.bwg-property-card__title (lines 129-145):**
+Added text overflow handling:
+- `overflow: hidden` - prevents text from overflowing container
+- `text-overflow: ellipsis` - shows "..." for truncated text
+- `display: -webkit-box` - required for line clamping
+- `-webkit-line-clamp: 2` - limits to 2 lines
+- `-webkit-box-orient: vertical` - required for line clamping
+- `line-height: 1.3` - consistent line spacing
+- `max-height: 2.6em` - 2 lines * 1.3 line-height
+- `word-wrap: break-word` - allows breaking long words
+- `overflow-wrap: break-word` - modern equivalent
+
+**.bwg-property-title (lines 147-157):**
+Added graceful wrapping:
+- `word-wrap: break-word` - allows breaking long words
+- `overflow-wrap: break-word` - modern equivalent
+- `hyphens: auto` - enables automatic hyphenation
+
+**Test Mock Property (includes/class-bwg-api.php):**
+Added property ID 5 with very long name:
+"The Absolutely Magnificent Oceanfront Beach House Estate with Private Pool, Spa, and Direct Beach Access - Perfect for Large Family Reunions and Special Celebrations"
+
+#### Browser Verification:
+
+**Test 1: Desktop View (1280x720)** ✅
+- Navigated to: /bwg-properties-grid-test-feature-20/
+- Long property name truncated to: "The Absolutely Magnificent..."
+- Ellipsis shows after 2 lines
+- Card layout not broken - consistent height with other cards
+- Screenshot: feature-72-long-name-with-css-applied.png
+
+**Test 2: CSS Properties Verified** ✅
+- overflow: hidden ✓
+- textOverflow: ellipsis ✓
+- webkitLineClamp: 2 ✓
+- webkitBoxOrient: vertical ✓
+- maxHeight: 52px (2 lines * 26px) ✓
+
+**Test 3: Mobile View (375x667)** ✅
+- Long name truncates appropriately on mobile
+- Card layout maintains consistency
+- Screenshot: feature-72-mobile-long-name-card.png
+
+#### Console Errors: None
+
+#### Git Commit:
+- Hash: 5d1bedc
+- Message: "Implement Feature #72: Long property names handle gracefully"
+
+#### Result:
+Feature #72 PASSING - Long property names handle gracefully:
+1. CSS truncation with ellipsis after 2 lines
+2. Desktop and mobile layouts not broken
+3. Cards maintain consistent height
+4. Word wrapping prevents layout breaks from very long words
+
+---
+
 ## Session: 2026-01-30 (Feature #70 - Parallel Agent)
 
 ### Feature #70: Shortcode attributes are sanitized - PASSED
@@ -1027,3 +1107,176 @@ Feature #66 PASSING - Booking button opens in new tab:
 
 [Testing] Feature #66 verified - booking button opens in new tab (2026-01-30)
 [Testing] Feature #44 verified - still passing (2026-01-30)
+
+---
+
+## Session: 2026-01-30 (Regression Testing)
+
+### Feature #46: CSS classes use BEM naming convention - VERIFIED PASSING
+
+**Status: REGRESSION TEST PASSED**
+
+#### Feature Definition:
+- ID: 46
+- Name: CSS classes use BEM naming convention
+- Description: All plugin CSS classes follow BEM methodology with bwg- prefix
+- Category: style
+- Dependencies: Feature #20 (CSS file loads on pages with shortcodes) PASSED
+- Steps:
+  1. View a page with shortcode output
+  2. Inspect HTML elements
+  3. Verify classes use bwg- prefix
+  4. Verify BEM structure (block__element--modifier)
+
+#### Regression Test Results:
+
+**Step 1: View a page with shortcode output** ✅
+- Tested pages: /bwg-rentals-classic-editor-test/ and /feature-63-gallery-slider-smooth-transitions-test/
+- Multiple shortcodes rendered including property grid, property cards, gallery slider
+
+**Step 2: Inspect HTML elements** ✅
+- Used JavaScript to extract all CSS classes containing 'bwg'
+- Found 41 elements with bwg- classes on the classic editor test page
+
+**Step 3: Verify classes use bwg- prefix** ✅
+- All 18 unique BEM classes on first page start with 'bwg-' prefix
+- All 11 unique BEM classes on gallery page start with 'bwg-' prefix
+- Example classes found:
+  - bwg-properties, bwg-property-card, bwg-property-gallery
+  - bwg-lightbox, bwg-property-specs, bwg-property-description
+
+**Step 4: Verify BEM structure (block__element--modifier)** ✅
+- **Blocks identified:** bwg-properties, bwg-property-card, bwg-property-gallery, bwg-lightbox, bwg-property-specs, bwg-property-title, bwg-property-description, bwg-property-booking-button
+- **Elements identified:** bwg-property-card__content, bwg-property-card__image, bwg-property-card__title, bwg-property-specs__item, bwg-property-specs__icon, bwg-property-gallery__slider, bwg-property-gallery__slides, bwg-property-gallery__slide, bwg-property-gallery__nav, bwg-lightbox__close, bwg-lightbox__image
+- **Modifiers identified:** bwg-properties--grid, bwg-properties--grid-3, bwg-property-gallery--slider, bwg-property-gallery__nav--prev, bwg-property-gallery__nav--next
+
+#### CSS File Verification (assets/css/bwg-rentals-public.css):
+- File header explicitly states: "Uses BEM naming convention with bwg- prefix"
+- All 760 lines consistently follow BEM methodology
+- CSS custom properties all use --bwg- prefix
+
+#### Console Errors: None
+
+#### Screenshots:
+- feature-46-bem-classes-test.png - Classic editor page with BEM classes
+- feature-46-gallery-bem-classes.png - Gallery slider page with BEM classes
+
+#### Result:
+Feature #46 STILL PASSING - No regression detected. All CSS classes:
+1. Use the bwg- prefix
+2. Follow BEM naming convention (block__element--modifier)
+3. Are consistently applied across all shortcode output
+
+[Testing] Feature #46 verified - still passing (2026-01-30)
+
+---
+
+## Session: 2026-01-30 (Feature #71 - Parallel Agent)
+
+### Feature #71: API data is sanitized before display - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 71
+- Name: API data is sanitized before display
+- Description: Property data from API is escaped to prevent XSS
+- Category: security
+- Dependencies: Feature #27 ([bwg_property_title] renders property name) PASSED
+- Steps:
+  1. Create property with HTML in name via API
+  2. View property title shortcode
+  3. Verify HTML is escaped, not rendered
+  4. Verify no script injection possible
+
+#### Implementation (Already Implemented):
+
+**Shortcode Class (includes/class-bwg-shortcodes.php):**
+- Line 322: `$name = isset( $property['name'] ) ? esc_html( $property['name'] ) : '';`
+- All property data is escaped using WordPress sanitization functions:
+  - `esc_html()` for text content
+  - `esc_attr()` for HTML attributes
+  - `esc_url()` for URLs
+  - `wp_kses_post()` for description HTML (controlled allowlist)
+
+**Template Files:**
+- templates/property-card.php: Line 29 uses `esc_html( $property['name'] ?? '' )`
+- All templates consistently escape output
+
+#### Test Setup:
+
+**Added XSS Test Property (ID 4) to Mock API (includes/class-bwg-api.php):**
+```php
+array(
+    'id'          => 4,
+    'name'        => '<script>alert("XSS")</script>Test Property',
+    'headline'    => '<img src=x onerror="alert(\'XSS\')">Injected headline',
+    'description' => 'This property has <b>HTML tags</b> and <script>document.write("XSS")</script>...',
+    'amenities'   => array( 'WiFi', '<script>alert("amenity")</script>', '<img src=x onerror="alert()">' ),
+    'address'     => array(
+        'street'  => '<script>alert("street")</script>123 Test St',
+        'city'    => '<b>Injected City</b>',
+        ...
+    ),
+)
+```
+
+#### Browser Verification:
+
+**Test 1: Property Title Shortcode** ✅
+- Test page: /feature-71-xss-sanitization-test/
+- Shortcode: `[bwg_property_title id="4"]`
+- Result: HTML escaped as `&lt;script&gt;alert("XSS")&lt;/script&gt;Test Property`
+- Script NOT executed - displayed as text
+- Screenshot: feature-71-xss-sanitization-test.png
+
+**Test 2: Property Card Shortcode** ✅
+- Test page: /feature-71-xss-comprehensive-test/
+- Shortcode: `[bwg_property_card id="4"]`
+- Result: All malicious content escaped
+- Script tags visible as text, not executed
+- Screenshot: feature-71-xss-comprehensive-test.png
+
+**Test 3: Property Description Shortcode** ✅
+- Shortcode: `[bwg_property_description id="4"]`
+- Result: Script tags escaped via wp_kses_post()
+- Only safe HTML tags allowed through
+- Screenshot: feature-71-xss-comprehensive-test-scrolled.png
+
+**Test 4: Property Amenities Shortcode** ✅
+- Shortcode: `[bwg_property_amenities id="4"]`
+- Result: Malicious amenities escaped
+- `<script>` tags shown as text: `&lt;script&gt;...`
+- Screenshot: feature-71-xss-amenities-location.png
+
+**Test 5: Property Location Shortcode** ✅
+- Shortcode: `[bwg_property_location id="4"]`
+- Result: Address fields properly escaped
+- `<b>Injected City</b>` shown as `&lt;b&gt;Injected City&lt;/b&gt;`
+- Screenshot: feature-71-xss-amenities-location.png
+
+#### Console Errors: None
+
+No JavaScript errors logged, confirming scripts were not executed.
+
+#### Git Commit:
+- Hash: 81bb702
+- Message: "Verify Feature #71: API data is sanitized before display (XSS prevention)"
+
+#### Result:
+Feature #71 PASSING - API data is properly sanitized before display:
+1. All text content escaped with `esc_html()`
+2. HTML attributes escaped with `esc_attr()`
+3. URLs escaped with `esc_url()`
+4. Descriptions use `wp_kses_post()` with controlled allowlist
+5. XSS injection attempts display as text, not executed
+6. No JavaScript console errors during testing
+
+---
+
+### Updated Statistics
+- Total Passing: 81/90 features (90.0%)
+- This Session: Feature #71 completed
+
+[Testing] Feature #71 verified - API data sanitized, XSS prevented (2026-01-30)
+
