@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feature #19: [bwg_property_card] Requires ID Attribute Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-section h2 { margin-top: 0; color: #333; }
+        .shortcode { background: #f0f0f0; padding: 10px; border-left: 4px solid #0073aa; margin: 10px 0; font-family: monospace; }
+        .expected { background: #e7f5e7; padding: 10px; margin: 10px 0; border-left: 4px solid #28a745; }
+        .expected strong { color: #28a745; }
+        .test-url { background: #fff3cd; padding: 10px; margin: 10px 0; border-left: 4px solid #ffc107; }
+        .code-block { background: #f8f9fa; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+        ul { line-height: 1.8; }
+        .step { background: #e3f2fd; padding: 10px; margin: 10px 0; border-left: 4px solid #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>Feature #19: [bwg_property_card] Requires ID Attribute</h1>
+
+    <div class="test-section">
+        <h2>Feature Definition</h2>
+        <p><strong>Feature ID:</strong> 19</p>
+        <p><strong>Category:</strong> Archive Shortcodes</p>
+        <p><strong>Name:</strong> [bwg_property_card] requires id attribute</p>
+        <p><strong>Description:</strong> The shortcode shows error when id is missing</p>
+        <p><strong>Dependencies:</strong> Feature #15 ([bwg_property_card] basic rendering) - ✅ PASSING</p>
+        <p><strong>Verification Steps:</strong></p>
+        <ol>
+            <li>Add [bwg_property_card] without id</li>
+            <li>Verify error message displays</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Implementation Review</h2>
+        <p><strong>File:</strong> includes/class-bwg-shortcodes.php</p>
+        <p><strong>Function:</strong> property_card() (lines 514-541)</p>
+
+        <div class="code-block">
+public function property_card( $atts ) {
+    $this->enqueue_assets();
+
+    $atts = shortcode_atts(
+        array(
+            'id'         => 0,
+            'show_image' => 'true',
+            'show_specs' => 'true',
+            'link'       => 'true',
+        ),
+        $atts,
+        'bwg_property_card'
+    );
+
+    // LINE 528-530: Error handling for missing ID
+    if ( empty( $atts['id'] ) ) {
+        return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
+    }
+
+    $property = $this->api->get_property( $atts['id'] );
+
+    if ( is_wp_error( $property ) ) {
+        return $this->render_error( $property->get_error_message() );
+    }
+
+    ob_start();
+    include $this->get_template( 'property-card.php' );
+    return ob_get_clean();
+}
+        </div>
+
+        <p><strong>Implementation Status:</strong> ✅ FULLY IMPLEMENTED</p>
+        <ul>
+            <li>✅ ID attribute defaults to 0</li>
+            <li>✅ empty() check catches: 0, '', null, false</li>
+            <li>✅ Error message is localized with __() function</li>
+            <li>✅ Uses render_error() for consistent error display</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 1: Shortcode Without ID Attribute</h2>
+        <div class="shortcode">[bwg_property_card]</div>
+        <div class="step">
+            <strong>What Happens:</strong>
+            <ul>
+                <li>shortcode_atts() sets id to default value: 0</li>
+                <li>empty(0) evaluates to TRUE</li>
+                <li>Error handler triggered</li>
+            </ul>
+        </div>
+        <div class="expected">
+            <strong>Expected Behavior:</strong>
+            <ul>
+                <li>✅ Error message displays: "Property ID is required."</li>
+                <li>✅ Error has proper styling (bwg-error class)</li>
+                <li>✅ No PHP warnings or notices</li>
+                <li>✅ No property card rendered</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Shortcode With Empty ID</h2>
+        <div class="shortcode">[bwg_property_card id=""]</div>
+        <div class="step">
+            <strong>What Happens:</strong>
+            <ul>
+                <li>ID attribute is explicitly set to empty string</li>
+                <li>empty("") evaluates to TRUE</li>
+                <li>Error handler triggered</li>
+            </ul>
+        </div>
+        <div class="expected">
+            <strong>Expected Behavior:</strong>
+            <ul>
+                <li>✅ Error message displays: "Property ID is required."</li>
+                <li>✅ Same behavior as Test 1</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Shortcode With ID=0</h2>
+        <div class="shortcode">[bwg_property_card id="0"]</div>
+        <div class="step">
+            <strong>What Happens:</strong>
+            <ul>
+                <li>ID attribute is explicitly set to "0"</li>
+                <li>empty(0) evaluates to TRUE</li>
+                <li>Error handler triggered</li>
+            </ul>
+        </div>
+        <div class="expected">
+            <strong>Expected Behavior:</strong>
+            <ul>
+                <li>✅ Error message displays: "Property ID is required."</li>
+                <li>✅ ID of 0 is correctly treated as invalid/missing</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test WordPress Page</h2>
+        <div class="test-url">
+            <strong>Test URL:</strong><br>
+            <a href="http://localhost:8088/feature-19-property-card-missing-id/" target="_blank">
+                http://localhost:8088/feature-19-property-card-missing-id/
+            </a>
+        </div>
+        <p><strong>Page Content:</strong> Should include all three test shortcodes above</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Verification Checklist</h2>
+        <p>To mark Feature #19 as PASSING, verify ALL of the following:</p>
+        <ul>
+            <li>❌ [bwg_property_card] without id shows error message</li>
+            <li>❌ [bwg_property_card id=""] shows error message</li>
+            <li>❌ [bwg_property_card id="0"] shows error message</li>
+            <li>❌ Error message text is: "Property ID is required."</li>
+            <li>❌ Error has proper CSS styling (bwg-error class)</li>
+            <li>❌ No PHP warnings in HTML output</li>
+            <li>❌ No JavaScript errors in console</li>
+            <li>❌ Behavior is consistent across all test cases</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Testing Instructions</h2>
+        <ol>
+            <li>Navigate to WordPress admin at http://localhost:8088/wp-admin/</li>
+            <li>Create a new page with URL slug: <code>feature-19-property-card-missing-id</code></li>
+            <li>Add the three test shortcodes to the page content</li>
+            <li>Publish the page</li>
+            <li>Visit http://localhost:8088/feature-19-property-card-missing-id/</li>
+            <li>Verify all three shortcodes show the error message</li>
+            <li>Check browser console for errors (F12 > Console)</li>
+            <li>Take screenshots for documentation</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Error HTML Structure</h2>
+        <div class="code-block">
+&lt;div class="bwg-error"&gt;
+    &lt;p class="bwg-error__message"&gt;Property ID is required.&lt;/p&gt;
+&lt;/div&gt;
+        </div>
+        <p>This structure is generated by the render_error() method in class-bwg-shortcodes.php</p>
+    </div>
+</body>
+</html>
