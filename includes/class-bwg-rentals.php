@@ -83,10 +83,8 @@ class BWG_Rentals {
         // Initialize shortcodes
         $this->shortcodes = new BWG_Shortcodes( $this->api );
 
-        // Initialize admin (only in admin context)
-        if ( is_admin() ) {
-            $this->admin = new BWG_Admin( $this->api, $this->cache );
-        }
+        // Initialize admin (loads class for decrypt_value method, but only initializes hooks in admin context)
+        $this->admin = new BWG_Admin( $this->api, $this->cache );
 
         // Initialize updater
         $this->init_updater();

@@ -23,18 +23,22 @@ class BWG_Admin {
      * Constructor
      */
     public function __construct() {
-        // Add admin menu
-        add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+        // Only register admin hooks in admin context
+        // Note: Class is always loaded so decrypt_value() is available on frontend
+        if ( is_admin() ) {
+            // Add admin menu
+            add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 
-        // Register settings
-        add_action( 'admin_init', array( $this, 'register_settings' ) );
+            // Register settings
+            add_action( 'admin_init', array( $this, 'register_settings' ) );
 
-        // Enqueue admin scripts and styles
-        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+            // Enqueue admin scripts and styles
+            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
-        // AJAX handlers
-        add_action( 'wp_ajax_bwg_test_connection', array( $this, 'ajax_test_connection' ) );
-        add_action( 'wp_ajax_bwg_clear_cache', array( $this, 'ajax_clear_cache' ) );
+            // AJAX handlers
+            add_action( 'wp_ajax_bwg_test_connection', array( $this, 'ajax_test_connection' ) );
+            add_action( 'wp_ajax_bwg_clear_cache', array( $this, 'ajax_clear_cache' ) );
+        }
     }
 
     /**
