@@ -109,6 +109,26 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </p>
                     </td>
                 </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_property_page"><?php esc_html_e( 'Property Detail Page', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <?php
+                        wp_dropdown_pages( array(
+                            'name'              => 'bwg_rentals_property_page',
+                            'id'                => 'bwg_rentals_property_page',
+                            'selected'          => $property_page,
+                            'show_option_none'  => __( '— Select a page —', 'bwg-rentals' ),
+                            'option_none_value' => '0',
+                        ) );
+                        ?>
+                        <p class="description">
+                            <?php esc_html_e( 'Select the page that displays individual property details. Add the [bwg_property_full] shortcode to that page.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
             </tbody>
         </table>
 

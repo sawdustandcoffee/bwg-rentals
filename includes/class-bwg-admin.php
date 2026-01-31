@@ -106,6 +106,12 @@ class BWG_Admin {
             'default' => 'Book Now',
         ) );
 
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_property_page', array(
+            'type' => 'integer',
+            'sanitize_callback' => 'absint',
+            'default' => 0,
+        ) );
+
         // Add settings section
         add_settings_section(
             'bwg_rentals_api_section',
@@ -162,6 +168,7 @@ class BWG_Admin {
         $org_id = $this->decrypt_org_id( get_option( 'bwg_rentals_org_id', '' ) );
         $cache_dur = get_option( 'bwg_rentals_cache_duration', 24 );
         $btn_text = get_option( 'bwg_rentals_booking_button_text', 'Book Now' );
+        $property_page = get_option( 'bwg_rentals_property_page', 0 );
         $cache_status = $this->get_cache_status();
 
         // Include template
