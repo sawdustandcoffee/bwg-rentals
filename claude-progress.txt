@@ -1,3 +1,93 @@
+## Session: 2026-01-30 (Feature #70 - Parallel Agent)
+
+### Feature #70: Shortcode attributes are sanitized - PASSED
+
+**Status: VERIFIED via Browser Automation**
+
+#### Feature Definition:
+- ID: 70
+- Name: Shortcode attributes are sanitized
+- Description: Shortcode attributes are properly escaped to prevent XSS
+- Category: functional
+- Dependencies: Feature #27 ([bwg_property_title] renders property name) PASSED
+- Steps:
+  1. Add shortcode with malicious attribute: [bwg_property_title class='test\" onclick=\"alert(1)']
+  2. View page source
+  3. Verify attribute is properly escaped
+  4. Verify no script execution occurs
+
+#### Sanitization Methods Verified:
+
+**1. tag attribute (property_title shortcode):**
+- Uses allowlist: `array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' )`
+- Invalid values fall back to default `h1`
+- Code location: includes/class-bwg-shortcodes.php lines 319-320
+
+**2. class attribute (various shortcodes):**
+- Sanitized with `esc_attr()` in shortcodes and templates
+- Code location: includes/class-bwg-shortcodes.php line 321
+
+**3. id attribute:**
+- API URL uses regex `/\/properties\/(\d+)$/` which only captures digits
+- Result cast to `(int)`
+- Code location: includes/class-bwg-api.php line 112
+
+**4. text attribute (booking button):**
+- Sanitized with `esc_html()`
+- Code location: includes/class-bwg-shortcodes.php line 553
+
+**5. target attribute (booking button):**
+- Sanitized with `esc_attr()`
+- Code location: includes/class-bwg-shortcodes.php line 555
+
+**6. orderby attribute (properties):**
+- Sanitized with `sanitize_text_field()`
+- Code location: includes/class-bwg-shortcodes.php line 203
+
+**7. Template files - all use proper escaping:**
+- `esc_url()` for URLs
+- `esc_attr()` for HTML attributes
+- `esc_html()` for text content
+- `esc_html_e()` for translatable strings
+- `wp_kses_post()` for description HTML
+
+#### Browser Verification:
+
+**Test 1: XSS injection in class attribute**
+- Test page: /feature-70-attribute-sanitization-test-2/
+- Shortcode: `[bwg_property_title id="1" class="test-class\" onclick=\"alert('xss')"]`
+- Result: XSS payload was escaped, class attribute safe
+- HTML output: `<h1 class="bwg-property-title test-class\">Oceanfront Beach House</h1>`
+- Screenshot: feature-70-class-xss-test.png
+
+**Test 2: Invalid tag attribute (script)**
+- Test page: /feature-70-tag-attribute-sanitization-test/
+- Shortcode: `[bwg_property_title id="1" tag="script"]`
+- Result: "script" tag rejected, fell back to default h1
+- HTML output: `<h1 class="bwg-property-title ">Oceanfront Beach House</h1>`
+- Screenshot: feature-70-tag-sanitization-test.png
+
+**Test 3: SQL injection in ID attribute**
+- Test page: /feature-70-id-attribute-sanitization-test/
+- Shortcode: `[bwg_property_title id="1; DROP TABLE properties;--"]`
+- Result: Only "1" was extracted via regex, property displayed correctly
+- Screenshot: feature-70-id-sanitization-test.png
+
+#### Console Errors: None
+
+#### Git Commit:
+- Hash: 352dd83
+- Message: "Verify Feature #70: Shortcode attributes are sanitized"
+
+#### Result:
+Feature #70 PASSING - All shortcode attributes are properly sanitized:
+1. XSS injection attempts are escaped with esc_attr()/esc_html()
+2. Tag attribute uses allowlist validation
+3. ID attribute only captures digits via regex
+4. All templates use proper WordPress escaping functions
+
+---
+
 ## Session: 2026-01-30 (Feature #69 - Parallel Agent)
 
 ### Feature #69: Amenities icons display correctly - PASSED
@@ -936,3 +1026,4 @@ Feature #66 PASSING - Booking button opens in new tab:
 - This Session: Feature #66 completed
 
 [Testing] Feature #66 verified - booking button opens in new tab (2026-01-30)
+[Testing] Feature #44 verified - still passing (2026-01-30)
