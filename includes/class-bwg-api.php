@@ -777,16 +777,15 @@ class BWG_API {
             }
         }
 
-        // Use /search endpoint which returns full property data with images
-        // The /properties endpoint only returns id, name, updated_at (no images)
-        $data = $this->request( 'search?_limit=100' );
+        // Use /properties endpoint which returns property list with featured_image data
+        $data = $this->request( 'properties' );
 
         if ( is_wp_error( $data ) ) {
             return $data;
         }
 
-        // Extract properties array from search results
-        $properties = isset( $data['results'] ) ? $data['results'] : array();
+        // Extract properties array from response
+        $properties = isset( $data['properties'] ) ? $data['properties'] : array();
 
         // Normalize images for each property
         $properties = array_map( array( $this, 'normalize_property_images' ), $properties );
