@@ -49,6 +49,7 @@ class BWG_Shortcodes {
         add_shortcode( 'bwg_properties', array( $this, 'properties' ) );
         add_shortcode( 'bwg_property_card', array( $this, 'property_card' ) );
         add_shortcode( 'bwg_property_slider', array( $this, 'property_slider' ) );
+        add_shortcode( 'bwg_properties_featured', array( $this, 'properties_featured' ) );
 
         // Single property shortcodes
         add_shortcode( 'bwg_property', array( $this, 'property_full' ) ); // Full property page
@@ -730,6 +731,90 @@ class BWG_Shortcodes {
         $output = ob_get_clean();
 
         return apply_filters( 'bwg_property_slider_output', $output, $properties );
+    }
+
+    /**
+     * Featured properties shortcode
+     *
+     * Displays a curated selection of featured properties. Properties can be specified
+     * by ID or the first N properties will be used if no IDs are provided.
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string HTML output.
+     */
+    public function properties_featured( $atts ) {
+        $this->enqueue_assets();
+
+        $atts = shortcode_atts(
+            array(
+                'ids'     => '',     // Comma-separated list of property IDs
+                'limit'   => 3,      // Max properties to show if no IDs specified
+                'layout'  => 'grid', // grid or slider
+                'columns' => 3,      // Columns for grid layout
+                'orderby' => 'name', // Sort order: name, beds, sleeps, sqft
+            ),
+            $atts,
+            'bwg_properties_featured'
+        );
+
+        $properties = $this->api->get_properties();
+
+        if ( is_wp_error( $properties ) ) {
+            return $this->render_error( $properties->get_error_message() );
+        }
+
+        if ( empty( $properties ) ) {
+            return $this->render_empty( __( 'No properties available to feature.', 'bwg-rentals' ) );
+        }
+
+        // Filter properties by IDs if specified
+        if ( ! empty( $atts['ids'] ) ) {
+            $featured_ids = array_map( 'trim', explode( ',', $atts['ids'] ) );
+            $featured_ids = array_map( 'absint', $featured_ids );
+
+            $properties = array_filter( $properties, function( $property ) use ( $featured_ids ) {
+                return in_array( $property['id'], $featured_ids, true );
+            } );
+
+            // Preserve the order specified in the ids attribute
+            $ordered_properties = array();
+            foreach ( $featured_ids as $id ) {
+                foreach ( $properties as $property ) {
+                    if ( $property['id'] === $id ) {
+                        $ordered_properties[] = $property;
+                        break;
+                    }
+                }
+            }
+            $properties = $ordered_properties;
+        } else {
+            // No specific IDs - use first N properties
+            $orderby = sanitize_text_field( $atts['orderby'] );
+            $properties = $this->sort_properties( $properties, $orderby );
+
+            if ( $atts['limit'] > 0 ) {
+                $properties = array_slice( $properties, 0, absint( $atts['limit'] ) );
+            }
+        }
+
+        if ( empty( $properties ) ) {
+            return $this->render_empty( __( 'No featured properties found.', 'bwg-rentals' ) );
+        }
+
+        // Render based on layout
+        $layout = sanitize_text_field( $atts['layout'] );
+
+        ob_start();
+        if ( $layout === 'slider' ) {
+            // Reuse the slider template
+            include $this->get_template( 'property-slider.php' );
+        } else {
+            // Use grid layout (reuse properties grid template)
+            include $this->get_template( 'properties-grid.php' );
+        }
+        $output = ob_get_clean();
+
+        return apply_filters( 'bwg_properties_featured_output', $output, $properties );
     }
 
     /**
