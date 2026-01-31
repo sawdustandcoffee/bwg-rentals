@@ -224,9 +224,10 @@ class BWG_API {
      */
     private function get_mock_properties() {
         return array(
-            array(
-                'id'          => 1,
-                'name'        => 'Oceanfront Beach House',
+            'properties' => array(
+                array(
+                    'id'          => 1,
+                    'name'        => 'Oceanfront Beach House',
                 'headline'    => 'Stunning oceanfront property with private beach access',
                 'description' => 'Experience luxury living in this beautiful 4-bedroom oceanfront beach house. Wake up to stunning ocean views, enjoy morning coffee on your private deck, and take a short walk to your own private beach.',
                 'bedrooms'    => 4,
@@ -353,6 +354,7 @@ class BWG_API {
                 'latitude'    => 34.0902,
                 'longitude'   => -118.4065,
             ),
+            ),
         );
     }
 
@@ -363,7 +365,8 @@ class BWG_API {
      * @return array|null Mock property data or null if not found.
      */
     private function get_mock_property( $property_id ) {
-        $properties = $this->get_mock_properties();
+        $properties_data = $this->get_mock_properties();
+        $properties = isset( $properties_data['properties'] ) ? $properties_data['properties'] : array();
 
         foreach ( $properties as $property ) {
             if ( $property['id'] === $property_id ) {
