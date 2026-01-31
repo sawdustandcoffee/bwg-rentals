@@ -686,11 +686,16 @@ class BWG_API {
 
         $data = $this->request( 'properties' );
 
-        if ( ! is_wp_error( $data ) ) {
-            $this->cache->set( $cache_key, $data );
+        if ( is_wp_error( $data ) ) {
+            return $data;
         }
 
-        return $data;
+        // Extract properties array from response
+        $properties = isset( $data['properties'] ) ? $data['properties'] : array();
+
+        $this->cache->set( $cache_key, $properties );
+
+        return $properties;
     }
 
     /**
