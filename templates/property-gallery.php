@@ -17,15 +17,28 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Debug output - enable with: define('BWG_DEBUG', true); in wp-config.php
-if ( defined( 'BWG_DEBUG' ) && BWG_DEBUG ) : ?>
+// Debug output - enable with ?bwg_debug=1 in URL
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$bwg_debug = isset( $_GET['bwg_debug'] ) && current_user_can( 'manage_options' );
+if ( $bwg_debug ) : ?>
+<div style="background:#1e1e1e;color:#0f0;padding:15px;margin:10px 0;font-family:monospace;font-size:12px;border-radius:5px;overflow:auto;">
+    <strong style="color:#ff0;">BWG Property Gallery Debug: <?php echo esc_html( $property['name'] ?? 'Unknown' ); ?></strong><br><br>
+    <strong>ID:</strong> <?php echo esc_html( $property['id'] ?? 'N/A' ); ?><br>
+    <strong>Layout:</strong> <?php echo esc_html( $atts['layout'] ?? 'slider' ); ?><br>
+    <strong>Images:</strong> <?php echo count( $property['images'] ?? [] ); ?> total<br>
+    <?php if ( ! empty( $property['images'] ) ) : ?>
+        <?php foreach ( array_slice( $property['images'], 0, 3 ) as $i => $img ) : ?>
+            <strong>Image <?php echo $i + 1; ?>:</strong> <?php echo esc_html( $img['url'] ?? 'NO URL' ); ?><br>
+        <?php endforeach; ?>
+        <?php if ( count( $property['images'] ) > 3 ) : ?>
+            <em>... and <?php echo count( $property['images'] ) - 3; ?> more</em><br>
+        <?php endif; ?>
+    <?php else : ?>
+        <strong style="color:#f00;">NO IMAGES!</strong><br>
+    <?php endif; ?>
+</div>
 <script>
-console.group('BWG Property Gallery Debug: <?php echo esc_js( $property['name'] ?? 'Unknown' ); ?>');
-console.log('Property ID:', <?php echo wp_json_encode( $property['id'] ?? null ); ?>);
-console.log('Images count:', <?php echo count( $property['images'] ?? [] ); ?>);
-console.log('Images:', <?php echo wp_json_encode( $property['images'] ?? [] ); ?>);
-console.log('Layout:', <?php echo wp_json_encode( $atts['layout'] ?? 'slider' ); ?>);
-console.groupEnd();
+console.log('BWG Property Gallery:', <?php echo wp_json_encode( $property['images'] ?? [] ); ?>);
 </script>
 <?php endif;
 

@@ -12,17 +12,26 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Debug output - enable with: define('BWG_DEBUG', true); in wp-config.php
-if ( defined( 'BWG_DEBUG' ) && BWG_DEBUG ) : ?>
+// Debug output - enable with ?bwg_debug=1 in URL
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$bwg_debug = isset( $_GET['bwg_debug'] ) && current_user_can( 'manage_options' );
+if ( $bwg_debug ) : ?>
+<div style="background:#1e1e1e;color:#0f0;padding:15px;margin:10px 0;font-family:monospace;font-size:12px;border-radius:5px;overflow:auto;">
+    <strong style="color:#ff0;">BWG Property Card Debug: <?php echo esc_html( $property['name'] ?? 'Unknown' ); ?></strong><br><br>
+    <strong>ID:</strong> <?php echo esc_html( $property['id'] ?? 'N/A' ); ?><br>
+    <strong>Images:</strong> <?php echo count( $property['images'] ?? [] ); ?> total<br>
+    <?php if ( ! empty( $property['images'][0]['url'] ) ) : ?>
+        <strong>First image:</strong> <?php echo esc_html( $property['images'][0]['url'] ); ?><br>
+    <?php else : ?>
+        <strong style="color:#f00;">First image: MISSING!</strong><br>
+    <?php endif; ?>
+    <strong>Bedrooms:</strong> <?php echo esc_html( $property['bedrooms'] ?? 'N/A' ); ?><br>
+    <strong>Bathrooms:</strong> <?php echo esc_html( $property['bathrooms'] ?? 'N/A' ); ?><br>
+    <strong>Guests:</strong> <?php echo esc_html( $property['guests'] ?? $property['sleeps'] ?? 'N/A' ); ?><br>
+    <strong>Keys:</strong> <?php echo esc_html( implode( ', ', array_keys( $property ) ) ); ?>
+</div>
 <script>
-console.group('BWG Property Card Debug: <?php echo esc_js( $property['name'] ?? 'Unknown' ); ?>');
-console.log('Property ID:', <?php echo wp_json_encode( $property['id'] ?? null ); ?>);
-console.log('Images:', <?php echo wp_json_encode( $property['images'] ?? [] ); ?>);
-console.log('Bedrooms:', <?php echo wp_json_encode( $property['bedrooms'] ?? null ); ?>);
-console.log('Bathrooms:', <?php echo wp_json_encode( $property['bathrooms'] ?? null ); ?>);
-console.log('Guests:', <?php echo wp_json_encode( $property['guests'] ?? $property['sleeps'] ?? null ); ?>);
-console.log('Full property:', <?php echo wp_json_encode( array_keys( $property ) ); ?>);
-console.groupEnd();
+console.log('BWG Property Card:', <?php echo wp_json_encode( $property ); ?>);
 </script>
 <?php endif;
 

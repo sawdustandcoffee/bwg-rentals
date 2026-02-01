@@ -810,14 +810,12 @@ class BWG_API {
      * @return array Property data with normalized structure.
      */
     private function normalize_property_images( $property ) {
-        $debug = defined( 'BWG_DEBUG' ) && BWG_DEBUG;
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $debug = isset( $_GET['bwg_debug'] );
         $name  = $property['name'] ?? 'Unknown';
 
         if ( $debug ) {
-            error_log( "BWG_DEBUG: Normalizing property: {$name}" );
-            error_log( "BWG_DEBUG: Has featured_image.image.large.url: " . ( isset( $property['featured_image']['image']['large']['url'] ) ? 'YES' : 'NO' ) );
-            error_log( "BWG_DEBUG: Has images array: " . ( isset( $property['images'] ) ? count( $property['images'] ) . ' items' : 'NO' ) );
-            error_log( "BWG_DEBUG: Has units array: " . ( isset( $property['units'] ) ? count( $property['units'] ) . ' units' : 'NO' ) );
+            error_log( "BWG: Normalizing '{$name}' - featured_image: " . ( isset( $property['featured_image']['image']['large']['url'] ) ? 'YES' : 'NO' ) . ", images: " . ( isset( $property['images'] ) ? count( $property['images'] ) : 0 ) . ", units: " . ( isset( $property['units'] ) ? count( $property['units'] ) : 0 ) );
         }
 
         // Check if already normalized (has 'url' key in first image)
@@ -826,9 +824,6 @@ class BWG_API {
             $first_image = reset( $property['images'] );
             if ( isset( $first_image['url'] ) ) {
                 $already_normalized = true;
-                if ( $debug ) {
-                    error_log( "BWG_DEBUG: Images already normalized, skipping image processing" );
-                }
             }
         }
 
@@ -844,9 +839,6 @@ class BWG_API {
                     'small'  => $property['featured_image']['image']['small']['url'] ?? '',
                     'alt'    => $property['name'] ?? '',
                 );
-                if ( $debug ) {
-                    error_log( "BWG_DEBUG: Added featured_image: " . $property['featured_image']['image']['large']['url'] );
-                }
             }
 
             // Extract additional images from Direct API 'images' array (uri format)
@@ -862,9 +854,6 @@ class BWG_API {
                         'alt'     => $api_image['label'] ?? ( $property['name'] ?? '' ),
                         'caption' => $api_image['label'] ?? '',
                     );
-                }
-                if ( $debug ) {
-                    error_log( "BWG_DEBUG: Added " . ( count( $images ) - 1 ) . " images from uri format" );
                 }
             }
 
@@ -885,8 +874,9 @@ class BWG_API {
             }
 
             $property['images'] = $images;
+
             if ( $debug ) {
-                error_log( "BWG_DEBUG: Total images after normalization: " . count( $images ) );
+                error_log( "BWG: Normalized '{$name}' - " . count( $images ) . " images" );
             }
         }
 
@@ -896,31 +886,22 @@ class BWG_API {
 
             if ( ! isset( $property['bedrooms'] ) && isset( $unit['num_bedrooms'] ) ) {
                 $property['bedrooms'] = $unit['num_bedrooms'];
-                if ( $debug ) {
-                    error_log( "BWG_DEBUG: Extracted bedrooms from units: " . $unit['num_bedrooms'] );
-                }
             }
             if ( ! isset( $property['bathrooms'] ) && isset( $unit['num_bathrooms'] ) ) {
                 $property['bathrooms'] = $unit['num_bathrooms'];
-                if ( $debug ) {
-                    error_log( "BWG_DEBUG: Extracted bathrooms from units: " . $unit['num_bathrooms'] );
-                }
             }
             if ( ! isset( $property['guests'] ) && ! isset( $property['sleeps'] ) && isset( $unit['occupancy'] ) ) {
                 $property['guests'] = $unit['occupancy'];
-                if ( $debug ) {
-                    error_log( "BWG_DEBUG: Extracted guests from units: " . $unit['occupancy'] );
-                }
+            }
+
+            if ( $debug ) {
+                error_log( "BWG: Extracted specs from units - beds: " . ( $property['bedrooms'] ?? 'N/A' ) . ", baths: " . ( $property['bathrooms'] ?? 'N/A' ) . ", guests: " . ( $property['guests'] ?? 'N/A' ) );
             }
         }
 
         // Map description field
         if ( ! isset( $property['description'] ) && isset( $property['summary_description'] ) ) {
             $property['description'] = $property['summary_description'];
-        }
-
-        if ( $debug ) {
-            error_log( "BWG_DEBUG: Final property data - images: " . count( $property['images'] ?? [] ) . ", bedrooms: " . ( $property['bedrooms'] ?? 'N/A' ) . ", bathrooms: " . ( $property['bathrooms'] ?? 'N/A' ) . ", guests: " . ( $property['guests'] ?? 'N/A' ) );
         }
 
         return $property;
