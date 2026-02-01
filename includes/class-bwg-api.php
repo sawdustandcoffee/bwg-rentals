@@ -773,7 +773,8 @@ class BWG_API {
         if ( $use_cache ) {
             $cached = $this->cache->get( $cache_key );
             if ( false !== $cached ) {
-                return $cached;
+                // Always normalize cached data in case cache predates normalization fix
+                return array_map( array( $this, 'normalize_property_images' ), $cached );
             }
         }
 
@@ -921,7 +922,8 @@ class BWG_API {
         if ( $use_cache ) {
             $cached = $this->cache->get( $cache_key );
             if ( false !== $cached ) {
-                return $cached;
+                // Always normalize cached data in case cache predates normalization fix
+                return $this->normalize_property_images( $cached );
             }
         }
 
