@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$bwg_debug = isset( $_GET['bwg_debug'] ) && current_user_can( 'manage_options' );
+
 $months_to_show = absint( $atts['months_to_show'] );
 $start_month    = $atts['start_month'];
 $property_id    = isset( $atts['id'] ) ? absint( $atts['id'] ) : 0;
@@ -131,3 +134,9 @@ $day_names = array(
         </div>
     </div>
 </div>
+<?php if ( $bwg_debug ) : ?>
+<div style="background:#1a1a2e;color:#0f0;padding:10px;margin:5px 0;font-family:monospace;font-size:11px;border-left:3px solid #f80;overflow:auto;">
+    <strong style="color:#f80;">[bwg_property_availability]</strong> property_id: <?php echo esc_html( $property_id ); ?> |
+    availability days: <?php echo count( $availability ?? [] ); ?>
+</div>
+<?php endif; ?>

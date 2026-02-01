@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$bwg_debug = isset( $_GET['bwg_debug'] ) && current_user_can( 'manage_options' );
+
 $show_icons = 'true' === $atts['show_icons'];
 $layout     = $atts['layout'];
 $class      = 'bwg-property-specs';
@@ -61,3 +64,11 @@ $square_feet = isset( $property['square_feet'] ) ? $property['square_feet'] : ( 
         </span>
     <?php endif; ?>
 </div>
+<?php if ( $bwg_debug ) : ?>
+<div style="background:#1a1a2e;color:#0f0;padding:10px;margin:5px 0;font-family:monospace;font-size:11px;border-left:3px solid #f0f;overflow:auto;">
+    <strong style="color:#f0f;">[bwg_property_specs]</strong> <?php echo esc_html( $property['name'] ?? 'Unknown' ); ?> |
+    beds: <?php echo esc_html( $property['bedrooms'] ?? 'N/A' ); ?> |
+    baths: <?php echo esc_html( $property['bathrooms'] ?? 'N/A' ); ?> |
+    guests: <?php echo esc_html( $guests ?? 'N/A' ); ?>
+</div>
+<?php endif; ?>

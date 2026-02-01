@@ -12,28 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Debug output - enable with ?bwg_debug=1 in URL
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $bwg_debug = isset( $_GET['bwg_debug'] ) && current_user_can( 'manage_options' );
-if ( $bwg_debug ) : ?>
-<div style="background:#1e1e1e;color:#0f0;padding:15px;margin:10px 0;font-family:monospace;font-size:12px;border-radius:5px;overflow:auto;">
-    <strong style="color:#ff0;">BWG Property Card Debug: <?php echo esc_html( $property['name'] ?? 'Unknown' ); ?></strong><br><br>
-    <strong>ID:</strong> <?php echo esc_html( $property['id'] ?? 'N/A' ); ?><br>
-    <strong>Images:</strong> <?php echo count( $property['images'] ?? [] ); ?> total<br>
-    <?php if ( ! empty( $property['images'][0]['url'] ) ) : ?>
-        <strong>First image:</strong> <?php echo esc_html( $property['images'][0]['url'] ); ?><br>
-    <?php else : ?>
-        <strong style="color:#f00;">First image: MISSING!</strong><br>
-    <?php endif; ?>
-    <strong>Bedrooms:</strong> <?php echo esc_html( $property['bedrooms'] ?? 'N/A' ); ?><br>
-    <strong>Bathrooms:</strong> <?php echo esc_html( $property['bathrooms'] ?? 'N/A' ); ?><br>
-    <strong>Guests:</strong> <?php echo esc_html( $property['guests'] ?? $property['sleeps'] ?? 'N/A' ); ?><br>
-    <strong>Keys:</strong> <?php echo esc_html( implode( ', ', array_keys( $property ) ) ); ?>
-</div>
-<script>
-console.log('BWG Property Card:', <?php echo wp_json_encode( $property ); ?>);
-</script>
-<?php endif;
 
 $show_image = 'true' === $atts['show_image'];
 $show_specs = 'true' === $atts['show_specs'];
@@ -99,3 +79,13 @@ $tag_close = $enable_link ? '</a>' : '</div>';
         <?php endif; ?>
     </div>
 <?php echo $tag_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+<?php if ( $bwg_debug ) : ?>
+<div style="background:#1a1a2e;color:#0f0;padding:10px;margin:5px 0;font-family:monospace;font-size:11px;border-left:3px solid #ff0;overflow:auto;">
+    <strong style="color:#ff0;">[bwg_property_card]</strong> <?php echo esc_html( $property['name'] ?? 'Unknown' ); ?> |
+    images: <?php echo count( $property['images'] ?? [] ); ?> |
+    beds: <?php echo esc_html( $property['bedrooms'] ?? 'N/A' ); ?> |
+    baths: <?php echo esc_html( $property['bathrooms'] ?? 'N/A' ); ?> |
+    guests: <?php echo esc_html( $property['guests'] ?? $property['sleeps'] ?? 'N/A' ); ?>
+    <?php if ( empty( $property['images'][0]['url'] ) ) : ?><strong style="color:#f00;">⚠ NO IMAGE URL</strong><?php endif; ?>
+</div>
+<?php endif; ?>

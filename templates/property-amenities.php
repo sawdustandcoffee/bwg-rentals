@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$bwg_debug = isset( $_GET['bwg_debug'] ) && current_user_can( 'manage_options' );
+
 $amenities  = $property['amenities'] ?? array();
 $show_icons = 'true' === $atts['show_icons'];
 $columns    = absint( $atts['columns'] );
@@ -39,3 +42,9 @@ $list_class = 'bwg-property-amenities__list bwg-property-amenities__list--column
         <?php endforeach; ?>
     </ul>
 </div>
+<?php if ( $bwg_debug ) : ?>
+<div style="background:#1a1a2e;color:#0f0;padding:10px;margin:5px 0;font-family:monospace;font-size:11px;border-left:3px solid #0f0;overflow:auto;">
+    <strong style="color:#0f0;">[bwg_property_amenities]</strong> <?php echo esc_html( $property['name'] ?? 'Unknown' ); ?> |
+    amenities: <?php echo count( $property['amenities'] ?? [] ); ?>
+</div>
+<?php endif; ?>
