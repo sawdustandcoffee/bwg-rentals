@@ -810,7 +810,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $availability = $this->api->get_availability( $property_id );
+        $availability = $this->api->get_availability_local_first( $property_id );
 
         if ( is_wp_error( $availability ) ) {
             return $this->render_error( $availability->get_error_message() );
@@ -846,7 +846,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $rates = $this->api->get_rates( $atts['id'] );
+        $rates = $this->api->get_rates_local_first( $atts['id'] );
 
         if ( is_wp_error( $rates ) ) {
             return $this->render_error( $rates->get_error_message() );
@@ -1442,8 +1442,8 @@ class BWG_Shortcodes {
             return false; // Check-out must be after check-in
         }
 
-        // Get availability data for this property
-        $availability = $this->api->get_availability( $property_id );
+        // Get availability data for this property (use local-first for performance)
+        $availability = $this->api->get_availability_local_first( $property_id );
 
         if ( is_wp_error( $availability ) || empty( $availability ) ) {
             // If we can't get availability data, assume property is available
@@ -1505,8 +1505,8 @@ class BWG_Shortcodes {
         $min_price = isset( $_POST['min_price'] ) ? absint( $_POST['min_price'] ) : 0;
         $max_price = isset( $_POST['max_price'] ) ? absint( $_POST['max_price'] ) : 0;
 
-        // Get all properties (bypass cache to get latest data with base_rate)
-        $properties = $this->api->get_properties( false );
+        // Get all properties using local-first strategy for faster search
+        $properties = $this->api->get_properties_local_first();
 
         if ( is_wp_error( $properties ) ) {
             wp_send_json_error( array( 'message' => $properties->get_error_message() ) );
@@ -1671,8 +1671,8 @@ class BWG_Shortcodes {
             wp_send_json_error( array( 'message' => __( 'Property ID is required', 'bwg-rentals' ) ) );
         }
 
-        // Get availability data from API (will use cache if available)
-        $availability = $this->api->get_availability( $property_id );
+        // Get availability data using local-first strategy for faster response
+        $availability = $this->api->get_availability_local_first( $property_id );
 
         if ( is_wp_error( $availability ) ) {
             wp_send_json_error( array( 'message' => $availability->get_error_message() ) );
@@ -1709,8 +1709,8 @@ class BWG_Shortcodes {
             wp_send_json_error( array( 'message' => __( 'Property ID is required', 'bwg-rentals' ) ) );
         }
 
-        // Get rates data from API (will use cache if available)
-        $rates = $this->api->get_rates( $property_id );
+        // Get rates data using local-first strategy for faster response
+        $rates = $this->api->get_rates_local_first( $property_id );
 
         if ( is_wp_error( $rates ) ) {
             wp_send_json_error( array( 'message' => $rates->get_error_message() ) );
