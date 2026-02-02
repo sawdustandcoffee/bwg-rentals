@@ -981,6 +981,212 @@
     };
 
     /**
+     * Full Property Gallery (property-full.php)
+     *
+     * Main image with thumbnail strip - hover to preview, click to select
+     */
+    var BWGFullGallery = {
+        init: function() {
+            var self = this;
+            var $galleries = $('.bwg-property-gallery--full');
+
+            $galleries.each(function() {
+                var $gallery = $(this);
+                var $slides = $gallery.find('.bwg-property-gallery__slide');
+                var $thumbs = $gallery.find('.bwg-property-gallery__thumb');
+                var $counter = $gallery.find('.bwg-property-gallery__current');
+                var $thumbSlider = $gallery.find('.bwg-property-gallery__thumb-slider');
+                var $thumbTrack = $gallery.find('.bwg-property-gallery__thumb-track');
+                var $thumbPrev = $gallery.find('.bwg-property-gallery__thumb-nav--prev');
+                var $thumbNext = $gallery.find('.bwg-property-gallery__thumb-nav--next');
+                var currentIndex = 0;
+                var totalSlides = $slides.length;
+                var thumbOffset = 0;
+                var hoverTimeout = null;
+
+                // Show a specific slide
+                function showSlide(index, updateThumbScroll) {
+                    currentIndex = index;
+
+                    // Update main image
+                    $slides.removeClass('bwg-property-gallery__slide--active');
+                    $slides.eq(index).addClass('bwg-property-gallery__slide--active');
+
+                    // Update thumbnails
+                    $thumbs.removeClass('bwg-property-gallery__thumb--active');
+                    $thumbs.eq(index).addClass('bwg-property-gallery__thumb--active');
+
+                    // Update counter
+                    if ($counter.length) {
+                        $counter.text(index + 1);
+                    }
+
+                    // Scroll thumbnails to keep active one visible
+                    if (updateThumbScroll !== false) {
+                        self.scrollToThumb($thumbSlider, $thumbTrack, $thumbs, index);
+                    }
+                }
+
+                // Main image navigation arrows
+                $gallery.find('.bwg-property-gallery__nav--prev').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide((currentIndex - 1 + totalSlides) % totalSlides);
+                });
+
+                $gallery.find('.bwg-property-gallery__nav--next').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide((currentIndex + 1) % totalSlides);
+                });
+
+                // Thumbnail hover - preview on hover with delay
+                $thumbs.on('mouseenter', function() {
+                    var $thumb = $(this);
+                    var index = parseInt($thumb.data('index'), 10);
+
+                    // Clear any pending timeout
+                    if (hoverTimeout) {
+                        clearTimeout(hoverTimeout);
+                    }
+
+                    // Small delay before showing to prevent flickering when moving fast
+                    hoverTimeout = setTimeout(function() {
+                        showSlide(index, false);
+                    }, 100);
+                });
+
+                $thumbs.on('mouseleave', function() {
+                    // Clear timeout if leaving before it fires
+                    if (hoverTimeout) {
+                        clearTimeout(hoverTimeout);
+                        hoverTimeout = null;
+                    }
+                });
+
+                // Thumbnail click - select and keep that image
+                $thumbs.on('click', function(e) {
+                    e.preventDefault();
+                    var index = parseInt($(this).data('index'), 10);
+
+                    // Clear hover timeout
+                    if (hoverTimeout) {
+                        clearTimeout(hoverTimeout);
+                        hoverTimeout = null;
+                    }
+
+                    showSlide(index);
+                });
+
+                // Main image click opens lightbox
+                $slides.on('click keydown', function(e) {
+                    if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') {
+                        return;
+                    }
+                    e.preventDefault();
+                    var galleryId = $gallery.attr('id');
+                    BWGLightbox.open(galleryId, currentIndex);
+                });
+
+                // Thumbnail strip navigation
+                $thumbPrev.on('click', function(e) {
+                    e.preventDefault();
+                    self.scrollThumbs($thumbSlider, $thumbTrack, $thumbs, 'prev');
+                });
+
+                $thumbNext.on('click', function(e) {
+                    e.preventDefault();
+                    self.scrollThumbs($thumbSlider, $thumbTrack, $thumbs, 'next');
+                });
+
+                // Keyboard navigation
+                $gallery.attr('tabindex', '0').on('keydown', function(e) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        showSlide((currentIndex - 1 + totalSlides) % totalSlides);
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        showSlide((currentIndex + 1) % totalSlides);
+                    }
+                });
+
+                // Initialize thumbnail nav button states
+                self.updateThumbNavState($thumbSlider, $thumbTrack, $thumbPrev, $thumbNext);
+
+                // Update on resize
+                $(window).on('resize', function() {
+                    self.updateThumbNavState($thumbSlider, $thumbTrack, $thumbPrev, $thumbNext);
+                });
+            });
+        },
+
+        /**
+         * Scroll thumbnail strip left/right
+         */
+        scrollThumbs: function($slider, $track, $thumbs, direction) {
+            var self = this;
+            var trackWidth = $track.width();
+            var sliderWidth = $slider[0].scrollWidth;
+            var currentScroll = $slider.scrollLeft();
+            var scrollAmount = trackWidth * 0.75; // Scroll 75% of visible area
+
+            var newScroll;
+            if (direction === 'prev') {
+                newScroll = Math.max(0, currentScroll - scrollAmount);
+            } else {
+                newScroll = Math.min(sliderWidth - trackWidth, currentScroll + scrollAmount);
+            }
+
+            $slider.animate({ scrollLeft: newScroll }, 300, function() {
+                self.updateThumbNavState($slider, $track,
+                    $slider.closest('.bwg-property-gallery--full').find('.bwg-property-gallery__thumb-nav--prev'),
+                    $slider.closest('.bwg-property-gallery--full').find('.bwg-property-gallery__thumb-nav--next')
+                );
+            });
+        },
+
+        /**
+         * Scroll to make a specific thumbnail visible
+         */
+        scrollToThumb: function($slider, $track, $thumbs, index) {
+            var self = this;
+            var $thumb = $thumbs.eq(index);
+            if (!$thumb.length) return;
+
+            var trackWidth = $track.width();
+            var thumbLeft = $thumb.position().left;
+            var thumbWidth = $thumb.outerWidth(true);
+            var currentScroll = $slider.scrollLeft();
+
+            // Check if thumb is out of view
+            if (thumbLeft < 0) {
+                // Thumb is to the left - scroll left
+                $slider.animate({ scrollLeft: currentScroll + thumbLeft - 10 }, 200);
+            } else if (thumbLeft + thumbWidth > trackWidth) {
+                // Thumb is to the right - scroll right
+                $slider.animate({ scrollLeft: currentScroll + (thumbLeft + thumbWidth - trackWidth) + 10 }, 200);
+            }
+        },
+
+        /**
+         * Update nav button disabled states based on scroll position
+         */
+        updateThumbNavState: function($slider, $track, $prevBtn, $nextBtn) {
+            if (!$slider.length) return;
+
+            var trackWidth = $track.width();
+            var sliderWidth = $slider[0].scrollWidth;
+            var currentScroll = $slider.scrollLeft();
+
+            // Disable prev if at start
+            $prevBtn.prop('disabled', currentScroll <= 0);
+
+            // Disable next if at end
+            $nextBtn.prop('disabled', currentScroll >= sliderWidth - trackWidth - 1);
+        }
+    };
+
+    /**
      * Initialize on DOM ready
      */
     $(document).ready(function() {
@@ -990,6 +1196,7 @@
         BWGPropertySlider.init();
         BWGFilters.init();
         BWGSearch.init();
+        BWGFullGallery.init();
     });
 
 })(jQuery);

@@ -94,21 +94,86 @@ if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) {
 	<?php endif; ?>
 
 	<?php if ( 'true' === $atts['show_gallery'] && ! empty( $property['images'] ) ) : ?>
+		<?php $gallery_id = 'bwg-full-gallery-' . uniqid(); ?>
 		<div id="bwg-section-gallery" class="bwg-property-full__gallery">
-			<div class="bwg-property-gallery bwg-property-gallery--slider">
-				<div class="bwg-property-gallery__slider">
-					<div class="bwg-property-gallery__slides">
+			<div class="bwg-property-gallery bwg-property-gallery--full" id="<?php echo esc_attr( $gallery_id ); ?>">
+				<!-- Main Image Display -->
+				<div class="bwg-property-gallery__main-container">
+					<div class="bwg-property-gallery__main-image">
 						<?php foreach ( $property['images'] as $index => $image ) : ?>
-							<div class="bwg-property-gallery__slide <?php echo 0 === $index ? 'bwg-property-gallery__slide--active' : ''; ?>">
-								<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $property['name'] ); ?>" />
+							<div class="bwg-property-gallery__slide<?php echo 0 === $index ? ' bwg-property-gallery__slide--active' : ''; ?>"
+								 data-index="<?php echo esc_attr( $index ); ?>"
+								 role="button"
+								 tabindex="0"
+								 aria-label="<?php esc_attr_e( 'Click to open lightbox', 'bwg-rentals' ); ?>">
+								<img
+									src="<?php echo esc_url( $image['url'] ?? '' ); ?>"
+									alt="<?php echo esc_attr( $image['alt'] ?? $property['name'] ?? '' ); ?>"
+									loading="<?php echo 0 === $index ? 'eager' : 'lazy'; ?>"
+								/>
 							</div>
 						<?php endforeach; ?>
 					</div>
 					<?php if ( count( $property['images'] ) > 1 ) : ?>
-						<button class="bwg-property-gallery__nav bwg-property-gallery__nav--prev" aria-label="<?php esc_attr_e( 'Previous image', 'bwg-rentals' ); ?>">‹</button>
-						<button class="bwg-property-gallery__nav bwg-property-gallery__nav--next" aria-label="<?php esc_attr_e( 'Next image', 'bwg-rentals' ); ?>">›</button>
+						<button class="bwg-property-gallery__nav bwg-property-gallery__nav--prev" aria-label="<?php esc_attr_e( 'Previous image', 'bwg-rentals' ); ?>">&#8249;</button>
+						<button class="bwg-property-gallery__nav bwg-property-gallery__nav--next" aria-label="<?php esc_attr_e( 'Next image', 'bwg-rentals' ); ?>">&#8250;</button>
+						<div class="bwg-property-gallery__counter">
+							<span class="bwg-property-gallery__current">1</span> / <?php echo count( $property['images'] ); ?>
+						</div>
 					<?php endif; ?>
 				</div>
+
+				<!-- Thumbnail Strip -->
+				<?php if ( count( $property['images'] ) > 1 ) : ?>
+				<div class="bwg-property-gallery__thumb-strip">
+					<button class="bwg-property-gallery__thumb-nav bwg-property-gallery__thumb-nav--prev" aria-label="<?php esc_attr_e( 'Scroll thumbnails left', 'bwg-rentals' ); ?>">&#8249;</button>
+					<div class="bwg-property-gallery__thumb-track">
+						<div class="bwg-property-gallery__thumb-slider">
+							<?php foreach ( $property['images'] as $index => $image ) :
+								$thumb_url = ! empty( $image['small'] ) ? $image['small'] : ( ! empty( $image['medium'] ) ? $image['medium'] : $image['url'] );
+							?>
+								<button class="bwg-property-gallery__thumb<?php echo 0 === $index ? ' bwg-property-gallery__thumb--active' : ''; ?>"
+										data-index="<?php echo esc_attr( $index ); ?>"
+										aria-label="<?php echo esc_attr( sprintf( __( 'View image %d', 'bwg-rentals' ), $index + 1 ) ); ?>">
+									<img
+										src="<?php echo esc_url( $thumb_url ); ?>"
+										alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>"
+										loading="lazy"
+									/>
+								</button>
+							<?php endforeach; ?>
+						</div>
+					</div>
+					<button class="bwg-property-gallery__thumb-nav bwg-property-gallery__thumb-nav--next" aria-label="<?php esc_attr_e( 'Scroll thumbnails right', 'bwg-rentals' ); ?>">&#8250;</button>
+				</div>
+				<?php endif; ?>
+			</div>
+
+			<!-- Lightbox Modal -->
+			<div class="bwg-lightbox" id="<?php echo esc_attr( $gallery_id ); ?>-lightbox" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Image gallery lightbox', 'bwg-rentals' ); ?>">
+				<div class="bwg-lightbox__overlay"></div>
+				<div class="bwg-lightbox__content">
+					<button class="bwg-lightbox__close" aria-label="<?php esc_attr_e( 'Close lightbox', 'bwg-rentals' ); ?>">&times;</button>
+					<div class="bwg-lightbox__image-container">
+						<img class="bwg-lightbox__image" src="" alt="" />
+					</div>
+					<?php if ( count( $property['images'] ) > 1 ) : ?>
+						<button class="bwg-lightbox__nav bwg-lightbox__nav--prev" aria-label="<?php esc_attr_e( 'Previous image', 'bwg-rentals' ); ?>">&#8249;</button>
+						<button class="bwg-lightbox__nav bwg-lightbox__nav--next" aria-label="<?php esc_attr_e( 'Next image', 'bwg-rentals' ); ?>">&#8250;</button>
+						<div class="bwg-lightbox__counter">
+							<span class="bwg-lightbox__current">1</span> / <?php echo count( $property['images'] ); ?>
+						</div>
+					<?php endif; ?>
+				</div>
+				<!-- Store images data for JavaScript -->
+				<script type="application/json" class="bwg-lightbox__data">
+					<?php echo wp_json_encode( array_map( function( $img ) {
+						return array(
+							'url' => $img['url'] ?? '',
+							'alt' => $img['alt'] ?? '',
+						);
+					}, $property['images'] ) ); ?>
+				</script>
 			</div>
 		</div>
 	<?php endif; ?>

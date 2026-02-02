@@ -669,6 +669,262 @@
     }
 }
 
+/* ============================================
+   Full Property Gallery (property-full.php)
+   ============================================ */
+.bwg-property-gallery--full {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Main Image Container */
+.bwg-property-gallery__main-container {
+    position: relative;
+    background: #000;
+    border-radius: var(--bwg-border-radius);
+    overflow: hidden;
+}
+
+.bwg-property-gallery__main-image {
+    position: relative;
+    width: 100%;
+    max-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a1a;
+}
+
+.bwg-property-gallery--full .bwg-property-gallery__slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.bwg-property-gallery--full .bwg-property-gallery__slide--active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bwg-property-gallery--full .bwg-property-gallery__slide img {
+    max-width: 100%;
+    max-height: 500px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* Navigation Arrows on Main Image */
+.bwg-property-gallery--full .bwg-property-gallery__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.bwg-property-gallery--full .bwg-property-gallery__nav:hover {
+    background: #ffffff;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.bwg-property-gallery--full .bwg-property-gallery__nav--prev {
+    left: var(--bwg-spacing-md);
+}
+
+.bwg-property-gallery--full .bwg-property-gallery__nav--next {
+    right: var(--bwg-spacing-md);
+}
+
+/* Image Counter */
+.bwg-property-gallery--full .bwg-property-gallery__counter {
+    position: absolute;
+    bottom: var(--bwg-spacing-md);
+    right: var(--bwg-spacing-md);
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Thumbnail Strip */
+.bwg-property-gallery__thumb-strip {
+    display: flex;
+    align-items: center;
+    gap: var(--bwg-spacing-sm);
+    margin-top: var(--bwg-spacing-md);
+    padding: var(--bwg-spacing-sm);
+    background: #f5f5f5;
+    border-radius: var(--bwg-border-radius);
+}
+
+.bwg-property-gallery__thumb-track {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.bwg-property-gallery__thumb-slider {
+    display: flex;
+    gap: var(--bwg-spacing-sm);
+    padding: 4px 0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.bwg-property-gallery__thumb-slider::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+}
+
+.bwg-property-gallery__thumb {
+    flex-shrink: 0;
+    width: 100px;
+    height: 70px;
+    border: 3px solid transparent;
+    border-radius: var(--bwg-border-radius);
+    overflow: hidden;
+    cursor: pointer;
+    padding: 0;
+    background: #ddd;
+    transition: all 0.2s ease;
+}
+
+.bwg-property-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.bwg-property-gallery__thumb:hover {
+    border-color: var(--bwg-primary-color);
+}
+
+.bwg-property-gallery__thumb:hover img {
+    transform: scale(1.05);
+}
+
+.bwg-property-gallery__thumb--active {
+    border-color: var(--bwg-primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.3);
+}
+
+/* Thumbnail Navigation Arrows */
+.bwg-property-gallery__thumb-nav {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--bwg-border-color);
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.bwg-property-gallery__thumb-nav:hover {
+    background: var(--bwg-primary-color);
+    border-color: var(--bwg-primary-color);
+    color: #ffffff;
+}
+
+.bwg-property-gallery__thumb-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.bwg-property-gallery__thumb-nav:disabled:hover {
+    background: #ffffff;
+    border-color: var(--bwg-border-color);
+    color: #666;
+}
+
+/* Responsive Full Gallery */
+@media (max-width: 768px) {
+    .bwg-property-gallery__main-image {
+        max-height: 350px;
+    }
+
+    .bwg-property-gallery--full .bwg-property-gallery__slide img {
+        max-height: 350px;
+    }
+
+    .bwg-property-gallery--full .bwg-property-gallery__nav {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+
+    .bwg-property-gallery__thumb {
+        width: 70px;
+        height: 50px;
+    }
+
+    .bwg-property-gallery__thumb-nav {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .bwg-property-gallery__main-image {
+        max-height: 280px;
+    }
+
+    .bwg-property-gallery--full .bwg-property-gallery__slide img {
+        max-height: 280px;
+    }
+
+    .bwg-property-gallery--full .bwg-property-gallery__nav {
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+    }
+
+    .bwg-property-gallery--full .bwg-property-gallery__nav--prev {
+        left: var(--bwg-spacing-sm);
+    }
+
+    .bwg-property-gallery--full .bwg-property-gallery__nav--next {
+        right: var(--bwg-spacing-sm);
+    }
+
+    .bwg-property-gallery__thumb {
+        width: 60px;
+        height: 45px;
+    }
+
+    .bwg-property-gallery__thumb-strip {
+        padding: var(--bwg-spacing-xs, 4px);
+    }
+}
+
 /* Property Availability Calendar */
 .bwg-property-availability {
     font-family: var(--bwg-font-family);
