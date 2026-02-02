@@ -1349,6 +1349,152 @@
     };
 
     /**
+     * Feature #131: Property Page Redesign - Sticky Navigation
+     */
+    var BWGStickyNav = {
+        init: function() {
+            var $nav = $('#bwg-property-nav');
+            if ($nav.length === 0) return;
+
+            var self = this;
+            var navTop = $nav.offset().top;
+            var $links = $nav.find('.bwg-property-nav__link');
+            var sections = [];
+
+            // Build sections array
+            $links.each(function() {
+                var sectionId = $(this).data('section');
+                var $section = $('#bwg-section-' + sectionId);
+                if ($section.length) {
+                    sections.push({
+                        id: sectionId,
+                        $link: $(this),
+                        $section: $section,
+                        top: $section.offset().top
+                    });
+                }
+            });
+
+            // Smooth scroll on click
+            $links.on('click', function(e) {
+                e.preventDefault();
+                var sectionId = $(this).data('section');
+                var $section = $('#bwg-section-' + sectionId);
+                if ($section.length) {
+                    var offset = $nav.outerHeight() + 20;
+                    $('html, body').animate({
+                        scrollTop: $section.offset().top - offset
+                    }, 500);
+                }
+            });
+
+            // Scroll handler for sticky state and active highlighting
+            $(window).on('scroll', function() {
+                var scrollTop = $(window).scrollTop();
+                var navHeight = $nav.outerHeight();
+
+                // Sticky state
+                if (scrollTop > navTop - 1) {
+                    $nav.addClass('bwg-property-nav--stuck');
+                } else {
+                    $nav.removeClass('bwg-property-nav--stuck');
+                }
+
+                // Active section highlighting
+                var activeIndex = 0;
+                for (var i = 0; i < sections.length; i++) {
+                    // Update section top positions (in case of dynamic content)
+                    sections[i].top = sections[i].$section.offset().top;
+                    if (scrollTop >= sections[i].top - navHeight - 50) {
+                        activeIndex = i;
+                    }
+                }
+
+                $links.removeClass('bwg-property-nav__link--active');
+                if (sections[activeIndex]) {
+                    sections[activeIndex].$link.addClass('bwg-property-nav__link--active');
+                }
+            });
+
+            // Trigger initial state
+            $(window).trigger('scroll');
+        }
+    };
+
+    /**
+     * Feature #131: Description Show More/Less Toggle
+     */
+    var BWGDescriptionToggle = {
+        init: function() {
+            var $toggles = $('.bwg-property-description__toggle');
+
+            $toggles.each(function() {
+                var $toggle = $(this);
+                var $description = $toggle.siblings('.bwg-property-description--collapsible');
+                var $textSpan = $toggle.find('.bwg-property-description__toggle-text');
+
+                $toggle.on('click', function() {
+                    var isCollapsed = $description.attr('data-collapsed') === 'true';
+
+                    if (isCollapsed) {
+                        $description.attr('data-collapsed', 'false');
+                        $toggle.attr('aria-expanded', 'true');
+                        $textSpan.text('Show Less');
+                    } else {
+                        $description.attr('data-collapsed', 'true');
+                        $toggle.attr('aria-expanded', 'false');
+                        $textSpan.text('Show More');
+                    }
+                });
+            });
+        }
+    };
+
+    /**
+     * Feature #131: Amenities Modal
+     */
+    var BWGAmenitiesModal = {
+        init: function() {
+            var self = this;
+            var $modal = $('#bwg-amenities-modal');
+            if ($modal.length === 0) return;
+
+            // Open modal
+            $('[data-amenities-modal]').on('click', function() {
+                self.open($modal);
+            });
+
+            // Close modal on close button
+            $modal.find('.bwg-modal__close').on('click', function() {
+                self.close($modal);
+            });
+
+            // Close modal on overlay click
+            $modal.find('.bwg-modal__overlay').on('click', function() {
+                self.close($modal);
+            });
+
+            // Close on Escape key
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $modal.hasClass('bwg-modal--active')) {
+                    self.close($modal);
+                }
+            });
+        },
+
+        open: function($modal) {
+            $modal.addClass('bwg-modal--active');
+            $('body').css('overflow', 'hidden');
+            $modal.attr('tabindex', '-1').focus();
+        },
+
+        close: function($modal) {
+            $modal.removeClass('bwg-modal--active');
+            $('body').css('overflow', '');
+        }
+    };
+
+    /**
      * Initialize on DOM ready
      */
     $(document).ready(function() {
@@ -1360,6 +1506,10 @@
         BWGSearch.init();
         BWGFullGallery.init();
         BWGAjaxLoader.init();
+        // Feature #131: Property Page Redesign
+        BWGStickyNav.init();
+        BWGDescriptionToggle.init();
+        BWGAmenitiesModal.init();
     });
 
 })(jQuery);

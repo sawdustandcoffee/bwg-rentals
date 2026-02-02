@@ -3,7 +3,7 @@
  * Plugin Name: BWG Rentals
  * Plugin URI: https://github.com/sawdustandcoffee/bwg-rentals
  * Description: Display vacation rental properties from Direct Software on your WordPress site with flexible shortcodes.
- * Version: 1.0.30
+ * Version: 1.0.31
  * Author: Sawdust and Coffee
  * Author URI: https://sawdustandcoffee.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin version
-define( 'BWG_RENTALS_VERSION', '1.0.30' );
+define( 'BWG_RENTALS_VERSION', '1.0.31' );
 
 // Plugin directory path
 define( 'BWG_RENTALS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
