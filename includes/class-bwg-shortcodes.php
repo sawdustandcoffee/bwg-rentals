@@ -242,8 +242,8 @@ class BWG_Shortcodes {
      * @return array Array of related properties.
      */
     private function get_related_properties( $property, $limit = 4 ) {
-        // Get all properties
-        $all_properties = $this->api->get_properties();
+        // Get all properties using local-first strategy for instant related properties
+        $all_properties = $this->api->get_properties_local_first();
 
         if ( is_wp_error( $all_properties ) || empty( $all_properties ) ) {
             return array();
@@ -459,7 +459,8 @@ class BWG_Shortcodes {
             'bwg_properties'
         );
 
-        $properties = $this->api->get_properties();
+        // Use local-first strategy for fast page loads
+        $properties = $this->api->get_properties_local_first();
 
         if ( is_wp_error( $properties ) ) {
             return $this->render_error( $properties->get_error_message() );
@@ -561,7 +562,8 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        // Use local-first strategy for fast property card rendering
+        $property = $this->api->get_property_local_first( $atts['id'] );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -598,7 +600,8 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $property_id );
+        // Use local-first strategy for fast gallery rendering
+        $property = $this->api->get_property_local_first( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -637,7 +640,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $property_id );
+        $property = $this->api->get_property_local_first( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -684,7 +687,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $property_id );
+        $property = $this->api->get_property_local_first( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -723,7 +726,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $property_id );
+        $property = $this->api->get_property_local_first( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -768,7 +771,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $property_id );
+        $property = $this->api->get_property_local_first( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -882,7 +885,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property_local_first( $atts['id'] );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -923,7 +926,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property_local_first( $atts['id'] );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -963,7 +966,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $atts['id'] );
+        $property = $this->api->get_property_local_first( $atts['id'] );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -1029,7 +1032,7 @@ class BWG_Shortcodes {
             return $this->render_error( __( 'Property ID is required.', 'bwg-rentals' ) );
         }
 
-        $property = $this->api->get_property( $property_id );
+        $property = $this->api->get_property_local_first( $property_id );
 
         if ( is_wp_error( $property ) ) {
             return $this->render_error( $property->get_error_message() );
@@ -1084,7 +1087,7 @@ class BWG_Shortcodes {
             'bwg_property_slider'
         );
 
-        $properties = $this->api->get_properties();
+        $properties = $this->api->get_properties_local_first();
 
         if ( is_wp_error( $properties ) ) {
             return $this->render_error( $properties->get_error_message() );
@@ -1146,7 +1149,7 @@ class BWG_Shortcodes {
             'bwg_properties_featured'
         );
 
-        $properties = $this->api->get_properties();
+        $properties = $this->api->get_properties_local_first();
 
         if ( is_wp_error( $properties ) ) {
             return $this->render_error( $properties->get_error_message() );
@@ -1249,7 +1252,7 @@ class BWG_Shortcodes {
         }
 
         // Get properties to extract bedroom, amenity, and location options
-        $properties = $this->api->get_properties();
+        $properties = $this->api->get_properties_local_first();
         $bedroom_options = array();
         $amenity_options = array();
         $location_options = array();
@@ -1325,7 +1328,7 @@ class BWG_Shortcodes {
         );
 
         // Get all properties
-        $properties = $this->api->get_properties();
+        $properties = $this->api->get_properties_local_first();
 
         if ( is_wp_error( $properties ) ) {
             wp_send_json_error( array( 'message' => $properties->get_error_message() ) );

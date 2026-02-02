@@ -1056,4 +1056,118 @@ class BWG_API {
         // Fallback to default Direct Software URL format
         return 'https://app.getdirect.io/listings/' . $credentials['org_id'] . '/' . $property_id;
     }
+
+    /**
+     * Get a property using local-first strategy
+     *
+     * Checks local CPT storage first for instant retrieval. If not found locally,
+     * falls back to API call. This enables fast page loads while ensuring
+     * data is always available.
+     *
+     * @param int  $property_id Property ID.
+     * @param bool $use_cache   Whether to use transient cache as fallback.
+     * @return array|WP_Error Property data or error.
+     */
+    public function get_property_local_first( $property_id, $use_cache = true ) {
+        $property_id = absint( $property_id );
+
+        // Try to get from local CPT storage first
+        $post = BWG_CPT::get_post_by_api_id( $property_id );
+
+        if ( $post ) {
+            $property = BWG_CPT::cpt_to_property_array( $post );
+            BWG_Rentals::log( 'Property ' . $property_id . ' loaded from local storage.', 'debug' );
+            return $property;
+        }
+
+        // Fall back to API call
+        BWG_Rentals::log( 'Property ' . $property_id . ' not found locally, fetching from API.', 'debug' );
+        return $this->get_property( $property_id, $use_cache );
+    }
+
+    /**
+     * Get all properties using local-first strategy
+     *
+     * Checks local CPT storage first for instant retrieval. If no local data exists,
+     * falls back to API call. This enables fast page loads for listing pages.
+     *
+     * @param bool $use_cache Whether to use transient cache as fallback.
+     * @return array|WP_Error Properties array or error.
+     */
+    public function get_properties_local_first( $use_cache = true ) {
+        // Check if we have local data
+        $property_count = BWG_CPT::get_property_count();
+
+        if ( $property_count > 0 ) {
+            // Get all properties from local storage
+            $posts      = BWG_CPT::get_all_posts();
+            $properties = array();
+
+            foreach ( $posts as $post ) {
+                $properties[] = BWG_CPT::cpt_to_property_array( $post );
+            }
+
+            BWG_Rentals::log( 'Loaded ' . count( $properties ) . ' properties from local storage.', 'debug' );
+            return $properties;
+        }
+
+        // Fall back to API call
+        BWG_Rentals::log( 'No local properties found, fetching from API.', 'debug' );
+        return $this->get_properties( $use_cache );
+    }
+
+    /**
+     * Get property availability using local-first strategy
+     *
+     * @param int  $property_id Property ID.
+     * @param bool $use_cache   Whether to use transient cache as fallback.
+     * @return array|WP_Error Availability data or error.
+     */
+    public function get_availability_local_first( $property_id, $use_cache = true ) {
+        $property_id = absint( $property_id );
+
+        // Try to get from local CPT storage first
+        $availability = BWG_CPT::get_local_availability( $property_id );
+
+        if ( ! empty( $availability ) ) {
+            BWG_Rentals::log( 'Availability for property ' . $property_id . ' loaded from local storage.', 'debug' );
+            return $availability;
+        }
+
+        // Fall back to API call
+        BWG_Rentals::log( 'Availability for property ' . $property_id . ' not found locally, fetching from API.', 'debug' );
+        return $this->get_availability( $property_id, $use_cache );
+    }
+
+    /**
+     * Get property rates using local-first strategy
+     *
+     * @param int  $property_id Property ID.
+     * @param bool $use_cache   Whether to use transient cache as fallback.
+     * @return array|WP_Error Rates data or error.
+     */
+    public function get_rates_local_first( $property_id, $use_cache = true ) {
+        $property_id = absint( $property_id );
+
+        // Try to get from local CPT storage first
+        $rates = BWG_CPT::get_local_rates( $property_id );
+
+        if ( ! empty( $rates ) ) {
+            BWG_Rentals::log( 'Rates for property ' . $property_id . ' loaded from local storage.', 'debug' );
+            return $rates;
+        }
+
+        // Fall back to API call
+        BWG_Rentals::log( 'Rates for property ' . $property_id . ' not found locally, fetching from API.', 'debug' );
+        return $this->get_rates( $property_id, $use_cache );
+    }
+
+    /**
+     * Check if local data is available
+     *
+     * @return bool True if local data exists.
+     */
+    public function has_local_data() {
+        return BWG_CPT::get_property_count() > 0;
+    }
 }

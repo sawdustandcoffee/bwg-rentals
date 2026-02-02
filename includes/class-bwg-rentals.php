@@ -51,6 +51,13 @@ class BWG_Rentals {
     public $shortcodes;
 
     /**
+     * Data sync instance
+     *
+     * @var BWG_Data_Sync
+     */
+    public $sync;
+
+    /**
      * Get single instance of the class
      *
      * @return BWG_Rentals
@@ -85,6 +92,12 @@ class BWG_Rentals {
 
         // Initialize admin (loads class for decrypt_value method, but only initializes hooks in admin context)
         $this->admin = new BWG_Admin( $this->api, $this->cache );
+
+        // Initialize data sync
+        $this->sync = new BWG_Data_Sync();
+
+        // Initialize CPT for local storage
+        new BWG_CPT();
 
         // Initialize updater
         $this->init_updater();

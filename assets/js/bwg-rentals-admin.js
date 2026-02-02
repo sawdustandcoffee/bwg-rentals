@@ -227,6 +227,134 @@
     }
 
     /**
+     * Initialize Data Sync handler
+     * Handles both #bwg-sync-data and #bwg-sync-now button IDs
+     */
+    function initDataSync() {
+        $('#bwg-sync-data, #bwg-sync-now').on('click', function(e) {
+            e.preventDefault();
+
+            var $button = $(this);
+            var $status = $('#bwg-sync-result');
+            var $statusMessage = $('#bwg-sync-status-message');
+            var $propertyCount = $('#bwg-sync-property-count');
+            var $lastSync = $('#bwg-sync-last-sync');
+            var $spinner = $button.find('.bwg-sync-spinner, .spinner');
+            var $buttonText = $button.find('.bwg-sync-text');
+
+            // Disable button and show loading
+            $button.addClass('loading').prop('disabled', true);
+            if ($spinner.length) {
+                $spinner.addClass('is-active').show();
+            }
+            if ($buttonText.length) {
+                $buttonText.text(bwgRentalsAdmin.strings.syncing || 'Syncing...');
+            }
+            $status.removeClass('success error').addClass('loading')
+                .text(bwgRentalsAdmin.strings.syncing || 'Syncing...');
+            $statusMessage.text(bwgRentalsAdmin.strings.syncing || 'Syncing...');
+
+            $.ajax({
+                url: bwgRentalsAdmin.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'bwg_sync_data',
+                    nonce: bwgRentalsAdmin.nonce
+                },
+                timeout: 120000, // 2 minute timeout for large syncs
+                success: function(response) {
+                    $button.removeClass('loading').prop('disabled', false);
+                    if ($spinner.length) {
+                        $spinner.removeClass('is-active').hide();
+                    }
+                    if ($buttonText.length) {
+                        $buttonText.text('Sync Now');
+                    }
+                    $status.removeClass('loading');
+
+                    if (response.success) {
+                        $status.addClass('success').text(response.data.message);
+                        $statusMessage.text(bwgRentalsAdmin.strings.syncComplete || 'Complete');
+
+                        // Update property count if returned
+                        if (response.data.count !== undefined) {
+                            $propertyCount.text(response.data.count);
+                        }
+
+                        // Update last sync time
+                        var now = new Date();
+                        $lastSync.text(now.toLocaleString());
+                    } else {
+                        $status.addClass('error').text(response.data.message);
+                        $statusMessage.text('Failed - ' + response.data.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $button.removeClass('loading').prop('disabled', false);
+                    if ($spinner.length) {
+                        $spinner.removeClass('is-active').hide();
+                    }
+                    if ($buttonText.length) {
+                        $buttonText.text('Sync Now');
+                    }
+                    $status.removeClass('loading').addClass('error');
+
+                    if (status === 'timeout') {
+                        $status.text('Sync timed out. Try again or check server logs.');
+                        $statusMessage.text('Failed - Timeout');
+                    } else {
+                        $status.text(bwgRentalsAdmin.strings.error || 'An error occurred');
+                        $statusMessage.text('Failed');
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Initialize Auto-Sync toggle handler
+     */
+    function initAutoSyncToggle() {
+        $('#bwg_auto_sync_enabled').on('change', function() {
+            var $checkbox = $(this);
+            var enabled = $checkbox.is(':checked');
+
+            $.ajax({
+                url: bwgRentalsAdmin.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'bwg_toggle_auto_sync',
+                    nonce: bwgRentalsAdmin.nonce,
+                    enabled: enabled ? 'true' : 'false'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the next scheduled sync display
+                        var $nextScheduled = $('#bwg-sync-next-scheduled');
+                        if ($nextScheduled.length) {
+                            if (enabled) {
+                                // Reload to get the new scheduled time
+                                location.reload();
+                            } else {
+                                $nextScheduled.text('Not scheduled');
+                            }
+                        }
+                    } else {
+                        // Revert checkbox on failure
+                        $checkbox.prop('checked', !enabled);
+                        alert(response.data.message || 'Failed to update auto-sync setting.');
+                    }
+                },
+                error: function() {
+                    // Revert checkbox on error
+                    $checkbox.prop('checked', !enabled);
+                    alert('An error occurred while updating auto-sync setting.');
+                }
+            });
+        });
+    }
+
+    /**
      * Initialize all functionality
      * Using both $(document).ready() and direct call for WordPress footer scripts
      */
@@ -234,6 +362,8 @@
         initFormValidation();
         initTestConnection();
         initClearCache();
+        initDataSync();
+        initAutoSyncToggle();
     }
 
     // Initialize when DOM is ready

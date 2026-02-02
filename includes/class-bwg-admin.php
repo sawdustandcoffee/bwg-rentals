@@ -38,6 +38,9 @@ class BWG_Admin {
             // AJAX handlers
             add_action( 'wp_ajax_bwg_test_connection', array( $this, 'ajax_test_connection' ) );
             add_action( 'wp_ajax_bwg_clear_cache', array( $this, 'ajax_clear_cache' ) );
+            add_action( 'wp_ajax_bwg_sync_data', array( $this, 'ajax_sync_data' ) );
+            add_action( 'wp_ajax_bwg_get_sync_status', array( $this, 'ajax_get_sync_status' ) );
+            add_action( 'wp_ajax_bwg_toggle_auto_sync', array( $this, 'ajax_toggle_auto_sync' ) );
         }
     }
 
@@ -512,6 +515,8 @@ class BWG_Admin {
                     'testing' => __( 'Testing connection...', 'bwg-rentals' ),
                     'clearing' => __( 'Clearing cache...', 'bwg-rentals' ),
                     'cacheCleared' => __( 'Cache cleared successfully!', 'bwg-rentals' ),
+                    'syncing' => __( 'Syncing data...', 'bwg-rentals' ),
+                    'syncComplete' => __( 'Data sync complete!', 'bwg-rentals' ),
                     'error' => __( 'An error occurred. Please try again.', 'bwg-rentals' ),
                 ),
             ) );
@@ -649,6 +654,96 @@ class BWG_Admin {
         $decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, 0, $iv );
 
         return $decrypted !== false ? $decrypted : '';
+    }
+
+    /**
+     * AJAX handler for syncing data to local database
+     */
+    public function ajax_sync_data() {
+        // Verify nonce
+        check_ajax_referer( 'bwg_rentals_admin', 'nonce' );
+
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Unauthorized', 'bwg-rentals' ) ) );
+        }
+
+        // Check if credentials are configured
+        $api_key = self::decrypt_value( get_option( 'bwg_rentals_api_key', '' ) );
+        $org_id = self::decrypt_value( get_option( 'bwg_rentals_org_id', '' ) );
+
+        if ( empty( $api_key ) || empty( $org_id ) ) {
+            wp_send_json_error( array(
+                'message' => __( 'API credentials not configured. Please configure your API key and Organization ID first.', 'bwg-rentals' )
+            ) );
+            return;
+        }
+
+        // Run sync using BWG_Data_Sync
+        $cache = new BWG_Cache();
+        $api = new BWG_API( $cache );
+        $sync = new BWG_Data_Sync();
+
+        $start_time = microtime( true );
+        $result = $sync->sync_all_properties( $api );
+        $duration = round( microtime( true ) - $start_time, 2 );
+
+        if ( $result['success'] ) {
+            wp_send_json_success( array(
+                'message'  => $result['message'],
+                'synced'   => isset( $result['count'] ) ? $result['count'] : 0,
+                'errors'   => isset( $result['errors'] ) ? $result['errors'] : array(),
+                'duration' => $duration,
+            ) );
+        } else {
+            wp_send_json_error( array(
+                'message' => $result['message'],
+            ) );
+        }
+    }
+
+    /**
+     * AJAX handler for getting sync status
+     */
+    public function ajax_get_sync_status() {
+        // Verify nonce
+        check_ajax_referer( 'bwg_rentals_admin', 'nonce' );
+
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Unauthorized', 'bwg-rentals' ) ) );
+        }
+
+        $sync = new BWG_Data_Sync();
+        wp_send_json_success( $sync->get_sync_status() );
+    }
+
+    /**
+     * AJAX handler for toggling auto-sync
+     */
+    public function ajax_toggle_auto_sync() {
+        // Verify nonce
+        check_ajax_referer( 'bwg_rentals_admin', 'nonce' );
+
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Unauthorized', 'bwg-rentals' ) ) );
+        }
+
+        $enabled = isset( $_POST['enabled'] ) && $_POST['enabled'] === 'true';
+
+        if ( $enabled ) {
+            BWG_Data_Sync::schedule_sync( 'daily' );
+        } else {
+            BWG_Data_Sync::unschedule_sync();
+        }
+
+        wp_send_json_success( array(
+            'enabled' => $enabled,
+            'message' => $enabled
+                ? __( 'Auto-sync enabled.', 'bwg-rentals' )
+                : __( 'Auto-sync disabled.', 'bwg-rentals' ),
+        ) );
     }
 
     /**

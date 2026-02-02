@@ -219,4 +219,96 @@ if ( ! defined( 'ABSPATH' ) ) {
             </tr>
         </tbody>
     </table>
+
+    <hr />
+
+    <h2><?php esc_html_e( 'Local Data Sync', 'bwg-rentals' ); ?></h2>
+    <p class="description" style="margin-bottom: 15px;">
+        <?php esc_html_e( 'Store property data locally in your WordPress database for instant page loads. Synced data is used first, with the API as a fallback.', 'bwg-rentals' ); ?>
+    </p>
+    <?php
+    // Get sync status from BWG_Data_Sync
+    $data_sync = new BWG_Data_Sync();
+    $sync_status = $data_sync->get_sync_status();
+    ?>
+    <table class="form-table" role="presentation">
+        <tbody>
+            <tr>
+                <th scope="row"><?php esc_html_e( 'Sync Status', 'bwg-rentals' ); ?></th>
+                <td>
+                    <div id="bwg-sync-status-container">
+                        <p>
+                            <strong><?php esc_html_e( 'Last Sync:', 'bwg-rentals' ); ?></strong>
+                            <span id="bwg-sync-last-sync"><?php echo esc_html( $sync_status['last_sync_time'] ); ?></span>
+                        </p>
+                        <p>
+                            <strong><?php esc_html_e( 'Local Properties:', 'bwg-rentals' ); ?></strong>
+                            <span id="bwg-sync-property-count"><?php echo esc_html( $sync_status['property_count'] ); ?></span>
+                        </p>
+                        <p>
+                            <strong><?php esc_html_e( 'Status:', 'bwg-rentals' ); ?></strong>
+                            <span id="bwg-sync-status-message">
+                                <?php
+                                $status_labels = array(
+                                    'unknown'   => __( 'Unknown', 'bwg-rentals' ),
+                                    'running'   => __( 'Sync in progress...', 'bwg-rentals' ),
+                                    'completed' => __( 'Complete', 'bwg-rentals' ),
+                                    'failed'    => __( 'Failed', 'bwg-rentals' ),
+                                );
+                                $status_key = isset( $sync_status['last_sync_status'] ) ? $sync_status['last_sync_status'] : 'unknown';
+                                $label = isset( $status_labels[ $status_key ] ) ? $status_labels[ $status_key ] : ucfirst( $status_key );
+                                echo esc_html( $label );
+                                if ( ! empty( $sync_status['status_message'] ) ) {
+                                    echo ' - ' . esc_html( $sync_status['status_message'] );
+                                }
+                                ?>
+                            </span>
+                        </p>
+                        <p>
+                            <strong><?php esc_html_e( 'Next Scheduled Sync:', 'bwg-rentals' ); ?></strong>
+                            <span id="bwg-sync-next-scheduled"><?php echo esc_html( $sync_status['next_scheduled'] ); ?></span>
+                        </p>
+                        <?php if ( ! empty( $sync_status['errors'] ) ) : ?>
+                        <div class="bwg-sync-errors" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin-top: 10px;">
+                            <strong><?php esc_html_e( 'Sync Errors:', 'bwg-rentals' ); ?></strong>
+                            <ul style="margin: 5px 0 0 20px;">
+                                <?php foreach ( array_slice( $sync_status['errors'], 0, 5 ) as $error ) : ?>
+                                    <li><?php echo esc_html( $error ); ?></li>
+                                <?php endforeach; ?>
+                                <?php if ( count( $sync_status['errors'] ) > 5 ) : ?>
+                                    <li><em><?php printf( esc_html__( '...and %d more errors', 'bwg-rentals' ), count( $sync_status['errors'] ) - 5 ); ?></em></li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><?php esc_html_e( 'Auto-Sync', 'bwg-rentals' ); ?></th>
+                <td>
+                    <label>
+                        <input type="checkbox" name="bwg_auto_sync_enabled" id="bwg_auto_sync_enabled" value="1" <?php checked( $sync_status['auto_sync'], true ); ?> />
+                        <?php esc_html_e( 'Enable daily automatic sync (runs at 3 AM)', 'bwg-rentals' ); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e( 'When enabled, property data will be automatically synced from the API every day at 3 AM.', 'bwg-rentals' ); ?>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><?php esc_html_e( 'Manual Sync', 'bwg-rentals' ); ?></th>
+                <td>
+                    <button type="button" class="button button-primary" id="bwg-sync-now">
+                        <span class="bwg-sync-text"><?php esc_html_e( 'Sync Now', 'bwg-rentals' ); ?></span>
+                        <span class="bwg-sync-spinner spinner" style="display: none; float: none; margin: 0 0 0 5px;"></span>
+                    </button>
+                    <span id="bwg-sync-result" class="bwg-ajax-status"></span>
+                    <p class="description">
+                        <?php esc_html_e( 'Fetch all property data from the API and store it locally. This may take a moment depending on the number of properties.', 'bwg-rentals' ); ?>
+                    </p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
