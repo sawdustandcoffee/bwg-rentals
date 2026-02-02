@@ -754,24 +754,46 @@ class BWG_Admin {
     private function get_cache_status() {
         global $wpdb;
 
-        // Count cached items
-        $count = $wpdb->get_var(
+        // Count transient cached items
+        $transient_count = $wpdb->get_var(
             "SELECT COUNT(*)
             FROM {$wpdb->options}
             WHERE option_name LIKE '_transient_bwg_rentals_%'"
         );
 
+        // Count locally synced properties (CPT storage)
+        $local_count = 0;
+        if ( class_exists( 'BWG_CPT' ) ) {
+            $local_count = BWG_CPT::get_property_count();
+        }
+
+        // Total cached items = transients + local properties
+        $total_count = (int) $transient_count + $local_count;
+
         // Get cache duration setting
         $duration = get_option( 'bwg_rentals_cache_duration', 24 );
 
-        // Try to get last update time from properties transient
-        $properties_transient = get_transient( 'bwg_rentals_properties' );
-        $last_updated = $properties_transient ? __( 'Recently', 'bwg-rentals' ) : __( 'Never', 'bwg-rentals' );
+        // Determine last updated time
+        $last_updated = __( 'Never', 'bwg-rentals' );
+
+        // Check local sync time first (preferred source)
+        $sync_status = get_option( 'bwg_rentals_sync_status', array() );
+        if ( ! empty( $sync_status['last_sync_time'] ) ) {
+            $last_updated = date_i18n(
+                get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
+                $sync_status['last_sync_time']
+            );
+        } elseif ( get_transient( 'bwg_rentals_properties' ) ) {
+            // Fall back to transient check
+            $last_updated = __( 'Recently', 'bwg-rentals' );
+        }
 
         return array(
-            'item_count' => (int) $count,
-            'duration' => $duration . ' ' . __( 'hours', 'bwg-rentals' ),
-            'last_updated' => $last_updated,
+            'item_count'      => $total_count,
+            'transient_count' => (int) $transient_count,
+            'local_count'     => $local_count,
+            'duration'        => $duration . ' ' . __( 'hours', 'bwg-rentals' ),
+            'last_updated'    => $last_updated,
         );
     }
 }

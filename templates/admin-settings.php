@@ -198,6 +198,18 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <p>
                         <strong><?php esc_html_e( 'Cached Items:', 'bwg-rentals' ); ?></strong>
                         <?php echo esc_html( $cache_status['item_count'] ); ?>
+                        <?php if ( isset( $cache_status['local_count'] ) && $cache_status['local_count'] > 0 ) : ?>
+                            <span class="description" style="margin-left: 5px;">
+                                (<?php
+                                printf(
+                                    /* translators: %1$d: local properties count, %2$d: transient cache count */
+                                    esc_html__( '%1$d local, %2$d transients', 'bwg-rentals' ),
+                                    $cache_status['local_count'],
+                                    isset( $cache_status['transient_count'] ) ? $cache_status['transient_count'] : 0
+                                );
+                                ?>)
+                            </span>
+                        <?php endif; ?>
                     </p>
                     <p>
                         <strong><?php esc_html_e( 'Duration:', 'bwg-rentals' ); ?></strong>
