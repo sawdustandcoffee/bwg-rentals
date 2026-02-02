@@ -51,6 +51,10 @@ class BWG_Shortcodes {
         add_action( 'wp_ajax_nopriv_bwg_filter_properties', array( $this, 'ajax_filter_properties' ) );
         add_action( 'wp_ajax_bwg_search_properties', array( $this, 'ajax_search_properties' ) );
         add_action( 'wp_ajax_nopriv_bwg_search_properties', array( $this, 'ajax_search_properties' ) );
+        add_action( 'wp_ajax_bwg_get_availability', array( $this, 'ajax_get_availability' ) );
+        add_action( 'wp_ajax_nopriv_bwg_get_availability', array( $this, 'ajax_get_availability' ) );
+        add_action( 'wp_ajax_bwg_get_rates', array( $this, 'ajax_get_rates' ) );
+        add_action( 'wp_ajax_nopriv_bwg_get_rates', array( $this, 'ajax_get_rates' ) );
     }
 
     /**
@@ -93,12 +97,40 @@ class BWG_Shortcodes {
 
         // Localize script for AJAX
         wp_localize_script( 'bwg-rentals-public', 'bwgRentals', array(
-            'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-            'filterNonce' => wp_create_nonce( 'bwg_filter_properties' ),
-            'searchNonce' => wp_create_nonce( 'bwg_search_properties' ),
+            'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
+            'filterNonce'       => wp_create_nonce( 'bwg_filter_properties' ),
+            'searchNonce'       => wp_create_nonce( 'bwg_search_properties' ),
+            'availabilityNonce' => wp_create_nonce( 'bwg_get_availability' ),
+            'ratesNonce'        => wp_create_nonce( 'bwg_get_rates' ),
         ) );
 
         $this->assets_enqueued = true;
+    }
+
+    /**
+     * Enqueue Google Maps assets if API key is configured
+     *
+     * Only enqueues if the Google Maps API key is set in plugin settings.
+     */
+    private function enqueue_google_maps() {
+        static $google_maps_enqueued = false;
+
+        if ( $google_maps_enqueued ) {
+            return;
+        }
+
+        // Check if Google Maps API key is configured
+        $google_maps_api_key = BWG_Admin::decrypt_value( get_option( 'bwg_rentals_google_maps_api_key', '' ) );
+
+        if ( ! empty( $google_maps_api_key ) ) {
+            // Enqueue Google Maps initialization script
+            wp_enqueue_script( 'bwg-google-maps' );
+
+            // Enqueue Google Maps API script (will load after bwg-google-maps due to callback)
+            wp_enqueue_script( 'google-maps-api' );
+
+            $google_maps_enqueued = true;
+        }
     }
 
     /**
@@ -897,6 +929,11 @@ class BWG_Shortcodes {
             return $this->render_error( $property->get_error_message() );
         }
 
+        // Enqueue Google Maps scripts if map is enabled and API key is configured
+        if ( 'true' === $atts['show_map'] ) {
+            $this->enqueue_google_maps();
+        }
+
         ob_start();
         include $this->get_template( 'property-location.php' );
         $output = ob_get_clean();
@@ -998,14 +1035,20 @@ class BWG_Shortcodes {
             return $this->render_error( $property->get_error_message() );
         }
 
-        // Get availability and rates data for the full property view
-        $availability = 'true' === $atts['show_availability'] ? $this->api->get_availability( $property_id ) : null;
-        $rates        = 'true' === $atts['show_rates'] ? $this->api->get_rates( $property_id ) : null;
+        // Availability and rates are now loaded via AJAX for faster initial page render
+        // Pass null to template - JS will fetch these asynchronously
+        $availability = null;
+        $rates        = null;
 
         // Get related properties if enabled
         $related_properties = null;
         if ( 'true' === $atts['show_related'] ) {
             $related_properties = $this->get_related_properties( $property, absint( $atts['related_limit'] ) );
+        }
+
+        // Enqueue Google Maps scripts if location is enabled
+        if ( 'true' === $atts['show_location'] ) {
+            $this->enqueue_google_maps();
         }
 
         ob_start();
@@ -1603,5 +1646,196 @@ class BWG_Shortcodes {
             'html'  => $html,
             'count' => $count,
         ) );
+    }
+
+    /**
+     * AJAX handler for getting property availability
+     *
+     * Returns availability data for lazy loading on property pages.
+     *
+     * @return void
+     */
+    public function ajax_get_availability() {
+        // Verify nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'bwg_get_availability' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed', 'bwg-rentals' ) ) );
+        }
+
+        // Get property ID
+        $property_id = isset( $_POST['property_id'] ) ? absint( $_POST['property_id'] ) : 0;
+
+        if ( empty( $property_id ) ) {
+            wp_send_json_error( array( 'message' => __( 'Property ID is required', 'bwg-rentals' ) ) );
+        }
+
+        // Get availability data from API (will use cache if available)
+        $availability = $this->api->get_availability( $property_id );
+
+        if ( is_wp_error( $availability ) ) {
+            wp_send_json_error( array( 'message' => $availability->get_error_message() ) );
+        }
+
+        // Generate HTML for the availability calendar
+        ob_start();
+        $this->render_availability_html( $availability, $property_id );
+        $html = ob_get_clean();
+
+        wp_send_json_success( array(
+            'html' => $html,
+            'data' => $availability,
+        ) );
+    }
+
+    /**
+     * AJAX handler for getting property rates
+     *
+     * Returns rates data for lazy loading on property pages.
+     *
+     * @return void
+     */
+    public function ajax_get_rates() {
+        // Verify nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'bwg_get_rates' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed', 'bwg-rentals' ) ) );
+        }
+
+        // Get property ID
+        $property_id = isset( $_POST['property_id'] ) ? absint( $_POST['property_id'] ) : 0;
+
+        if ( empty( $property_id ) ) {
+            wp_send_json_error( array( 'message' => __( 'Property ID is required', 'bwg-rentals' ) ) );
+        }
+
+        // Get rates data from API (will use cache if available)
+        $rates = $this->api->get_rates( $property_id );
+
+        if ( is_wp_error( $rates ) ) {
+            wp_send_json_error( array( 'message' => $rates->get_error_message() ) );
+        }
+
+        // Generate HTML for the rates section
+        ob_start();
+        $this->render_rates_html( $rates );
+        $html = ob_get_clean();
+
+        wp_send_json_success( array(
+            'html' => $html,
+            'data' => $rates,
+        ) );
+    }
+
+    /**
+     * Render availability calendar HTML
+     *
+     * @param array $availability Availability data.
+     * @param int   $property_id  Property ID.
+     */
+    private function render_availability_html( $availability, $property_id ) {
+        if ( empty( $availability['availability'] ) ) {
+            echo '<p class="bwg-property-availability__empty">' . esc_html__( 'Availability information is not available.', 'bwg-rentals' ) . '</p>';
+            return;
+        }
+
+        // Group availability by month
+        $availability_by_month = array();
+        foreach ( $availability['availability'] as $day ) {
+            $month_key = gmdate( 'Y-m', strtotime( $day['date'] ) );
+            if ( ! isset( $availability_by_month[ $month_key ] ) ) {
+                $availability_by_month[ $month_key ] = array();
+            }
+            $availability_by_month[ $month_key ][] = $day;
+        }
+
+        echo '<div class="bwg-property-availability__calendar">';
+
+        // Show first 3 months
+        $months_shown = 0;
+        foreach ( $availability_by_month as $month_key => $days ) {
+            if ( $months_shown >= 3 ) {
+                break;
+            }
+            $month_name = gmdate( 'F Y', strtotime( $month_key . '-01' ) );
+            ?>
+            <div class="bwg-property-availability__month">
+                <h3 class="bwg-property-availability__month-name"><?php echo esc_html( $month_name ); ?></h3>
+                <div class="bwg-property-availability__grid">
+                    <?php foreach ( $days as $day ) : ?>
+                        <div class="bwg-property-availability__day <?php echo $day['available'] ? 'bwg-property-availability__day--available' : 'bwg-property-availability__day--unavailable'; ?>">
+                            <span class="bwg-property-availability__date"><?php echo esc_html( gmdate( 'j', strtotime( $day['date'] ) ) ); ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php
+            $months_shown++;
+        }
+
+        echo '</div>';
+        ?>
+        <div class="bwg-property-availability__legend">
+            <span class="bwg-property-availability__legend-item">
+                <span class="bwg-property-availability__legend-color bwg-property-availability__legend-color--available"></span>
+                <?php esc_html_e( 'Available', 'bwg-rentals' ); ?>
+            </span>
+            <span class="bwg-property-availability__legend-item">
+                <span class="bwg-property-availability__legend-color bwg-property-availability__legend-color--unavailable"></span>
+                <?php esc_html_e( 'Unavailable', 'bwg-rentals' ); ?>
+            </span>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render rates section HTML
+     *
+     * @param array $rates Rates data.
+     */
+    private function render_rates_html( $rates ) {
+        if ( empty( $rates ) ) {
+            echo '<p class="bwg-property-rates__empty">' . esc_html__( 'Rate information is not available.', 'bwg-rentals' ) . '</p>';
+            return;
+        }
+
+        ?>
+        <div class="bwg-property-rates">
+            <?php if ( isset( $rates['base_rate'] ) ) : ?>
+                <div class="bwg-property-rates__base">
+                    <span class="bwg-property-rates__label"><?php esc_html_e( 'Base Rate:', 'bwg-rentals' ); ?></span>
+                    <span class="bwg-property-rates__value">
+                        <?php echo esc_html( '$' . number_format( $rates['base_rate'] ) ); ?>
+                        <span class="bwg-property-rates__period"><?php esc_html_e( '/ night', 'bwg-rentals' ); ?></span>
+                    </span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ( ! empty( $rates['seasonal_rates'] ) ) : ?>
+                <div class="bwg-property-rates__seasonal">
+                    <h3><?php esc_html_e( 'Seasonal Rates', 'bwg-rentals' ); ?></h3>
+                    <ul class="bwg-property-rates__list">
+                        <?php foreach ( $rates['seasonal_rates'] as $season ) : ?>
+                            <li class="bwg-property-rates__item">
+                                <span class="bwg-property-rates__season"><?php echo esc_html( $season['season'] ); ?></span>
+                                <span class="bwg-property-rates__amount"><?php echo esc_html( '$' . number_format( $season['rate'] ) ); ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <?php if ( ! empty( $rates['discounts'] ) ) : ?>
+                <div class="bwg-property-rates__discounts">
+                    <h3><?php esc_html_e( 'Discounts', 'bwg-rentals' ); ?></h3>
+                    <ul class="bwg-property-rates__list">
+                        <?php foreach ( $rates['discounts'] as $discount ) : ?>
+                            <li class="bwg-property-rates__item">
+                                <span class="bwg-property-rates__type"><?php echo esc_html( $discount['type'] ); ?></span>
+                                <span class="bwg-property-rates__amount"><?php echo esc_html( $discount['amount'] ); ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php
     }
 }

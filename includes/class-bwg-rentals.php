@@ -158,6 +158,27 @@ class BWG_Rentals {
             BWG_RENTALS_VERSION,
             true
         );
+
+        // Register Google Maps API script if API key is configured
+        $google_maps_api_key = BWG_Admin::decrypt_value( get_option( 'bwg_rentals_google_maps_api_key', '' ) );
+        if ( ! empty( $google_maps_api_key ) ) {
+            wp_register_script(
+                'google-maps-api',
+                'https://maps.googleapis.com/maps/api/js?key=' . urlencode( $google_maps_api_key ) . '&callback=bwgInitGoogleMaps',
+                array(),
+                null,
+                true
+            );
+
+            // Register Google Maps initialization script
+            wp_register_script(
+                'bwg-google-maps',
+                BWG_RENTALS_PLUGIN_URL . 'assets/js/bwg-google-maps.js',
+                array( 'jquery' ),
+                BWG_RENTALS_VERSION,
+                true
+            );
+        }
     }
 
     /**

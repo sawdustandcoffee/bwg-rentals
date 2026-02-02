@@ -267,133 +267,146 @@ if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) {
 				</div>
 			<?php endif; ?>
 
-			<?php if ( 'true' === $atts['show_availability'] && ! is_wp_error( $availability ) && ! empty( $availability['availability'] ) ) : ?>
-				<div id="bwg-section-availability" class="bwg-property-full__section bwg-property-full__section--availability">
+			<?php if ( 'true' === $atts['show_availability'] ) : ?>
+				<div id="bwg-section-availability" class="bwg-property-full__section bwg-property-full__section--availability" data-property-id="<?php echo esc_attr( $property_id ); ?>">
 					<h2><?php esc_html_e( 'Availability', 'bwg-rentals' ); ?></h2>
-					<div class="bwg-property-availability">
-						<div class="bwg-property-availability__calendar">
-							<?php
-							// Group availability by month
-							$availability_by_month = array();
-							foreach ( $availability['availability'] as $day ) {
-								$month_key = date( 'Y-m', strtotime( $day['date'] ) );
-								if ( ! isset( $availability_by_month[ $month_key ] ) ) {
-									$availability_by_month[ $month_key ] = array();
-								}
-								$availability_by_month[ $month_key ][] = $day;
-							}
-
-							// Show first 3 months
-							$months_shown = 0;
-							foreach ( $availability_by_month as $month_key => $days ) :
-								if ( $months_shown >= 3 ) {
-									break;
-								}
-								$month_name = date( 'F Y', strtotime( $month_key . '-01' ) );
-								?>
-								<div class="bwg-property-availability__month">
-									<h3 class="bwg-property-availability__month-name"><?php echo esc_html( $month_name ); ?></h3>
-									<div class="bwg-property-availability__grid">
-										<?php foreach ( $days as $day ) : ?>
-											<div class="bwg-property-availability__day <?php echo $day['available'] ? 'bwg-property-availability__day--available' : 'bwg-property-availability__day--unavailable'; ?>">
-												<span class="bwg-property-availability__date"><?php echo esc_html( date( 'j', strtotime( $day['date'] ) ) ); ?></span>
-											</div>
-										<?php endforeach; ?>
-									</div>
-								</div>
-								<?php
-								$months_shown++;
-							endforeach;
-							?>
-						</div>
-						<div class="bwg-property-availability__legend">
-							<span class="bwg-property-availability__legend-item">
-								<span class="bwg-property-availability__legend-color bwg-property-availability__legend-color--available"></span>
-								<?php esc_html_e( 'Available', 'bwg-rentals' ); ?>
-							</span>
-							<span class="bwg-property-availability__legend-item">
-								<span class="bwg-property-availability__legend-color bwg-property-availability__legend-color--unavailable"></span>
-								<?php esc_html_e( 'Unavailable', 'bwg-rentals' ); ?>
-							</span>
+					<div class="bwg-property-availability bwg-ajax-content" data-type="availability">
+						<!-- Loading placeholder - replaced via AJAX -->
+						<div class="bwg-ajax-loading">
+							<div class="bwg-ajax-loading__spinner"></div>
+							<span class="bwg-ajax-loading__text"><?php esc_html_e( 'Loading availability...', 'bwg-rentals' ); ?></span>
 						</div>
 					</div>
 				</div>
 			<?php endif; ?>
 
-			<?php if ( 'true' === $atts['show_rates'] && ! is_wp_error( $rates ) ) : ?>
-				<div id="bwg-section-rates" class="bwg-property-full__section bwg-property-full__section--rates">
+			<?php if ( 'true' === $atts['show_rates'] ) : ?>
+				<div id="bwg-section-rates" class="bwg-property-full__section bwg-property-full__section--rates" data-property-id="<?php echo esc_attr( $property_id ); ?>">
 					<h2><?php esc_html_e( 'Rates', 'bwg-rentals' ); ?></h2>
-					<div class="bwg-property-rates">
-						<?php if ( isset( $rates['base_rate'] ) ) : ?>
-							<div class="bwg-property-rates__base">
-								<span class="bwg-property-rates__label"><?php esc_html_e( 'Base Rate:', 'bwg-rentals' ); ?></span>
-								<span class="bwg-property-rates__value">
-									<?php echo esc_html( '$' . number_format( $rates['base_rate'] ) ); ?>
-									<span class="bwg-property-rates__period"><?php esc_html_e( '/ night', 'bwg-rentals' ); ?></span>
-								</span>
-							</div>
-						<?php endif; ?>
-
-						<?php if ( ! empty( $rates['seasonal_rates'] ) ) : ?>
-							<div class="bwg-property-rates__seasonal">
-								<h3><?php esc_html_e( 'Seasonal Rates', 'bwg-rentals' ); ?></h3>
-								<ul class="bwg-property-rates__list">
-									<?php foreach ( $rates['seasonal_rates'] as $season ) : ?>
-										<li class="bwg-property-rates__item">
-											<span class="bwg-property-rates__season"><?php echo esc_html( $season['season'] ); ?></span>
-											<span class="bwg-property-rates__amount"><?php echo esc_html( '$' . number_format( $season['rate'] ) ); ?></span>
-										</li>
-									<?php endforeach; ?>
-								</ul>
-							</div>
-						<?php endif; ?>
-
-						<?php if ( ! empty( $rates['discounts'] ) ) : ?>
-							<div class="bwg-property-rates__discounts">
-								<h3><?php esc_html_e( 'Discounts', 'bwg-rentals' ); ?></h3>
-								<ul class="bwg-property-rates__list">
-									<?php foreach ( $rates['discounts'] as $discount ) : ?>
-										<li class="bwg-property-rates__item">
-											<span class="bwg-property-rates__type"><?php echo esc_html( $discount['type'] ); ?></span>
-											<span class="bwg-property-rates__amount"><?php echo esc_html( $discount['amount'] ); ?></span>
-										</li>
-									<?php endforeach; ?>
-								</ul>
-							</div>
-						<?php endif; ?>
+					<div class="bwg-property-rates bwg-ajax-content" data-type="rates">
+						<!-- Loading placeholder - replaced via AJAX -->
+						<div class="bwg-ajax-loading">
+							<div class="bwg-ajax-loading__spinner"></div>
+							<span class="bwg-ajax-loading__text"><?php esc_html_e( 'Loading rates...', 'bwg-rentals' ); ?></span>
+						</div>
 					</div>
 				</div>
 			<?php endif; ?>
 
 			<?php if ( 'true' === $atts['show_location'] && ! empty( $property['address'] ) ) : ?>
+				<?php
+				// Build address string
+				$address_parts = array();
+				if ( ! empty( $property['address']['street'] ) ) {
+					$address_parts[] = $property['address']['street'];
+				}
+				$city_state_zip = array();
+				if ( ! empty( $property['address']['city'] ) ) {
+					$city_state_zip[] = $property['address']['city'];
+				}
+				if ( ! empty( $property['address']['state'] ) ) {
+					$city_state_zip[] = $property['address']['state'];
+				}
+				if ( ! empty( $property['address']['zip'] ) ) {
+					$city_state_zip[] = $property['address']['zip'];
+				}
+				if ( ! empty( $city_state_zip ) ) {
+					$address_parts[] = implode( ', ', $city_state_zip );
+				}
+				if ( ! empty( $property['address']['country'] ) ) {
+					$address_parts[] = $property['address']['country'];
+				}
+				$full_address = implode( ', ', $address_parts );
+
+				// Check if Google Maps API key is configured
+				$google_maps_api_key = '';
+				if ( class_exists( 'BWG_Admin' ) ) {
+					$google_maps_api_key = BWG_Admin::decrypt_value( get_option( 'bwg_rentals_google_maps_api_key', '' ) );
+				}
+				$use_google_maps = ! empty( $google_maps_api_key );
+				$has_coordinates = isset( $property['latitude'] ) && isset( $property['longitude'] );
+				$map_id = 'bwg-map-full-' . uniqid();
+				?>
 				<div id="bwg-section-location" class="bwg-property-full__section bwg-property-full__section--location">
 					<h2><?php esc_html_e( 'Location', 'bwg-rentals' ); ?></h2>
 					<div class="bwg-property-location">
 						<div class="bwg-property-location__address">
-							<?php
-							$address_parts = array();
-							if ( ! empty( $property['address']['street'] ) ) {
-								$address_parts[] = $property['address']['street'];
-							}
-							$city_state_zip = array();
-							if ( ! empty( $property['address']['city'] ) ) {
-								$city_state_zip[] = $property['address']['city'];
-							}
-							if ( ! empty( $property['address']['state'] ) ) {
-								$city_state_zip[] = $property['address']['state'];
-							}
-							if ( ! empty( $property['address']['zip'] ) ) {
-								$city_state_zip[] = $property['address']['zip'];
-							}
-							if ( ! empty( $city_state_zip ) ) {
-								$address_parts[] = implode( ', ', $city_state_zip );
-							}
-							if ( ! empty( $property['address']['country'] ) ) {
-								$address_parts[] = $property['address']['country'];
-							}
-							echo esc_html( implode( ', ', $address_parts ) );
-							?>
+							<?php echo esc_html( $full_address ); ?>
 						</div>
+
+						<?php if ( $has_coordinates ) : ?>
+							<?php
+							$lat = floatval( $property['latitude'] );
+							$lon = floatval( $property['longitude'] );
+							?>
+
+							<?php if ( $use_google_maps ) : ?>
+								<!-- Google Maps Integration -->
+								<div class="bwg-property-location__map-container bwg-property-location__map-container--google" style="margin-top: 15px;">
+									<div
+										id="<?php echo esc_attr( $map_id ); ?>"
+										class="bwg-property-location__google-map"
+										data-lat="<?php echo esc_attr( $lat ); ?>"
+										data-lng="<?php echo esc_attr( $lon ); ?>"
+										data-title="<?php echo esc_attr( $property['name'] ?? '' ); ?>"
+										data-address="<?php echo esc_attr( $full_address ); ?>"
+										style="width: 100%; height: 350px; border: 1px solid #ddd; border-radius: 4px;"
+									>
+										<div class="bwg-property-location__map-loading">
+											<span class="bwg-spinner"></span>
+											<span><?php esc_html_e( 'Loading map...', 'bwg-rentals' ); ?></span>
+										</div>
+									</div>
+									<div class="bwg-property-location__map-actions">
+										<a
+											href="https://www.google.com/maps/search/?api=1&query=<?php echo esc_attr( $lat ); ?>,<?php echo esc_attr( $lon ); ?>"
+											class="bwg-property-location__directions-link"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<?php esc_html_e( 'Get Directions', 'bwg-rentals' ); ?>
+										</a>
+										<a
+											href="https://www.google.com/maps/@<?php echo esc_attr( $lat ); ?>,<?php echo esc_attr( $lon ); ?>,15z"
+											class="bwg-property-location__view-larger"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<?php esc_html_e( 'View Larger Map', 'bwg-rentals' ); ?>
+										</a>
+									</div>
+								</div>
+							<?php else : ?>
+								<!-- OpenStreetMap Fallback (no API key required) -->
+								<?php
+								$osm_url = sprintf(
+									'https://www.openstreetmap.org/export/embed.html?bbox=%s,%s,%s,%s&layer=mapnik&marker=%s,%s',
+									esc_attr( $lon - 0.01 ),
+									esc_attr( $lat - 0.01 ),
+									esc_attr( $lon + 0.01 ),
+									esc_attr( $lat + 0.01 ),
+									esc_attr( $lat ),
+									esc_attr( $lon )
+								);
+								?>
+								<div class="bwg-property-location__map-container bwg-property-location__map-container--osm" style="margin-top: 15px;">
+									<iframe
+										class="bwg-property-location__map"
+										width="100%"
+										height="350"
+										style="border: 1px solid #ddd; border-radius: 4px;"
+										loading="lazy"
+										src="<?php echo esc_url( $osm_url ); ?>"
+										title="<?php echo esc_attr__( 'Property location map', 'bwg-rentals' ); ?>"
+									></iframe>
+									<small class="bwg-property-location__map-attribution">
+										<a href="https://www.openstreetmap.org/?mlat=<?php echo esc_attr( $lat ); ?>&mlon=<?php echo esc_attr( $lon ); ?>#map=15/<?php echo esc_attr( $lat ); ?>/<?php echo esc_attr( $lon ); ?>" target="_blank" rel="noopener noreferrer">
+											<?php esc_html_e( 'View Larger Map', 'bwg-rentals' ); ?>
+										</a>
+									</small>
+								</div>
+							<?php endif; ?>
+						<?php endif; ?>
 					</div>
 				</div>
 			<?php endif; ?>
@@ -459,31 +472,31 @@ if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) {
 
 		<!-- Sticky Booking Sidebar -->
 		<aside class="bwg-property-full__sidebar">
-			<div class="bwg-property-sidebar">
+			<div class="bwg-property-sidebar bwg-property-sidebar--modern">
 				<div class="bwg-property-sidebar__inner">
 
 					<!-- Property Name -->
 					<h3 class="bwg-property-sidebar__title"><?php echo esc_html( $property['name'] ?? '' ); ?></h3>
 
-					<!-- Key Specs -->
+					<!-- Key Specs - Badge Style -->
 					<?php if ( isset( $property['bedrooms'] ) || isset( $property['bathrooms'] ) || isset( $property['guests'] ) ) : ?>
-						<div class="bwg-property-sidebar__specs">
+						<div class="bwg-property-sidebar__specs bwg-property-sidebar__specs--badges">
 							<?php if ( isset( $property['bedrooms'] ) ) : ?>
-								<span class="bwg-property-sidebar__spec">
-									<span class="bwg-property-sidebar__spec-icon">🛏️</span>
-									<span class="bwg-property-sidebar__spec-value"><?php echo esc_html( $property['bedrooms'] ); ?> <?php echo esc_html( _n( 'Bed', 'Beds', $property['bedrooms'], 'bwg-rentals' ) ); ?></span>
+								<span class="bwg-property-sidebar__spec-badge">
+									<span class="bwg-property-sidebar__spec-badge__icon">🛏️</span>
+									<span><?php echo esc_html( $property['bedrooms'] ); ?> <?php echo esc_html( _n( 'Bed', 'Beds', $property['bedrooms'], 'bwg-rentals' ) ); ?></span>
 								</span>
 							<?php endif; ?>
 							<?php if ( isset( $property['bathrooms'] ) ) : ?>
-								<span class="bwg-property-sidebar__spec">
-									<span class="bwg-property-sidebar__spec-icon">🚿</span>
-									<span class="bwg-property-sidebar__spec-value"><?php echo esc_html( $property['bathrooms'] ); ?> <?php echo esc_html( _n( 'Bath', 'Baths', $property['bathrooms'], 'bwg-rentals' ) ); ?></span>
+								<span class="bwg-property-sidebar__spec-badge">
+									<span class="bwg-property-sidebar__spec-badge__icon">🚿</span>
+									<span><?php echo esc_html( $property['bathrooms'] ); ?> <?php echo esc_html( _n( 'Bath', 'Baths', $property['bathrooms'], 'bwg-rentals' ) ); ?></span>
 								</span>
 							<?php endif; ?>
 							<?php if ( isset( $property['guests'] ) ) : ?>
-								<span class="bwg-property-sidebar__spec">
-									<span class="bwg-property-sidebar__spec-icon">👥</span>
-									<span class="bwg-property-sidebar__spec-value"><?php echo esc_html( $property['guests'] ); ?> <?php echo esc_html( _n( 'Guest', 'Guests', $property['guests'], 'bwg-rentals' ) ); ?></span>
+								<span class="bwg-property-sidebar__spec-badge">
+									<span class="bwg-property-sidebar__spec-badge__icon">👥</span>
+									<span><?php echo esc_html( $property['guests'] ); ?> <?php echo esc_html( _n( 'Guest', 'Guests', $property['guests'], 'bwg-rentals' ) ); ?></span>
 								</span>
 							<?php endif; ?>
 						</div>
@@ -504,7 +517,7 @@ if ( 'true' === $atts['show_policies'] && ! empty( $property['policies'] ) ) {
 					<?php if ( 'true' === $atts['show_booking_button'] ) : ?>
 						<a
 							href="<?php echo esc_url( $booking_url ); ?>"
-							class="bwg-property-sidebar__button"
+							class="bwg-property-sidebar__button bwg-property-sidebar__button--enhanced"
 							target="_blank"
 							rel="noopener noreferrer"
 						>
