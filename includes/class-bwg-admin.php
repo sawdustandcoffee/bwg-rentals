@@ -118,6 +118,12 @@ class BWG_Admin {
             'default' => '',
         ) );
 
+        register_setting( 'bwg_rentals_settings', 'bwg_rentals_google_maps_api_key', array(
+            'type' => 'string',
+            'sanitize_callback' => array( $this, 'encrypt_api_key' ),
+            'default' => '',
+        ) );
+
         // Add settings section
         add_settings_section(
             'bwg_rentals_api_section',
@@ -166,6 +172,14 @@ class BWG_Admin {
             'bwg_rentals_settings',
             'bwg_rentals_api_section'
         );
+
+        add_settings_field(
+            'bwg_rentals_google_maps_api_key',
+            __( 'Google Maps API Key', 'bwg-rentals' ),
+            array( $this, 'render_google_maps_api_key_field' ),
+            'bwg_rentals_settings',
+            'bwg_rentals_api_section'
+        );
     }
 
     /**
@@ -183,6 +197,8 @@ class BWG_Admin {
         $cache_dur = get_option( 'bwg_rentals_cache_duration', 24 );
         $btn_text = get_option( 'bwg_rentals_booking_button_text', 'Book Now' );
         $property_page = get_option( 'bwg_rentals_property_page', 0 );
+        $booking_base_url = get_option( 'bwg_rentals_booking_base_url', '' );
+        $google_maps_api_key = $this->decrypt_api_key( get_option( 'bwg_rentals_google_maps_api_key', '' ) );
         $cache_status = $this->get_cache_status();
 
         // Include template
@@ -345,6 +361,27 @@ class BWG_Admin {
         />
         <p class="description">
             <?php _e( 'Base URL for booking links. Property slug will be appended (e.g., /listings/beach-please). Leave empty to use default Direct Software URL.', 'bwg-rentals' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render Google Maps API key field
+     */
+    public function render_google_maps_api_key_field() {
+        $value = $this->decrypt_api_key( get_option( 'bwg_rentals_google_maps_api_key', '' ) );
+        $masked = ! empty( $value ) ? str_repeat( '*', strlen( $value ) - 4 ) . substr( $value, -4 ) : '';
+        ?>
+        <input
+            type="password"
+            name="bwg_rentals_google_maps_api_key"
+            id="bwg_rentals_google_maps_api_key"
+            value="<?php echo esc_attr( $value ); ?>"
+            class="regular-text"
+            placeholder="<?php echo esc_attr( ! empty( $masked ) ? $masked : '' ); ?>"
+        />
+        <p class="description">
+            <?php _e( 'Your Google Maps API key for displaying property locations on maps. Leave empty to disable maps.', 'bwg-rentals' ); ?>
         </p>
         <?php
     }

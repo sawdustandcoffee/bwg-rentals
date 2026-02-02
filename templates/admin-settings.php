@@ -129,6 +129,44 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </p>
                     </td>
                 </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_booking_base_url"><?php esc_html_e( 'Booking Base URL', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <input
+                            type="url"
+                            name="bwg_rentals_booking_base_url"
+                            id="bwg_rentals_booking_base_url"
+                            value="<?php echo esc_attr( $booking_base_url ); ?>"
+                            class="regular-text"
+                            placeholder="https://bookings.example.com"
+                        />
+                        <p class="description">
+                            <?php esc_html_e( 'Base URL for booking links. Property slug will be appended (e.g., /listings/beach-please). Leave empty to use default Direct Software URL.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="bwg_rentals_google_maps_api_key"><?php esc_html_e( 'Google Maps API Key', 'bwg-rentals' ); ?></label>
+                    </th>
+                    <td>
+                        <input
+                            type="password"
+                            name="bwg_rentals_google_maps_api_key"
+                            id="bwg_rentals_google_maps_api_key"
+                            value="<?php echo esc_attr( $google_maps_api_key ); ?>"
+                            class="regular-text"
+                            autocomplete="off"
+                        />
+                        <p class="description">
+                            <?php esc_html_e( 'Your Google Maps API key for displaying property locations on maps. Leave empty to disable maps.', 'bwg-rentals' ); ?>
+                        </p>
+                    </td>
+                </tr>
             </tbody>
         </table>
 

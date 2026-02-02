@@ -48,6 +48,47 @@
     color: var(--bwg-text-light);
 }
 
+/* AJAX Loading State */
+.bwg-ajax-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bwg-spacing-md);
+    padding: var(--bwg-spacing-lg);
+    min-height: 150px;
+    color: var(--bwg-text-light);
+    font-family: var(--bwg-font-family);
+}
+
+.bwg-ajax-loading__spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--bwg-border-color);
+    border-top-color: var(--bwg-primary-color);
+    border-radius: 50%;
+    animation: bwg-spin 0.8s linear infinite;
+}
+
+.bwg-ajax-loading__text {
+    font-size: 14px;
+}
+
+@keyframes bwg-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* AJAX Error State */
+.bwg-ajax-error {
+    padding: var(--bwg-spacing-md);
+    background-color: #fef7f7;
+    border-left: 4px solid var(--bwg-error-color);
+    color: var(--bwg-error-color);
+    font-family: var(--bwg-font-family);
+    font-size: 14px;
+}
+
 .bwg-empty__icon {
     font-size: 3rem;
     margin-bottom: var(--bwg-spacing-md);
@@ -1912,6 +1953,14 @@
     font-family: var(--bwg-font-family);
     color: var(--bwg-text-color);
     background-color: var(--bwg-background-color);
+    /* Override theme max-width constraints (e.g., Twenty Twenty-One) */
+    max-width: none !important;
+    width: 100%;
+}
+
+/* Standard layout needs full width for two-column grid */
+.bwg-property-full--standard {
+    max-width: none !important;
 }
 
 .bwg-property-full__gallery {
@@ -1919,8 +1968,8 @@
 }
 
 .bwg-property-full__content {
-    max-width: 1200px;
-    margin: 0 auto;
+    /* Content width is controlled by grid layout */
+    min-width: 0; /* Prevent grid blowout */
 }
 
 .bwg-property-full__section {
@@ -2551,7 +2600,8 @@
 	display: grid;
 	grid-template-columns: 1fr 380px;
 	gap: var(--bwg-spacing-xl);
-	max-width: 1400px;
+	max-width: 1400px !important;
+	width: 100%;
 	margin: 0 auto;
 	padding: var(--bwg-spacing-xl);
 }
