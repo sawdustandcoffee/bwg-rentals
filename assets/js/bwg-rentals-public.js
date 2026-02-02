@@ -1249,6 +1249,106 @@
     };
 
     /**
+     * AJAX Content Loader
+     *
+     * Loads availability and rates data asynchronously for faster page render.
+     * Content is fetched after page load and injected into placeholders.
+     */
+    var BWGAjaxLoader = {
+        init: function() {
+            var self = this;
+
+            // Find all AJAX content containers
+            var $availabilityContainers = $('.bwg-ajax-content[data-type="availability"]');
+            var $ratesContainers = $('.bwg-ajax-content[data-type="rates"]');
+
+            // Load availability for each container
+            $availabilityContainers.each(function() {
+                var $container = $(this);
+                var $section = $container.closest('[data-property-id]');
+                var propertyId = $section.data('property-id');
+
+                if (propertyId) {
+                    self.loadAvailability($container, propertyId);
+                }
+            });
+
+            // Load rates for each container
+            $ratesContainers.each(function() {
+                var $container = $(this);
+                var $section = $container.closest('[data-property-id]');
+                var propertyId = $section.data('property-id');
+
+                if (propertyId) {
+                    self.loadRates($container, propertyId);
+                }
+            });
+        },
+
+        /**
+         * Load availability data via AJAX
+         */
+        loadAvailability: function($container, propertyId) {
+            var self = this;
+
+            $.ajax({
+                url: bwgRentals.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'bwg_get_availability',
+                    nonce: bwgRentals.availabilityNonce,
+                    property_id: propertyId
+                },
+                success: function(response) {
+                    if (response.success && response.data.html) {
+                        $container.html(response.data.html);
+                    } else {
+                        self.showError($container, response.data && response.data.message ? response.data.message : 'Failed to load availability');
+                    }
+                },
+                error: function() {
+                    self.showError($container, 'Failed to load availability. Please refresh the page.');
+                }
+            });
+        },
+
+        /**
+         * Load rates data via AJAX
+         */
+        loadRates: function($container, propertyId) {
+            var self = this;
+
+            $.ajax({
+                url: bwgRentals.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'bwg_get_rates',
+                    nonce: bwgRentals.ratesNonce,
+                    property_id: propertyId
+                },
+                success: function(response) {
+                    if (response.success && response.data.html) {
+                        // Replace the entire container contents with the rates HTML
+                        $container.html(response.data.html);
+                    } else {
+                        self.showError($container, response.data && response.data.message ? response.data.message : 'Failed to load rates');
+                    }
+                },
+                error: function() {
+                    self.showError($container, 'Failed to load rates. Please refresh the page.');
+                }
+            });
+        },
+
+        /**
+         * Show error message in container
+         */
+        showError: function($container, message) {
+            $container.html('<div class="bwg-ajax-error">' + message + '</div>');
+        }
+    };
+
+    /**
      * Initialize on DOM ready
      */
     $(document).ready(function() {
@@ -1259,6 +1359,7 @@
         BWGFilters.init();
         BWGSearch.init();
         BWGFullGallery.init();
+        BWGAjaxLoader.init();
     });
 
 })(jQuery);
