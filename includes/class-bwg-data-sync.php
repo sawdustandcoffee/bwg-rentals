@@ -31,18 +31,23 @@ class BWG_Data_Sync {
     /**
      * Sync all properties from API to local storage
      *
+     * The /properties list endpoint only returns basic info (id, name, featured_image).
+     * To get full property details including specs (bedrooms, bathrooms, etc.), we need
+     * to fetch each property individually using the /properties/{id} endpoint.
+     *
      * @param BWG_API $api API instance.
      * @return array Result with success status and message.
      */
     public function sync_all_properties( $api ) {
         // Update sync status
-        $this->set_sync_status( 'running', __( 'Fetching properties from API...', 'bwg-rentals' ) );
+        $this->set_sync_status( 'running', __( 'Fetching properties list from API...', 'bwg-rentals' ) );
 
-        // Fetch all properties from API (bypass cache to get fresh data)
-        $properties = $api->get_properties( false );
+        // Fetch properties list from API (bypass cache to get fresh data)
+        // Note: This only returns basic info - we need to fetch full details for each property
+        $properties_list = $api->get_properties( false );
 
-        if ( is_wp_error( $properties ) ) {
-            $error_message = $properties->get_error_message();
+        if ( is_wp_error( $properties_list ) ) {
+            $error_message = $properties_list->get_error_message();
             $this->set_sync_status( 'error', $error_message );
             BWG_Rentals::log( 'Sync failed: ' . $error_message, 'error' );
             return array(
@@ -51,7 +56,7 @@ class BWG_Data_Sync {
             );
         }
 
-        if ( empty( $properties ) ) {
+        if ( empty( $properties_list ) ) {
             $this->set_sync_status( 'complete', __( 'No properties found in API.', 'bwg-rentals' ) );
             return array(
                 'success' => true,
@@ -60,23 +65,49 @@ class BWG_Data_Sync {
             );
         }
 
-        $this->set_sync_status( 'running', sprintf(
-            /* translators: %d: number of properties */
-            __( 'Syncing %d properties...', 'bwg-rentals' ),
-            count( $properties )
-        ) );
-
+        $total_count = count( $properties_list );
         $synced_count = 0;
         $errors = array();
 
-        foreach ( $properties as $property ) {
-            $result = BWG_CPT::upsert_property( $property );
+        // Fetch full details for each property individually
+        foreach ( $properties_list as $index => $basic_property ) {
+            $property_id = isset( $basic_property['id'] ) ? absint( $basic_property['id'] ) : 0;
+
+            if ( ! $property_id ) {
+                $errors[] = 'unknown';
+                continue;
+            }
+
+            // Update status with progress
+            $this->set_sync_status( 'running', sprintf(
+                /* translators: 1: current property number, 2: total properties, 3: property name */
+                __( 'Syncing property %1$d of %2$d: %3$s...', 'bwg-rentals' ),
+                $index + 1,
+                $total_count,
+                isset( $basic_property['name'] ) ? $basic_property['name'] : $property_id
+            ) );
+
+            // Fetch full property details (includes bedrooms, bathrooms, etc. from units array)
+            $full_property = $api->get_property( $property_id, false );
+
+            if ( is_wp_error( $full_property ) ) {
+                $errors[] = $property_id;
+                BWG_Rentals::log( 'Failed to fetch property ' . $property_id . ': ' . $full_property->get_error_message(), 'error' );
+                continue;
+            }
+
+            // Upsert the full property data
+            $result = BWG_CPT::upsert_property( $full_property );
+
             if ( is_wp_error( $result ) ) {
-                $errors[] = isset( $property['id'] ) ? $property['id'] : 'unknown';
-                BWG_Rentals::log( 'Failed to sync property: ' . $result->get_error_message(), 'error' );
+                $errors[] = $property_id;
+                BWG_Rentals::log( 'Failed to sync property ' . $property_id . ': ' . $result->get_error_message(), 'error' );
             } else {
                 $synced_count++;
             }
+
+            // Small delay to avoid rate limiting (100ms between requests)
+            usleep( 100000 );
         }
 
         // Update last sync time
