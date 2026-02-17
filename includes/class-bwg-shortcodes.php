@@ -1148,6 +1148,7 @@ class BWG_Shortcodes {
                 'slides_to_scroll' => '1',
                 'navigation'       => 'both',
                 'loop'             => 'true',
+                'pause_on_hover'   => 'true',
                 'show_property_name' => 'true',
                 'style'            => 'testimonial', // testimonial, card, minimal
             ),

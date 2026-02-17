@@ -465,8 +465,11 @@
                     }
                 }
 
-                // Pause on hover
-                if (autoplay) {
+                // Pause on hover (respects data-pause-on-hover attribute, defaults to true)
+                var pauseOnHover = $slider.data('pause-on-hover');
+                pauseOnHover = (pauseOnHover === undefined || pauseOnHover === 'true' || pauseOnHover === true);
+
+                if (autoplay && pauseOnHover) {
                     $slider.on('mouseenter', function() {
                         stopAutoplay();
                     });
