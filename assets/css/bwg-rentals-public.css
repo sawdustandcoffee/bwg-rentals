@@ -4981,6 +4981,12 @@ html {
 .bwg-reviews-slider {
     max-width: 900px;
     margin: 0 auto;
+    padding: 0 50px var(--bwg-spacing-lg);
+    overflow: visible;
+}
+
+.bwg-reviews-slider .bwg-property-slider__container {
+    overflow: visible;
 }
 
 /* Base review card styles */
@@ -5144,6 +5150,7 @@ html {
 @media (max-width: 768px) {
     .bwg-reviews-slider {
         max-width: 100%;
+        padding: 0 40px var(--bwg-spacing-md);
     }
 
     .bwg-review-card--testimonial {
