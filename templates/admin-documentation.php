@@ -61,7 +61,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <tbody>
                     <tr>
                         <td><code>layout</code></td>
-                        <td>grid, list</td>
+                        <td>grid, list, masonry</td>
                         <td>grid</td>
                         <td><?php _e( 'Display layout style', 'bwg-rentals' ); ?></td>
                     </tr>
@@ -79,9 +79,27 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </tr>
                     <tr>
                         <td><code>orderby</code></td>
-                        <td>name, id</td>
+                        <td>name, beds, sleeps, sqft</td>
                         <td>name</td>
                         <td><?php _e( 'Sort properties by field', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>pagination</code></td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td><?php _e( 'Enable pagination', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>per_page</code></td>
+                        <td>number</td>
+                        <td>12</td>
+                        <td><?php _e( 'Properties per page (when pagination enabled)', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>show_filters</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show filter dropdowns', 'bwg-rentals' ); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -140,12 +158,328 @@ if ( ! defined( 'ABSPATH' ) ) {
             <pre><code>[bwg_property_card id="123" show_image="false"]</code></pre>
             <pre><code>[bwg_property_card id="123" link="/properties/beach-house/"]</code></pre>
         </div>
+
+        <!-- [bwg_property_slider] Shortcode -->
+        <div class="bwg-shortcode-doc">
+            <h3><code>[bwg_property_slider]</code></h3>
+            <p><?php _e( 'Displays properties in a carousel/slider.', 'bwg-rentals' ); ?></p>
+
+            <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th><?php _e( 'Attribute', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Values', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Default', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Description', 'bwg-rentals' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>number</td>
+                        <td>-1 (all)</td>
+                        <td><?php _e( 'Max properties to show', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>orderby</code></td>
+                        <td>name, beds, sleeps, sqft</td>
+                        <td>name</td>
+                        <td><?php _e( 'Sort order', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>autoplay</code></td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td><?php _e( 'Auto-advance slides', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>speed</code></td>
+                        <td>number (ms)</td>
+                        <td>5000</td>
+                        <td><?php _e( 'Autoplay interval', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>slides_to_show</code></td>
+                        <td>1-4</td>
+                        <td>1</td>
+                        <td><?php _e( 'Visible slides at once', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>slides_to_scroll</code></td>
+                        <td>1-4</td>
+                        <td>1</td>
+                        <td><?php _e( 'Slides to advance per step', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>navigation</code></td>
+                        <td>arrows, dots, both, none</td>
+                        <td>both</td>
+                        <td><?php _e( 'Navigation controls', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>loop</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Loop back to start', 'bwg-rentals' ); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4><?php _e( 'Examples:', 'bwg-rentals' ); ?></h4>
+            <pre><code>[bwg_property_slider]</code></pre>
+            <pre><code>[bwg_property_slider autoplay="true" speed="3000"]</code></pre>
+            <pre><code>[bwg_property_slider slides_to_show="3" navigation="dots"]</code></pre>
+        </div>
+
+        <!-- [bwg_properties_featured] Shortcode -->
+        <div class="bwg-shortcode-doc">
+            <h3><code>[bwg_properties_featured]</code></h3>
+            <p><?php _e( 'Displays a curated selection of featured properties.', 'bwg-rentals' ); ?></p>
+
+            <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th><?php _e( 'Attribute', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Values', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Default', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Description', 'bwg-rentals' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ids</code></td>
+                        <td>comma-separated IDs</td>
+                        <td></td>
+                        <td><?php _e( 'Specific properties to feature', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>number</td>
+                        <td>3</td>
+                        <td><?php _e( 'Max properties if no IDs specified', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>layout</code></td>
+                        <td>grid, slider</td>
+                        <td>grid</td>
+                        <td><?php _e( 'Display layout', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>columns</code></td>
+                        <td>2-4</td>
+                        <td>3</td>
+                        <td><?php _e( 'Grid columns', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>orderby</code></td>
+                        <td>name, beds, sleeps, sqft</td>
+                        <td>name</td>
+                        <td><?php _e( 'Sort order', 'bwg-rentals' ); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4><?php _e( 'Examples:', 'bwg-rentals' ); ?></h4>
+            <pre><code>[bwg_properties_featured]</code></pre>
+            <pre><code>[bwg_properties_featured ids="1,2,3"]</code></pre>
+            <pre><code>[bwg_properties_featured layout="slider" limit="5"]</code></pre>
+        </div>
+
+        <!-- [bwg_property_search] Shortcode -->
+        <div class="bwg-shortcode-doc">
+            <h3><code>[bwg_property_search]</code></h3>
+            <p><?php _e( 'Displays a property search form with filters.', 'bwg-rentals' ); ?></p>
+
+            <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th><?php _e( 'Attribute', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Values', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Default', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Description', 'bwg-rentals' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>show_dates</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show date pickers', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>show_guests</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show guest count filter', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>show_bedrooms</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show bedroom filter', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>show_amenities</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show amenities filter', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>show_location</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show location filter', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>results_page</code></td>
+                        <td>URL</td>
+                        <td></td>
+                        <td><?php _e( 'Page to show results (empty = same page)', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>button_text</code></td>
+                        <td>text</td>
+                        <td>Search Properties</td>
+                        <td><?php _e( 'Submit button text', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>layout</code></td>
+                        <td>horizontal, vertical, inline</td>
+                        <td>horizontal</td>
+                        <td><?php _e( 'Form layout', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>compact</code></td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td><?php _e( 'Compact mode with expandable filters', 'bwg-rentals' ); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4><?php _e( 'Examples:', 'bwg-rentals' ); ?></h4>
+            <pre><code>[bwg_property_search]</code></pre>
+            <pre><code>[bwg_property_search layout="vertical" compact="true"]</code></pre>
+            <pre><code>[bwg_property_search show_dates="false" show_amenities="false"]</code></pre>
+        </div>
+
+        <!-- [bwg_reviews_slider] Shortcode -->
+        <div class="bwg-shortcode-doc">
+            <h3><code>[bwg_reviews_slider]</code></h3>
+            <p><?php _e( 'Displays guest reviews in a carousel.', 'bwg-rentals' ); ?></p>
+
+            <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th><?php _e( 'Attribute', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Values', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Default', 'bwg-rentals' ); ?></th>
+                        <th><?php _e( 'Description', 'bwg-rentals' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>number</td>
+                        <td>-1 (all)</td>
+                        <td><?php _e( 'Max reviews to show', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>autoplay</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Auto-advance slides', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>speed</code></td>
+                        <td>number (ms)</td>
+                        <td>5000</td>
+                        <td><?php _e( 'Autoplay interval', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>slides_to_show</code></td>
+                        <td>1-4</td>
+                        <td>1</td>
+                        <td><?php _e( 'Visible slides at once', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>slides_to_scroll</code></td>
+                        <td>1-4</td>
+                        <td>1</td>
+                        <td><?php _e( 'Slides to advance per step', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>navigation</code></td>
+                        <td>arrows, dots, both, none</td>
+                        <td>both</td>
+                        <td><?php _e( 'Navigation controls', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>loop</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Loop back to start', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>show_property_name</code></td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td><?php _e( 'Show which property the review is for', 'bwg-rentals' ); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>style</code></td>
+                        <td>testimonial, card, minimal</td>
+                        <td>testimonial</td>
+                        <td><?php _e( 'Visual style', 'bwg-rentals' ); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4><?php _e( 'Examples:', 'bwg-rentals' ); ?></h4>
+            <pre><code>[bwg_reviews_slider]</code></pre>
+            <pre><code>[bwg_reviews_slider style="card" slides_to_show="2"]</code></pre>
+            <pre><code>[bwg_reviews_slider style="minimal" autoplay="false"]</code></pre>
+        </div>
     </div>
 
     <!-- Property Shortcodes Section -->
     <div id="property-shortcodes" class="bwg-docs-section" style="display: none;">
         <h2><?php _e( 'Property Shortcodes', 'bwg-rentals' ); ?></h2>
         <p><?php _e( 'These shortcodes display individual components of a single property. Use them to build custom property detail pages.', 'bwg-rentals' ); ?></p>
+
+        <!-- [bwg_property] -->
+        <div class="bwg-shortcode-doc">
+            <h3><code>[bwg_property]</code></h3>
+            <p><?php _e( 'Full property page - displays a complete property detail page with all sections.', 'bwg-rentals' ); ?></p>
+            <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
+            <ul>
+                <li><code>id</code> - Property ID (default: from URL)</li>
+                <li><code>layout</code> - standard, compact, minimal (default: standard)</li>
+                <li><code>show_breadcrumbs</code> - true, false (default: true)</li>
+                <li><code>show_gallery</code> - true, false (default: true)</li>
+                <li><code>show_title</code> - true, false (default: true)</li>
+                <li><code>show_specs</code> - true, false (default: true)</li>
+                <li><code>show_description</code> - true, false (default: true)</li>
+                <li><code>show_amenities</code> - true, false (default: true)</li>
+                <li><code>show_availability</code> - true, false (default: true)</li>
+                <li><code>show_rates</code> - true, false (default: true)</li>
+                <li><code>show_location</code> - true, false (default: true)</li>
+                <li><code>show_policies</code> - true, false (default: true)</li>
+                <li><code>show_booking_button</code> - true, false (default: true)</li>
+                <li><code>show_anchors</code> - true, false (default: true) - Show section navigation</li>
+                <li><code>show_related</code> - true, false (default: true) - Show related properties</li>
+                <li><code>related_limit</code> - Number of related properties (default: 4)</li>
+            </ul>
+            <h4><?php _e( 'Examples:', 'bwg-rentals' ); ?></h4>
+            <pre><code>[bwg_property]</code></pre>
+            <pre><code>[bwg_property id="123"]</code></pre>
+            <pre><code>[bwg_property layout="minimal"]</code></pre>
+            <pre><code>[bwg_property show_availability="false" show_rates="false"]</code></pre>
+        </div>
 
         <!-- [bwg_property_gallery] -->
         <div class="bwg-shortcode-doc">
@@ -225,8 +559,8 @@ if ( ! defined( 'ABSPATH' ) ) {
             <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
             <ul>
                 <li><code>id</code> - Property ID (required)</li>
-                <li><code>months_to_show</code> - Number of months to display (default: 2)</li>
-                <li><code>start_month</code> - Starting month offset (default: 0)</li>
+                <li><code>months_to_show</code> - Number of months to display (default: 3)</li>
+                <li><code>start_month</code> - Starting month (default: current)</li>
             </ul>
             <h4><?php _e( 'Example:', 'bwg-rentals' ); ?></h4>
             <pre><code>[bwg_property_availability id="123" months_to_show="3"]</code></pre>
@@ -268,8 +602,8 @@ if ( ! defined( 'ABSPATH' ) ) {
             <h4><?php _e( 'Attributes:', 'bwg-rentals' ); ?></h4>
             <ul>
                 <li><code>id</code> - Property ID (required)</li>
-                <li><code>show_map</code> - true, false (default: true)</li>
-                <li><code>map_height</code> - Map height in pixels (default: 300)</li>
+                <li><code>show_map</code> - true, false (default: false)</li>
+                <li><code>map_height</code> - Map height (default: 300px)</li>
             </ul>
             <h4><?php _e( 'Example:', 'bwg-rentals' ); ?></h4>
             <pre><code>[bwg_property_location id="123" show_map="true"]</code></pre>
