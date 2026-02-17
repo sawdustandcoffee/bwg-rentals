@@ -133,6 +133,13 @@ class BWG_API {
             } else {
                 $mock_data = $this->get_mock_search_results();
             }
+        } elseif ( strpos( $url, '/reviews' ) !== false ) {
+            // Mock reviews endpoint
+            if ( strpos( $credentials['api_key'], 'MOCK_EMPTY_' ) === 0 ) {
+                $mock_data = array( 'reviews' => array() );
+            } else {
+                $mock_data = $this->get_mock_reviews();
+            }
         } elseif ( strpos( $url, '/properties' ) !== false ) {
             // Mock properties list - check for empty mock key
             if ( strpos( $credentials['api_key'], 'MOCK_EMPTY_' ) === 0 ) {
@@ -214,6 +221,8 @@ class BWG_API {
             $mock_data = $this->get_mock_property( (int) $matches[1] );
         } elseif ( strpos( $url, '/search' ) !== false ) {
             $mock_data = $this->get_mock_search_results();
+        } elseif ( strpos( $url, '/reviews' ) !== false ) {
+            $mock_data = $this->get_mock_reviews();
         } elseif ( strpos( $url, '/properties' ) !== false ) {
             $mock_data = $this->get_mock_properties();
         }
@@ -1160,6 +1169,125 @@ class BWG_API {
         // Fall back to API call
         BWG_Rentals::log( 'Rates for property ' . $property_id . ' not found locally, fetching from API.', 'debug' );
         return $this->get_rates( $property_id, $use_cache );
+    }
+
+    /**
+     * Get all reviews
+     *
+     * @param bool $use_cache Whether to use cached data.
+     * @return array|WP_Error Reviews array or error.
+     */
+    public function get_reviews( $use_cache = true ) {
+        $cache_key = 'reviews';
+
+        if ( $use_cache ) {
+            $cached = $this->cache->get( $cache_key );
+            if ( false !== $cached ) {
+                return $cached;
+            }
+        }
+
+        $data = $this->request( 'reviews' );
+
+        if ( is_wp_error( $data ) ) {
+            return $data;
+        }
+
+        // Extract reviews array from response
+        $reviews = isset( $data['reviews'] ) ? $data['reviews'] : $data;
+
+        // Filter to only published reviews
+        if ( is_array( $reviews ) ) {
+            $reviews = array_filter(
+                $reviews,
+                function ( $review ) {
+                    return isset( $review['status'] ) && 'published' === $review['status'];
+                }
+            );
+            $reviews = array_values( $reviews );
+        }
+
+        $this->cache->set( $cache_key, $reviews );
+
+        return $reviews;
+    }
+
+    /**
+     * Get mock reviews data
+     *
+     * @return array Mock reviews.
+     */
+    private function get_mock_reviews() {
+        return array(
+            'reviews' => array(
+                array(
+                    'id'            => 1,
+                    'status'        => 'published',
+                    'rating'        => 5,
+                    'title'         => 'Amazing Beach Getaway!',
+                    'body'          => 'We had an absolutely wonderful time at the Oceanfront Beach House. The views were breathtaking and the amenities were top-notch. The private beach access was the highlight of our trip. Would definitely come back!',
+                    'reviewer_name' => 'Sarah M.',
+                    'date'          => '2025-12-15',
+                    'property_name' => 'Oceanfront Beach House',
+                    'property_id'   => 1,
+                ),
+                array(
+                    'id'            => 2,
+                    'status'        => 'published',
+                    'rating'        => 4,
+                    'title'         => 'Cozy Mountain Retreat',
+                    'body'          => 'The cabin was exactly what we needed for a peaceful weekend. The fireplace was perfect for chilly evenings and the mountain views were stunning. Only minor issue was the WiFi was a bit slow, but honestly that helped us disconnect!',
+                    'reviewer_name' => 'James & Linda K.',
+                    'date'          => '2025-11-28',
+                    'property_name' => 'Mountain Retreat Cabin',
+                    'property_id'   => 2,
+                ),
+                array(
+                    'id'            => 3,
+                    'status'        => 'published',
+                    'rating'        => 5,
+                    'title'         => 'Perfect Downtown Location',
+                    'body'          => 'This condo was in the perfect location for our city trip. Walking distance to everything! The modern decor was beautiful and the rooftop pool was an unexpected bonus. Highly recommend for business or leisure travel.',
+                    'reviewer_name' => 'Michael R.',
+                    'date'          => '2025-10-20',
+                    'property_name' => 'Downtown Luxury Condo',
+                    'property_id'   => 3,
+                ),
+                array(
+                    'id'            => 4,
+                    'status'        => 'published',
+                    'rating'        => 5,
+                    'title'         => 'Family Reunion Perfection',
+                    'body'          => 'We hosted our family reunion here and it was absolutely perfect. Plenty of room for everyone, the kids loved the pool, and the beach was just steps away. The kitchen was well-equipped for cooking large meals. Already planning next year!',
+                    'reviewer_name' => 'The Thompson Family',
+                    'date'          => '2025-09-05',
+                    'property_name' => 'Oceanfront Beach House',
+                    'property_id'   => 1,
+                ),
+                array(
+                    'id'            => 5,
+                    'status'        => 'draft',
+                    'rating'        => 3,
+                    'title'         => 'Draft Review - Should Not Show',
+                    'body'          => 'This review has draft status and should be filtered out.',
+                    'reviewer_name' => 'Test User',
+                    'date'          => '2025-08-01',
+                    'property_name' => 'Test Property',
+                    'property_id'   => 99,
+                ),
+                array(
+                    'id'            => 6,
+                    'status'        => 'published',
+                    'rating'        => 4,
+                    'title'         => 'Great Ski Trip Base',
+                    'body'          => 'Used the Mountain Retreat Cabin as our base for a ski trip. The hot tub after a long day on the slopes was heavenly. The cabin was clean, well-maintained, and had everything we needed. Will definitely be back next winter!',
+                    'reviewer_name' => 'Chris & Pat D.',
+                    'date'          => '2025-07-12',
+                    'property_name' => 'Mountain Retreat Cabin',
+                    'property_id'   => 2,
+                ),
+            ),
+        );
     }
 
     /**

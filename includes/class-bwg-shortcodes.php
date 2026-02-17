@@ -80,6 +80,9 @@ class BWG_Shortcodes {
         add_shortcode( 'bwg_property_location', array( $this, 'property_location' ) );
         add_shortcode( 'bwg_property_policies', array( $this, 'property_policies' ) );
 
+        // Reviews shortcode
+        add_shortcode( 'bwg_reviews_slider', array( $this, 'reviews_slider' ) );
+
         // Search shortcode
         add_shortcode( 'bwg_property_search', array( $this, 'property_search' ) );
     }
@@ -1123,6 +1126,73 @@ class BWG_Shortcodes {
         $output = ob_get_clean();
 
         return apply_filters( 'bwg_property_slider_output', $output, $properties );
+    }
+
+    /**
+     * Reviews slider shortcode
+     *
+     * Displays reviews in a carousel/slider format.
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string HTML output.
+     */
+    public function reviews_slider( $atts ) {
+        $this->enqueue_assets();
+
+        $atts = shortcode_atts(
+            array(
+                'limit'            => -1,
+                'autoplay'         => 'true',
+                'speed'            => '5000',
+                'slides_to_show'   => '1',
+                'slides_to_scroll' => '1',
+                'navigation'       => 'both',
+                'loop'             => 'true',
+                'show_property_name' => 'true',
+                'style'            => 'testimonial', // testimonial, card, minimal
+            ),
+            $atts,
+            'bwg_reviews_slider'
+        );
+
+        $reviews = $this->api->get_reviews();
+
+        if ( is_wp_error( $reviews ) ) {
+            return $this->render_error( $reviews->get_error_message() );
+        }
+
+        if ( empty( $reviews ) ) {
+            return $this->render_empty( __( 'No reviews available.', 'bwg-rentals' ), '⭐' );
+        }
+
+        // Validate and sanitize slides_to_show (1-4)
+        $atts['slides_to_show'] = max( 1, min( 4, absint( $atts['slides_to_show'] ) ) );
+
+        // Validate and sanitize slides_to_scroll (1-4)
+        $atts['slides_to_scroll'] = max( 1, min( 4, absint( $atts['slides_to_scroll'] ) ) );
+
+        // Validate navigation attribute
+        $valid_navigation = array( 'arrows', 'dots', 'both', 'none' );
+        $atts['navigation'] = in_array( $atts['navigation'], $valid_navigation, true )
+            ? $atts['navigation']
+            : 'both';
+
+        // Validate style attribute
+        $valid_styles = array( 'testimonial', 'card', 'minimal' );
+        $atts['style'] = in_array( $atts['style'], $valid_styles, true )
+            ? $atts['style']
+            : 'testimonial';
+
+        // Apply limit
+        if ( $atts['limit'] > 0 ) {
+            $reviews = array_slice( $reviews, 0, absint( $atts['limit'] ) );
+        }
+
+        ob_start();
+        include $this->get_template( 'reviews-slider.php' );
+        $output = ob_get_clean();
+
+        return apply_filters( 'bwg_reviews_slider_output', $output, $reviews );
     }
 
     /**
