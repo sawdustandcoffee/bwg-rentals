@@ -21,7 +21,7 @@ $slider_id = 'bwg-slider-' . wp_rand( 1000, 9999 );
 $show_arrows = in_array( $atts['navigation'], array( 'arrows', 'both' ), true );
 $show_dots   = in_array( $atts['navigation'], array( 'dots', 'both' ), true );
 ?>
-<div class="bwg-property-slider" id="<?php echo esc_attr( $slider_id ); ?>" data-slider-id="<?php echo esc_attr( $slider_id ); ?>" data-autoplay="<?php echo esc_attr( $atts['autoplay'] ); ?>" data-speed="<?php echo esc_attr( $atts['speed'] ); ?>" data-slides-to-show="<?php echo esc_attr( $atts['slides_to_show'] ); ?>" data-slides-to-scroll="<?php echo esc_attr( $atts['slides_to_scroll'] ); ?>" data-loop="<?php echo esc_attr( $atts['loop'] ); ?>">
+<div class="bwg-property-slider" id="<?php echo esc_attr( $slider_id ); ?>" data-slider-id="<?php echo esc_attr( $slider_id ); ?>" data-autoplay="<?php echo esc_attr( $atts['autoplay'] ); ?>" data-speed="<?php echo esc_attr( $atts['speed'] ); ?>" data-slides-to-show="<?php echo esc_attr( $atts['slides_to_show'] ); ?>" data-slides-to-scroll="<?php echo esc_attr( $atts['slides_to_scroll'] ); ?>" data-loop="<?php echo esc_attr( $atts['loop'] ); ?>" data-pause-on-hover="<?php echo esc_attr( $atts['pause_on_hover'] ); ?>">
     <div class="bwg-property-slider__container">
         <div class="bwg-property-slider__track">
             <?php foreach ( $properties as $index => $property ) : ?>

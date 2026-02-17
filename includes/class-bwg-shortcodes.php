@@ -1085,6 +1085,7 @@ class BWG_Shortcodes {
                 'slides_to_scroll' => '1',
                 'navigation'      => 'both',
                 'loop'            => 'true',
+                'pause_on_hover'  => 'true',
             ),
             $atts,
             'bwg_property_slider'
