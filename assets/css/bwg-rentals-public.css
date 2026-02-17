@@ -4982,11 +4982,6 @@ html {
     max-width: 900px;
     margin: 0 auto;
     padding: 0 50px var(--bwg-spacing-lg);
-    overflow: visible;
-}
-
-.bwg-reviews-slider .bwg-property-slider__container {
-    overflow: visible;
 }
 
 /* Base review card styles */
