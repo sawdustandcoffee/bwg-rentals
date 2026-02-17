@@ -5076,26 +5076,68 @@ html {
     justify-content: center;
 }
 
-/* Card style - bordered, shadow, left-aligned */
+/* Card style - bordered, shadow, left-aligned, structured */
 .bwg-review-card--card {
+    text-align: left;
     background: var(--bwg-background-color);
     border: 1px solid var(--bwg-border-color);
-    border-radius: var(--bwg-border-radius);
-    box-shadow: var(--bwg-box-shadow);
-    margin: var(--bwg-spacing-sm);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: var(--bwg-spacing-sm) var(--bwg-spacing-md);
+    padding: var(--bwg-spacing-lg);
 }
 
-/* Minimal style - compact, just quote/stars/name */
+.bwg-review-card--card .bwg-review-card__title {
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--bwg-border-color);
+    padding-bottom: var(--bwg-spacing-sm);
+    margin-bottom: var(--bwg-spacing-md);
+}
+
+.bwg-review-card--card .bwg-review-card__body {
+    font-size: 0.95rem;
+    color: var(--bwg-text-light);
+}
+
+.bwg-review-card--card .bwg-review-card__footer {
+    border-top: 1px solid var(--bwg-border-color);
+    padding-top: var(--bwg-spacing-sm);
+    margin-top: var(--bwg-spacing-sm);
+}
+
+.bwg-review-card--card .bwg-review-card__stars {
+    font-size: 1rem;
+}
+
+/* Minimal style - compact, quote-focused, no chrome */
 .bwg-review-card--minimal {
-    padding: var(--bwg-spacing-md) 0;
+    text-align: left;
+    padding: var(--bwg-spacing-md) var(--bwg-spacing-lg);
+    border-left: 3px solid var(--bwg-primary-color);
+    background: transparent;
 }
 
 .bwg-review-card--minimal .bwg-review-card__title {
     display: none;
 }
 
+.bwg-review-card--minimal .bwg-review-card__stars {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
 .bwg-review-card--minimal .bwg-review-card__body {
     font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: var(--bwg-spacing-sm);
+}
+
+.bwg-review-card--minimal .bwg-review-card__footer {
+    font-size: 0.8rem;
+}
+
+.bwg-review-card--minimal .bwg-review-card__property {
+    display: none;
 }
 
 /* Reviews slider responsive */
@@ -5124,6 +5166,14 @@ html {
 
     .bwg-review-card--testimonial .bwg-review-card__footer {
         align-items: center;
+    }
+
+    .bwg-review-card--card {
+        margin: var(--bwg-spacing-sm);
+    }
+
+    .bwg-review-card--minimal {
+        padding: var(--bwg-spacing-sm) var(--bwg-spacing-md);
     }
 
     .bwg-review-card__date::before,
